@@ -16,6 +16,11 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
 
     /**
+     * Tela de Categorias do Cardápio
+     */
+    object Categories : Screen("categories")
+
+    /**
      * Tela placeholder para desenvolvimento futuro
      */
     object Placeholder : Screen("placeholder")

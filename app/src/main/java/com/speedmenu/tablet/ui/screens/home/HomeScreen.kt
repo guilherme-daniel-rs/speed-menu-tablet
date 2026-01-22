@@ -60,7 +60,9 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
  * Design pensado para tablets em modo quiosque.
  */
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onNavigateToCategories: () -> Unit = {}
+) {
     // Estado para controlar animação de entrada
     var isVisible by remember { mutableStateOf(false) }
     
@@ -90,7 +92,8 @@ fun HomeScreen() {
             ) {
                 Sidebar(
                     modifier = Modifier.fillMaxSize(),
-                    isVisible = isVisible
+                    isVisible = isVisible,
+                    onStartOrderClick = onNavigateToCategories
                 )
                 
                 // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
@@ -137,11 +140,13 @@ fun HomeScreen() {
 /**
  * Sidebar fixa com logo, CTA principal e itens de menu.
  * Elemento forte de identidade visual com gradiente vertical sutil e continuidade com o ambiente.
+ * Compartilhada entre Home e Categories.
  */
 @Composable
-private fun Sidebar(
+internal fun Sidebar(
     modifier: Modifier = Modifier,
-    isVisible: Boolean = true
+    isVisible: Boolean = true,
+    onStartOrderClick: () -> Unit = {}
 ) {
     Box(modifier = modifier) {
         // ========== CAMADA 1: Gradiente vertical base refinado (dark → um pouco mais claro) ==========
@@ -217,9 +222,7 @@ private fun Sidebar(
             SidebarMenuItem(
                 text = "Iniciar pedido",
                 icon = Icons.Default.ShoppingCart,
-                onClick = {
-                    // TODO: Implementar navegação para tela de cardápio
-                },
+                onClick = onStartOrderClick,
                 style = SidebarMenuItemStyle.PRIMARY,
                 modifier = Modifier.fillMaxWidth() // Ocupa 100% da largura da sidebar
             )
