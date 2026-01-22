@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.CategoryCard
 import com.speedmenu.tablet.core.ui.components.FilterChip
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItem
@@ -47,7 +48,8 @@ data class CategoryData(
     val title: String,
     val subtitle: String,
     val description: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val imageResId: Int
 )
 
 /**
@@ -70,28 +72,32 @@ fun CategoriesScreen(
                 title = "Entradas",
                 subtitle = "Coleção Autoral",
                 description = "Explorar agora",
-                icon = Icons.Default.Restaurant
+                icon = Icons.Default.Restaurant,
+                imageResId = R.drawable.entradas
             ),
             CategoryData(
                 id = "pratos",
                 title = "Pratos Principais",
                 subtitle = "Coleção Autoral",
                 description = "Explorar agora",
-                icon = Icons.Default.LocalDining
+                icon = Icons.Default.LocalDining,
+                imageResId = R.drawable.pratos_principais
             ),
             CategoryData(
                 id = "bebidas",
                 title = "Bebidas",
                 subtitle = "Coleção Autoral",
                 description = "Explorar agora",
-                icon = Icons.Default.LocalBar
+                icon = Icons.Default.LocalBar,
+                imageResId = R.drawable.bebidas
             ),
             CategoryData(
                 id = "sobremesas",
                 title = "Sobremesas",
                 subtitle = "Coleção Autoral",
                 description = "Explorar agora",
-                icon = Icons.Default.Cake
+                icon = Icons.Default.Cake,
+                imageResId = R.drawable.sobremesas
             )
         )
     }
@@ -196,6 +202,7 @@ fun CategoriesScreen(
                         subtitle = category.subtitle,
                         description = category.description,
                         icon = category.icon,
+                        imageResId = category.imageResId,
                         onClick = {
                             // TODO: Implementar navegação para itens da categoria
                             onNavigateToCategory(category.id)

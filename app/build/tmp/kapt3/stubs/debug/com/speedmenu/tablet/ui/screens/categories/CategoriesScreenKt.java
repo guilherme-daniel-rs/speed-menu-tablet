@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable;
 import androidx.compose.ui.Alignment;
 import androidx.compose.ui.Modifier;
 import androidx.compose.ui.graphics.Brush;
+import com.speedmenu.tablet.R;
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle;
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors;
 

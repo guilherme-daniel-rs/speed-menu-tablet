@@ -75,6 +75,8 @@ int dimen notification_small_icon_size_as_large 0x7f050012
 int dimen notification_subtext_size 0x7f050013
 int dimen notification_top_pad 0x7f050014
 int dimen notification_top_pad_large_text 0x7f050015
+int drawable bebidas 0x7f060013
+int drawable entradas 0x7f060014
 int drawable ic_call_answer 0x7f060000
 int drawable ic_call_answer_low 0x7f060001
 int drawable ic_call_answer_video 0x7f060002
@@ -94,6 +96,8 @@ int drawable notification_template_icon_bg 0x7f06000f
 int drawable notification_template_icon_low_bg 0x7f060010
 int drawable notification_tile_bg 0x7f060011
 int drawable notify_panel_notification_icon_bg 0x7f060012
+int drawable pratos_principais 0x7f060015
+int drawable sobremesas 0x7f060016
 int id accessibility_action_clickable_span 0x7f070000
 int id accessibility_custom_action_0 0x7f070001
 int id accessibility_custom_action_1 0x7f070002

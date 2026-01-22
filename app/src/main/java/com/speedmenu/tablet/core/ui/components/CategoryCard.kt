@@ -1,5 +1,6 @@
 package com.speedmenu.tablet.core.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,6 +41,7 @@ fun CategoryCard(
     subtitle: String,
     description: String,
     icon: ImageVector,
+    imageResId: Int,
     onClick: () -> Unit,
     onViewItemsClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -47,20 +52,14 @@ fun CategoryCard(
             .height(320.dp)
             .clickable(onClick = onClick)
     ) {
-        // ========== CAMADA 1: Background com gradiente (simulando imagem) ==========
-        Box(
+        // ========== CAMADA 1: Imagem de fundo ==========
+        Image(
+            painter = painterResource(id = imageResId),
+            contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            SpeedMenuColors.Surface.copy(red = 0.15f, green = 0.18f, blue = 0.20f),
-                            SpeedMenuColors.Surface.copy(red = 0.12f, green = 0.15f, blue = 0.17f),
-                            SpeedMenuColors.Surface.copy(red = 0.10f, green = 0.12f, blue = 0.14f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                )
+                .clip(RoundedCornerShape(20.dp)),
+            contentScale = ContentScale.Crop
         )
         
         // ========== CAMADA 2: Overlay escuro para contraste ==========
