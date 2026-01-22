@@ -171,6 +171,14 @@ fun ProductsScreen(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
             ) {
                 items(products) { product ->
+                    // Badge emocional apenas para alguns produtos específicos
+                    val badgeText = when (product.id) {
+                        "1" -> "Mais pedido" // Bruschetta Italiana
+                        "9" -> "Chef recomenda" // Filé Mignon ao Molho
+                        "25" -> "Mais pedido" // Brownie com Sorvete
+                        else -> null
+                    }
+                    
                     ProductCard(
                         name = product.name,
                         price = product.price,
@@ -182,7 +190,8 @@ fun ProductsScreen(
                             // Adiciona ao carrinho (mockado)
                             cartItemCount++
                             // TODO: Implementar lógica real de carrinho
-                        }
+                        },
+                        badgeText = badgeText
                     )
                 }
             }
