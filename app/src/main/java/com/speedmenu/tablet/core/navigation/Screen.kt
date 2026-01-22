@@ -21,6 +21,13 @@ sealed class Screen(val route: String) {
     object Categories : Screen("categories")
 
     /**
+     * Tela de Produtos/Pratos de uma categoria
+     */
+    object Products : Screen("products/{categoryName}") {
+        fun createRoute(categoryName: String) = "products/$categoryName"
+    }
+
+    /**
      * Tela placeholder para desenvolvimento futuro
      */
     object Placeholder : Screen("placeholder")

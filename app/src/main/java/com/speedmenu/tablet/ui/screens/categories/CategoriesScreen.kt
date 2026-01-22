@@ -204,12 +204,12 @@ fun CategoriesScreen(
                         icon = category.icon,
                         imageResId = category.imageResId,
                         onClick = {
-                            // TODO: Implementar navegação para itens da categoria
-                            onNavigateToCategory(category.id)
+                            // Navega para tela de produtos da categoria
+                            onNavigateToCategory(category.title)
                         },
                         onViewItemsClick = {
-                            // TODO: Implementar navegação para itens da categoria
-                            onNavigateToCategory(category.id)
+                            // Navega para tela de produtos da categoria
+                            onNavigateToCategory(category.title)
                         }
                     )
                 }
