@@ -6,15 +6,15 @@ import androidx.compose.material3.Shapes;
 public final class ShapeKt {
     
     /**
-     * Configuração de formas (shapes) do Material Design 3.
-     * Define os cantos arredondados e formas utilizadas nos componentes.
+     * Configuração de formas (shapes) do Design System SpeedMenuTablet.
+     * Cantos bem arredondados para visual premium e moderno.
      */
     @org.jetbrains.annotations.NotNull()
     private static final androidx.compose.material3.Shapes Shapes = null;
     
     /**
-     * Configuração de formas (shapes) do Material Design 3.
-     * Define os cantos arredondados e formas utilizadas nos componentes.
+     * Configuração de formas (shapes) do Design System SpeedMenuTablet.
+     * Cantos bem arredondados para visual premium e moderno.
      */
     @org.jetbrains.annotations.NotNull()
     public static final androidx.compose.material3.Shapes getShapes() {

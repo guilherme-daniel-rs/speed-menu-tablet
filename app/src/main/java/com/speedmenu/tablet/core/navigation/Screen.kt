@@ -11,6 +11,11 @@ sealed class Screen(val route: String) {
     object Splash : Screen("splash")
 
     /**
+     * Tela Home principal do aplicativo
+     */
+    object Home : Screen("home")
+
+    /**
      * Tela placeholder para desenvolvimento futuro
      */
     object Placeholder : Screen("placeholder")

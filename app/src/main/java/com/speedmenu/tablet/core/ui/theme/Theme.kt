@@ -16,63 +16,34 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 /**
- * Esquema de cores claro para o aplicativo.
+ * Esquema de cores dark premium do SpeedMenuTablet.
+ * Inspirado em aplicativos profissionais de restaurante.
  */
-private val LightColorScheme = lightColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    error = Error,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
-    background = Background,
-    onBackground = OnBackground,
-    surface = Surface,
-    onSurface = OnSurface,
-    surfaceVariant = SurfaceVariant,
-    onSurfaceVariant = OnSurfaceVariant,
-    outline = Outline,
-    outlineVariant = OutlineVariant
-)
-
-/**
- * Esquema de cores escuro para o aplicativo.
- */
-private val DarkColorScheme = darkColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    error = Error,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
-    background = Background,
-    onBackground = OnBackground,
-    surface = Surface,
-    onSurface = OnSurface,
-    surfaceVariant = SurfaceVariant,
-    onSurfaceVariant = OnSurfaceVariant,
-    outline = Outline,
-    outlineVariant = OutlineVariant
+private val SpeedMenuDarkColorScheme = darkColorScheme(
+    primary = SpeedMenuColors.Primary,
+    onPrimary = SpeedMenuColors.TextOnPrimary,
+    primaryContainer = SpeedMenuColors.PrimaryContainer,
+    onPrimaryContainer = SpeedMenuColors.TextOnPrimary,
+    secondary = SpeedMenuColors.PrimaryLight,
+    onSecondary = SpeedMenuColors.TextOnPrimary,
+    secondaryContainer = SpeedMenuColors.PrimaryContainer,
+    onSecondaryContainer = SpeedMenuColors.TextOnPrimary,
+    tertiary = SpeedMenuColors.PrimaryDark,
+    onTertiary = SpeedMenuColors.TextOnPrimary,
+    tertiaryContainer = SpeedMenuColors.PrimaryContainer,
+    onTertiaryContainer = SpeedMenuColors.TextOnPrimary,
+    error = SpeedMenuColors.Error,
+    onError = SpeedMenuColors.TextOnPrimary,
+    errorContainer = SpeedMenuColors.Error.copy(alpha = 0.2f),
+    onErrorContainer = SpeedMenuColors.Error,
+    background = SpeedMenuColors.BackgroundPrimary,
+    onBackground = SpeedMenuColors.TextPrimary,
+    surface = SpeedMenuColors.Surface,
+    onSurface = SpeedMenuColors.TextPrimary,
+    surfaceVariant = SpeedMenuColors.SurfaceElevated,
+    onSurfaceVariant = SpeedMenuColors.TextSecondary,
+    outline = SpeedMenuColors.Border,
+    outlineVariant = SpeedMenuColors.BorderSubtle
 )
 
 /**
@@ -85,18 +56,12 @@ private val DarkColorScheme = darkColorScheme(
  */
 @Composable
 fun SpeedMenuTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true, // Sempre dark para este app
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    // SpeedMenuTablet sempre usa tema dark premium
+    val colorScheme = SpeedMenuDarkColorScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {

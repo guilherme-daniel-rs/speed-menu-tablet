@@ -11,7 +11,7 @@ public final class NavGraphKt {
      * Define todas as rotas e suas respectivas telas.
      *
      * @param navController Controlador de navegação do Compose
-     * @param startDestination Rota inicial da aplicação
+     * @param startDestination Rota inicial da aplicação (padrão: Home)
      */
     @androidx.compose.runtime.Composable()
     public static final void NavGraph(@org.jetbrains.annotations.NotNull()
