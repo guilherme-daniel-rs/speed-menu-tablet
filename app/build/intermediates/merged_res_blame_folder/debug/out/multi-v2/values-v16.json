@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.speedmenu.tablet.app-mergeDebugResources-53:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "/Users/guilherme/.gradle/caches/transforms-3/95270c14f91f469af20dbac6e1309bff/transformed/core-1.12.0/res/values-v16/values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
+                    }
+                }
+            ]
+        }
+    ]
+}
