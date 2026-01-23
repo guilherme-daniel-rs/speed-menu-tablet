@@ -42,7 +42,8 @@ import com.speedmenu.tablet.ui.screens.home.Sidebar
 fun ProductsScreen(
     categoryName: String,
     onNavigateBack: () -> Unit = {},
-    onNavigateToCart: () -> Unit = {}
+    onNavigateToCart: () -> Unit = {},
+    onNavigateToProductDetail: (String) -> Unit = {}
 ) {
     // Estado para controlar bottom sheet
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
@@ -184,7 +185,8 @@ fun ProductsScreen(
                         price = product.price,
                         imageResId = product.imageResId,
                         onClick = {
-                            selectedProduct = product
+                            // Navega para tela de detalhes do produto
+                            onNavigateToProductDetail(product.id)
                         },
                         onSelectClick = {
                             // Adiciona ao carrinho (mockado)

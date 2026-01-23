@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.speedmenu.tablet.ui.screens.categories.CategoriesScreen
 import com.speedmenu.tablet.ui.screens.home.HomeScreen
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderScreen
+import com.speedmenu.tablet.ui.screens.productdetail.VerPratoScreen
 import com.speedmenu.tablet.ui.screens.products.ProductsScreen
 import com.speedmenu.tablet.ui.screens.splash.SplashScreen
 
@@ -74,6 +75,45 @@ fun NavGraph(
                 },
                 onNavigateToCart = {
                     // TODO: Implementar navegação para carrinho
+                },
+                onNavigateToProductDetail = { productId ->
+                    navController.navigate(Screen.ProductDetail.createRoute(productId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.ProductDetail.route,
+            arguments = listOf(
+                navArgument("productId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: ""
+            // Mock de dados do produto (em produção viria de um ViewModel/Repository)
+            VerPratoScreen(
+                productId = productId,
+                productName = "Filé Mignon ao Molho",
+                productCategory = "Pratos Principais",
+                productPrice = 68.90,
+                productImageResId = com.speedmenu.tablet.R.drawable.pratos_principais,
+                productDescription = "Filé grelhado com molho especial e acompanhamentos",
+                ingredients = listOf("Filé mignon", "Molho especial", "Batatas", "Legumes", "Ervas"),
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
+                },
+                onNavigateToCart = {
+                    // TODO: Implementar navegação para carrinho
+                },
+                onAddToCart = {
+                    // TODO: Implementar lógica de adicionar ao carrinho
+                    navController.popBackStack()
                 }
             )
         }

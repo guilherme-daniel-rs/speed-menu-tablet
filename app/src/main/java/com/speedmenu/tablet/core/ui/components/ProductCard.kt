@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
 /**
  * Card minimalista de produto/prato.
@@ -177,7 +178,7 @@ fun ProductCard(
                 ) {
                     // Preço - mais discreto
                     Text(
-                        text = "R$ ${String.format("%.2f", price)}",
+                        text = CurrencyFormatter.formatCurrencyBR(price),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
                         color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.85f),

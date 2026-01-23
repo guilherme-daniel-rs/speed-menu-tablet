@@ -30,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import com.speedmenu.tablet.core.ui.components.SpeedMenuPrimaryButton
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
 /**
  * Bottom Sheet minimalista com detalhes do produto.
@@ -87,7 +88,7 @@ fun ProductDetailsBottomSheet(
                 
                 // Preço
                 Text(
-                    text = "R$ ${String.format("%.2f", product.price)}",
+                    text = CurrencyFormatter.formatCurrencyBR(product.price),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = SpeedMenuColors.PrimaryLight,

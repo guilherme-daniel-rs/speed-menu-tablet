@@ -28,6 +28,13 @@ sealed class Screen(val route: String) {
     }
 
     /**
+     * Tela de detalhes do prato (VerPratoScreen)
+     */
+    object ProductDetail : Screen("product/{productId}") {
+        fun createRoute(productId: String) = "product/$productId"
+    }
+
+    /**
      * Tela placeholder para desenvolvimento futuro
      */
     object Placeholder : Screen("placeholder")
