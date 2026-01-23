@@ -1,5 +1,6 @@
 package com.speedmenu.tablet.ui.screens.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Visibility
@@ -40,6 +50,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,9 +61,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.speedmenu.tablet.R
+import com.speedmenu.tablet.core.ui.components.AppTopBarContainer
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItem
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
 import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
+import com.speedmenu.tablet.core.ui.components.TopRightStatusPill
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
@@ -65,6 +81,9 @@ fun HomeScreen(
 ) {
     // Estado para controlar animação de entrada
     var isVisible by remember { mutableStateOf(false) }
+    
+    // Estado para controlar visibilidade do dialog de garçom
+    var showWaiterDialog by remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
         isVisible = true
@@ -118,22 +137,34 @@ fun HomeScreen(
             }
         }
 
-        // Conteúdo principal à direita com animação de entrada
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(
-                animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
-            ) + slideInHorizontally(
-                initialOffsetX = { it },
-                animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
-            )
-        ) {
-            HomeContent(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            )
-        }
+                // Conteúdo principal à direita com animação de entrada
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(
+                        animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
+                    ) + slideInHorizontally(
+                        initialOffsetX = { it },
+                        animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
+                    )
+                ) {
+                    HomeContent(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        showWaiterDialog = showWaiterDialog,
+                        onShowWaiterDialog = { showWaiterDialog = it }
+                    )
+                }
+                
+                // Dialog de garçom chamado (fora do AnimatedVisibility para garantir renderização)
+                WaiterCalledDialog(
+                    visible = showWaiterDialog,
+                    onDismiss = { showWaiterDialog = false },
+                    onConfirm = {
+                        showWaiterDialog = false
+                        // TODO: Implementar lógica de chamar garçom
+                    }
+                )
     }
 }
 
@@ -335,31 +366,65 @@ private fun RestaurantLogo() {
  */
 @Composable
 private fun HomeContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showWaiterDialog: Boolean,
+    onShowWaiterDialog: (Boolean) -> Unit
 ) {
     Box(modifier = modifier) {
         // Banner principal com imagem de fundo
         HomeBanner()
 
-        // Topo direito: Chamar garçom e número da mesa
-        TopRightInfo(
+        // TopBar com status pill (pixel-perfect)
+        AppTopBarContainer(
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(24.dp)
+                .align(Alignment.TopCenter)
+                .padding(horizontal = 24.dp), // Padding horizontal consistente
+            content = {
+                // Conteúdo vazio na Home (apenas banner)
+            },
+            statusPill = {
+                TopRightStatusPill(
+                    onWaiterClick = {
+                        onShowWaiterDialog(true)
+                    }
+                )
+            }
         )
     }
 }
 
 /**
- * Banner principal com imagem de fundo e texto de destaque.
+ * Banner principal com carrossel de imagens e texto de destaque.
  * Fundo sofisticado com múltiplas camadas visuais para profundidade.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun HomeBanner() {
+    // Lista de imagens do carrossel
+    val coverImages = remember {
+        listOf(
+            R.drawable.capa,      // capa.jpeg
+            R.drawable.capa_2,    // capa-2.png
+            R.drawable.capa_3     // capa-3.jpg
+        )
+    }
+    
+    // Estado do pager
+    val pagerState = rememberPagerState(pageCount = { coverImages.size }, initialPage = 0)
+    
+    // Auto-play do carrossel (muda de página a cada 5 segundos)
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(5000)
+            val nextPage = (pagerState.currentPage + 1) % coverImages.size
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
+    
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // ========== CAMADA 1: Background base ==========
+        // ========== CAMADA 0: Fallback background (por baixo, caso imagens não carreguem) ==========
         // Gradiente sofisticado (tons escuros com leve tom gastronômico)
         Box(
             modifier = Modifier
@@ -375,25 +440,51 @@ private fun HomeBanner() {
                     )
                 )
         )
+        
+        // ========== CAMADA 1: Carrossel de imagens ==========
+        // ColorMatrix para aumentar brilho e contraste (imagens mais vivas e apetitosas)
+        // Ajuste sutil: brilho e contraste levemente aumentados
+        val brightnessContrastMatrix = remember {
+            ColorMatrix(floatArrayOf(
+                // Contraste: 1.12 (aumenta contraste sutilmente)
+                1.12f, 0f, 0f, 0f, 0.12f, // R: contraste + brilho aumentado
+                0f, 1.12f, 0f, 0f, 0.12f, // G: contraste + brilho aumentado
+                0f, 0f, 1.12f, 0f, 0.12f, // B: contraste + brilho aumentado
+                0f, 0f, 0f, 1f, 0f       // Alpha: sem alteração
+            ))
+        }
+        
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            Image(
+                painter = painterResource(id = coverImages[page]),
+                contentDescription = "Imagem de capa ${page + 1}",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                colorFilter = ColorFilter.colorMatrix(brightnessContrastMatrix)
+            )
+        }
 
         // ========== CAMADA 2: Padrão sutil de profundidade ==========
-        // Gradiente horizontal para adicionar dimensão
+        // Gradiente horizontal para adicionar dimensão (reduzido ainda mais para mais clareza)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0x15000000), // Levemente escuro à esquerda
+                            Color(0x06000000), // Reduzido de 0x0A para 0x06 (ainda menos escuro à esquerda)
                             Color(0x00000000), // Transparente no centro
-                            Color(0x25000000)  // Levemente escuro à direita
+                            Color(0x0F000000)  // Reduzido de 0x15 para 0x0F (ainda menos escuro à direita)
                         )
                     )
                 )
         )
 
         // ========== CAMADA 3: Vignette radial ==========
-        // Escurecer bordas para foco central
+        // Escurecer bordas para foco central (reduzido ainda mais para mais clareza)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -401,8 +492,8 @@ private fun HomeBanner() {
                     brush = Brush.radialGradient(
                         colors = listOf(
                             Color(0x00000000), // Transparente no centro
-                            Color(0x40000000), // Escuro nas bordas
-                            Color(0x80000000)  // Muito escuro nas bordas externas
+                            Color(0x18000000), // Reduzido de 0x25 para 0x18 (ainda menos escuro nas bordas)
+                            Color(0x40000000)  // Reduzido de 0x50 para 0x40 (ainda menos escuro nas bordas externas)
                         ),
                         radius = 1200f
                     )
@@ -410,54 +501,46 @@ private fun HomeBanner() {
         )
 
         // ========== CAMADA 4: Overlay de contraste ==========
-        // Overlay escuro para melhorar contraste do texto
+        // Overlay escuro para melhorar contraste do texto (reduzido ainda mais para mais clareza, mantendo legibilidade)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            SpeedMenuColors.OverlayLight.copy(alpha = 0.6f), // Overlay leve (topo)
-                            SpeedMenuColors.Overlay.copy(alpha = 0.85f), // Overlay mais opaco (meio)
-                            SpeedMenuColors.Overlay  // Overlay muito opaco (base)
+                            SpeedMenuColors.OverlayLight.copy(alpha = 0.28f), // Reduzido de 0.35f para 0.28f (topo)
+                            SpeedMenuColors.Overlay.copy(alpha = 0.48f), // Reduzido de 0.55f para 0.48f (meio)
+                            SpeedMenuColors.Overlay.copy(alpha = 0.62f)  // Reduzido de 0.70f para 0.62f (base)
                         )
                     )
                 )
         )
-
-        // ========== CAMADA 5: Elementos informativos (chips) ==========
-        // Chips no canto inferior esquerdo para contexto sem poluir
-        Column(
+        
+        // ========== CAMADA 4.5: Indicadores do carrossel ==========
+        // Indicadores discretos no canto inferior direito
+        Row(
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(horizontal = 40.dp, vertical = 48.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .align(Alignment.BottomEnd)
+                .padding(horizontal = 40.dp, vertical = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Chip: Destaque do dia
-            SpeedMenuBadge(
-                text = "Destaque do dia",
-                modifier = Modifier,
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
-            )
-            
-            // Chip: Tempo médio de preparo
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = null,
-                    tint = SpeedMenuColors.PrimaryLight.copy(alpha = 0.8f),
-                    modifier = Modifier.size(14.dp)
-                )
-                SpeedMenuBadge(
-                    text = "~15 min",
-                    modifier = Modifier,
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+            repeat(coverImages.size) { index ->
+                val isSelected = pagerState.currentPage == index
+                Box(
+                    modifier = Modifier
+                        .size(if (isSelected) 10.dp else 8.dp)
+                        .clip(CircleShape)
+                        .background(
+                            color = if (isSelected) {
+                                SpeedMenuColors.PrimaryLight
+                            } else {
+                                SpeedMenuColors.PrimaryLight.copy(alpha = 0.4f)
+                            }
+                        )
                 )
             }
         }
+
 
         // ========== CAMADA 6: Conteúdo principal (texto) ==========
         // Texto de destaque agrupado em Column, alinhado à direita
@@ -498,10 +581,12 @@ private fun HomeBanner() {
  * Widget de status do sistema no topo direito.
  * Comunica estado de conexão, mesa e ações rápidas.
  * Aparência de widget de status profissional.
+ * Reutilizável em outras telas.
  */
 @Composable
-private fun TopRightInfo(
-    modifier: Modifier = Modifier
+internal fun TopRightInfo(
+    modifier: Modifier = Modifier,
+    onWaiterClick: () -> Unit = {}
 ) {
     // Container agrupado com fundo semi-transparente
     Box(
@@ -610,9 +695,7 @@ private fun TopRightInfo(
                 modifier = Modifier.clickable(
                     interactionSource = waiterInteractionSource,
                     indication = null,
-                    onClick = {
-                        // TODO: Implementar ação de chamar garçom
-                    }
+                    onClick = onWaiterClick
                 )
             ) {
                 Icon(
