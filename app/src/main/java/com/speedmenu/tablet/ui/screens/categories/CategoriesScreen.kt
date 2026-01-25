@@ -164,7 +164,6 @@ fun CategoriesScreen(
                         selectedCategoryId = categoryId
                         onNavigateToCategory(categoryId)
                     },
-                    onNavigateToHome = onNavigateToHome, // Botão "Voltar para início"
                     modifier = Modifier.fillMaxSize()
                 )
                 

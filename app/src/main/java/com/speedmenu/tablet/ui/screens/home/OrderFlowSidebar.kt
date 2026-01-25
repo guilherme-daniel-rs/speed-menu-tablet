@@ -71,7 +71,6 @@ fun OrderFlowSidebar(
     topics: List<MenuTopic>,
     selectedCategoryId: String? = null,
     onCategoryClick: (String) -> Unit,
-    onNavigateToHome: (() -> Unit)? = null, // Callback opcional para navegar para HOME
     modifier: Modifier = Modifier
 ) {
     // Estado do scroll para preservar posição e rolagem suave
@@ -129,16 +128,6 @@ fun OrderFlowSidebar(
             .background(SpeedMenuColors.BackgroundPrimary)
             .padding(vertical = 28.dp, horizontal = 24.dp) // Mais espaçamento para tablets
         ) {
-            // Botão "Voltar para início" (apenas se onNavigateToHome não for null)
-            onNavigateToHome?.let { onHomeClick ->
-                BackToHomeButton(
-                    onClick = onHomeClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 20.dp) // Espaçamento antes dos tópicos
-                )
-            }
-            
             // LazyColumn com scroll suave e sem scrollbar visível
             LazyColumn(
                 state = scrollState,
@@ -181,58 +170,6 @@ fun OrderFlowSidebar(
                     )
                 }
             }
-        }
-    }
-}
-
-/**
- * Botão discreto "Voltar para início" no topo do menu lateral.
- * Estilo alinhado ao tema dark com hover/press sutil.
- */
-@Composable
-private fun BackToHomeButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    
-    Box(
-        modifier = modifier
-            .height(48.dp)
-            .background(
-                color = if (isPressed) {
-                    SpeedMenuColors.Surface.copy(alpha = 0.2f)
-                } else {
-                    Color.Transparent
-                },
-                shape = RoundedCornerShape(10.dp)
-            )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-            .padding(horizontal = 12.dp, vertical = 12.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Voltar para início",
-                tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
-                modifier = Modifier.size(20.dp)
-            )
-            Text(
-                text = "Voltar ao início",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = SpeedMenuColors.TextSecondary.copy(alpha = 0.9f),
-                fontSize = 15.sp
-            )
         }
     }
 }

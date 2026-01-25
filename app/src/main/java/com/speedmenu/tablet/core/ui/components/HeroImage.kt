@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,15 +64,12 @@ fun HeroImage(
     
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .height(400.dp)
     ) {
         // Placeholder com shimmer discreto
         if (!imageLoaded) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp)
+                    .fillMaxSize()
                     .clip(RoundedCornerShape(20.dp))
                     .background(
                         brush = Brush.linearGradient(
@@ -92,8 +90,7 @@ fun HeroImage(
             painter = painterResource(id = imageResId),
             contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp)
+                .fillMaxSize()
                 .clip(RoundedCornerShape(20.dp))
                 .alpha(imageAlpha),
             contentScale = ContentScale.Crop
@@ -102,8 +99,7 @@ fun HeroImage(
         // Scrim leve para leitura (gradiente de baixo para cima)
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp)
+                .fillMaxSize()
                 .clip(RoundedCornerShape(20.dp))
                 .background(
                     brush = Brush.verticalGradient(

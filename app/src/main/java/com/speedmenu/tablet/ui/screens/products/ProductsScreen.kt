@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,8 +31,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.speedmenu.tablet.R
-import com.speedmenu.tablet.core.ui.components.OrderFlowScaffold
 import com.speedmenu.tablet.core.ui.components.ProductCard
+import com.speedmenu.tablet.core.ui.components.TopActionBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
@@ -48,6 +49,7 @@ import com.speedmenu.tablet.ui.screens.home.getSelectedCategoryIdForScenario
 @Composable
 fun ProductsScreen(
     categoryName: String,
+    initialSelectedCategoryId: String? = null, // Categoria selecionada restaurada do savedStateHandle
     onNavigateBack: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
     onNavigateToProductDetail: (String) -> Unit = {},
@@ -77,8 +79,24 @@ fun ProductsScreen(
     val mockupScenario = MenuMockupScenario. LONG_SCROLL // Altere aqui para testar
     
     // Estado para categoria selecionada no sidebar
-    var selectedCategoryId by remember { 
-        mutableStateOf(getSelectedCategoryIdForScenario(mockupScenario) ?: categoryName.lowercase())
+    // Usa initialSelectedCategoryId se fornecido (restaurado do savedStateHandle),
+    // caso contrário usa a categoria atual ou a default do mockup
+    var selectedCategoryId by remember(initialSelectedCategoryId) { 
+        mutableStateOf(
+            initialSelectedCategoryId 
+                ?: categoryName.lowercase()
+                ?: getSelectedCategoryIdForScenario(mockupScenario)
+        )
+    }
+    
+    // Atualiza selectedCategoryId quando categoryName muda (navegação entre categorias pelo menu lateral)
+    // Mas só atualiza se não houver initialSelectedCategoryId (para preservar estado restaurado ao voltar do prato)
+    LaunchedEffect(categoryName) {
+        // Se não há initialSelectedCategoryId (não veio do savedStateHandle), atualiza com categoryName
+        // Isso garante que navegação direta entre categorias funcione
+        if (initialSelectedCategoryId == null && categoryName.lowercase() != selectedCategoryId) {
+            selectedCategoryId = categoryName.lowercase()
+        }
     }
     
     // Dados mockados de tópicos e categorias para o sidebar hierárquico
@@ -133,14 +151,23 @@ fun ProductsScreen(
         }
     }
 
-    // OrderFlowScaffold envolve toda a tela para garantir posicionamento consistente do status pill
-    OrderFlowScaffold(
-        isConnected = isConnected,
-        tableNumber = tableNumber,
-        onCallWaiterClick = {
-            showWaiterCalledDialog = true
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(SpeedMenuColors.BackgroundPrimary)
     ) {
+        // ========== TOP ACTION BAR FIXA ==========
+        // REGRA: Botão "Voltar" na tela de categoria navega para HOME
+        TopActionBar(
+            onBackClick = onNavigateToHome, // Voltar navega para HOME
+            isConnected = isConnected,
+            tableNumber = tableNumber,
+            onCallWaiterClick = {
+                showWaiterCalledDialog = true
+            }
+        )
+        
+        // ========== CONTEÚDO PRINCIPAL ==========
         Row(
             modifier = Modifier
                 .fillMaxSize()
@@ -156,12 +183,13 @@ fun ProductsScreen(
                     topics = menuTopics,
                     selectedCategoryId = selectedCategoryId,
                     onCategoryClick = { categoryId ->
+                        // Atualiza o estado local antes de navegar
+                        selectedCategoryId = categoryId
                         // Navegação direta para a listagem da categoria selecionada
                         if (categoryId != categoryName.lowercase()) {
                             onNavigateToCategory(categoryId)
                         }
                     },
-                    onNavigateToHome = onNavigateToHome, // Botão "Voltar para início"
                     modifier = Modifier.fillMaxSize()
                 )
                 
@@ -199,7 +227,8 @@ fun ProductsScreen(
                             )
                         )
                     )
-                    .padding(horizontal = 40.dp, vertical = 32.dp)
+                    .padding(top = 18.dp)
+                    .padding(horizontal = 24.dp)
             ) {
                 // ========== HEADER ==========
                 ProductsHeader(
@@ -207,7 +236,7 @@ fun ProductsScreen(
                     productCount = products.size,
                     cartItemCount = cartItemCount,
                     onCartClick = onNavigateToCart,
-                    modifier = Modifier.padding(bottom = 32.dp)
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
 
                 // ========== GRID DE PRODUTOS COM FADE-IN SUAVE ==========

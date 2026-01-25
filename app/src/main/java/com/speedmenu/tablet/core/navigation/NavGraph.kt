@@ -1,10 +1,15 @@
 package com.speedmenu.tablet.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.speedmenu.tablet.ui.screens.home.HomeScreen
 import com.speedmenu.tablet.ui.screens.home.MenuMockupScenario
@@ -73,20 +78,31 @@ fun NavGraph(
             )
         ) { backStackEntry ->
             val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+            
+            // Restaura categoria selecionada do savedStateHandle (se existir)
+            // Isso preserva a categoria quando o usuário volta do prato
+            val savedCategoryId = backStackEntry.savedStateHandle.get<String>("selectedCategoryId")
+            val initialCategoryId = savedCategoryId ?: categoryName.lowercase()
+            
             ProductsScreen(
                 categoryName = categoryName,
+                initialSelectedCategoryId = initialCategoryId, // Prioriza savedStateHandle para preservar estado ao voltar do prato
                 onNavigateBack = {
-                    navController.popBackStack()
+                    // Não usado - TopActionBar usa onNavigateToHome
                 },
                 onNavigateToCart = {
                     // TODO: Implementar navegação para carrinho
                 },
                 onNavigateToProductDetail = { productId ->
+                    // Salva a categoria selecionada antes de navegar para o prato
+                    backStackEntry.savedStateHandle["selectedCategoryId"] = categoryName.lowercase()
                     // Navega para detalhes do prato SEM limpar stack
                     // Back natural retornará para a categoria atual
                     navController.navigate(Screen.ProductDetail.createRoute(productId))
                 },
                 onNavigateToCategory = { categoryId ->
+                    // Salva a categoria selecionada antes de navegar
+                    backStackEntry.savedStateHandle["selectedCategoryId"] = categoryId
                     // Navegação direta para outra categoria pelo menu lateral
                     // Substitui a tela Products atual na pilha para evitar acúmulo
                     // Mantém o resto da pilha (ex: Home) intacto

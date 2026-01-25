@@ -3,6 +3,7 @@ package com.speedmenu.tablet.ui.screens.productdetail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,16 +12,21 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,23 +39,38 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.speedmenu.tablet.core.ui.components.AccordionSection
 import com.speedmenu.tablet.core.ui.components.HeroImage
 import com.speedmenu.tablet.core.ui.components.IngredientQuantityItem
 import com.speedmenu.tablet.core.ui.components.MinimalTextField
-import com.speedmenu.tablet.core.ui.components.OrderFlowScaffold
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.PriceHeader
 import com.speedmenu.tablet.core.ui.components.QuantityStepper
 import com.speedmenu.tablet.core.ui.components.RemoveBaseIngredientDialog
+import com.speedmenu.tablet.core.ui.components.TopActionBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.core.utils.CurrencyFormatter
+
+/**
+ * Estado de quantidade de um ingrediente.
+ */
+data class IngredientQuantity(
+    val name: String,
+    val isBase: Boolean, // true = ingrediente base (requer confirmação ao remover de 1 para 0), false = opcional
+    var quantity: Int
+)
 
 /**
  * Tela de detalhes do prato (VerPratoScreen).
@@ -71,20 +92,15 @@ fun VerPratoScreen(
 ) {
     // Estados locais
     var quantity by remember { mutableStateOf(1) }
-    var isIngredientsExpanded by remember { mutableStateOf(false) }
-    var isObservationsExpanded by remember { mutableStateOf(false) }
     var observationsText by remember { mutableStateOf("") }
+    
+    // Estados para modais
+    var showIngredientsModal by remember { mutableStateOf(false) }
+    var showObservationsModal by remember { mutableStateOf(false) }
     
     // Estado para dialog de confirmação de remoção de ingrediente base
     var showRemoveBaseIngredientDialog by remember { mutableStateOf(false) }
     var pendingIngredientIndex by remember { mutableStateOf<Int?>(null) }
-    
-    // Estado de quantidades dos ingredientes
-    data class IngredientQuantity(
-        val name: String,
-        val isBase: Boolean, // true = ingrediente base (requer confirmação ao remover de 1 para 0), false = opcional
-        var quantity: Int
-    )
     
     val ingredientQuantities = remember {
         mutableStateListOf(
@@ -107,87 +123,47 @@ fun VerPratoScreen(
     val isConnected = remember { true } // Mock: sempre conectado
     val tableNumber = remember { "17" } // Mock: mesa 17
     
-    OrderFlowScaffold(
-        isConnected = isConnected,
-        tableNumber = tableNumber,
-        onCallWaiterClick = {
-            showWaiterCalledDialog = true
-        },
-        topLeftContent = {
-            // Breadcrumb "← Menu / Início" no topo esquerdo
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // "← Menu" (clicável)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.clickable(onClick = onNavigateBack)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Voltar",
-                        tint = SpeedMenuColors.TextSecondary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Menu",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.TextSecondary,
-                        fontSize = 16.sp
-                    )
-                }
-                
-                // Separador "/"
-                Text(
-                    text = "/",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextTertiary.copy(alpha = 0.5f),
-                    fontSize = 16.sp
-                )
-                
-                // "Início" (clicável, menor opacidade)
-                Text(
-                    text = "Início",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .clickable(onClick = onNavigateToHome)
-                        .padding(horizontal = 8.dp, vertical = 4.dp) // Touch target correto
-                )
-            }
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(SpeedMenuColors.BackgroundPrimary)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(SpeedMenuColors.BackgroundPrimary)
-        ) {
-            // TopBar removido - breadcrumb agora no topLeftContent do OrderFlowScaffold
-            // "Ver pedido" pode ser adicionado no topRightContent se necessário no futuro
-            
-            // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========
+        // ========== TOP ACTION BAR FIXA ==========
+        // REGRA: Botão "Voltar" na tela de prato retorna para a categoria anterior (popBackStack)
+        // Mantém categoria selecionada preservada via savedStateHandle
+        TopActionBar(
+            onBackClick = onNavigateBack, // Retorna para a categoria anterior (popBackStack)
+            isConnected = isConnected,
+            tableNumber = tableNumber,
+            onCallWaiterClick = {
+                showWaiterCalledDialog = true
+            }
+        )
+        
+        // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 40.dp, vertical = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(32.dp),
-            verticalAlignment = Alignment.Top // Alinhamento ao topo
+                .weight(1f) // Usa weight ao invés de fillMaxSize para não cobrir a TopActionBar
+                .fillMaxWidth()
+                .padding(top = 18.dp)
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            // ========== COLUNA ESQUERDA (maior) ==========
+            // ========== COLUNA ESQUERDA (weight 1.45f) ==========
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1.45f)
                     .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(24.dp) // Mais respiro
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 1) HeroImage (alinhado ao topo)
-                HeroImage(imageResId = productImageResId)
+                // 1) Imagem do prato com altura fixa
+                ProductImage(
+                    imageResId = productImageResId,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp)
+                )
                 
                 // 2) PriceHeader
                 PriceHeader(
@@ -196,18 +172,18 @@ fun VerPratoScreen(
                     price = productPrice * quantity
                 )
                 
-                // 3) Descrição curta (1 linha, truncar)
+                // 3) Descrição curta (máximo 2 linhas)
                 Text(
                     text = productDescription,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
                     color = SpeedMenuColors.TextSecondary,
                     fontSize = 15.sp,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 
-                // 4) Indicação discreta de ingredientes (apenas ativos)
+                // 4) Indicação discreta de ingredientes (1 linha)
                 val activeIngredientsCount = ingredientQuantities.count { it.quantity > 0 }
                 val totalIngredientsCount = ingredientQuantities.size
                 Text(
@@ -219,88 +195,191 @@ fun VerPratoScreen(
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Normal,
                     color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             
-            // ========== COLUNA DIREITA (fixa, mais estreita) ==========
+            // ========== COLUNA DIREITA (weight 0.55f) ==========
             Column(
                 modifier = Modifier
-                    .width(380.dp)
+                    .weight(0.55f)
                     .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(20.dp) // Espaçamento aumentado entre accordions
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 1) Seção "Ingredientes" (accordion com lista de ingredientes)
-                AccordionSection(
-                    title = "Ingredientes",
-                    icon = Icons.Default.Restaurant,
-                    expanded = isIngredientsExpanded,
-                    onExpandedChange = { isIngredientsExpanded = it },
-                    summary = run {
-                        val activeCount = ingredientQuantities.count { it.quantity > 0 }
-                        val totalCount = ingredientQuantities.size
-                        if (activeCount == 0) {
-                            "Nenhum ingrediente selecionado"
-                        } else if (activeCount < totalCount) {
-                            "$activeCount de $totalCount ingredientes"
-                        } else {
-                            "Todos os $activeCount ingredientes"
-                        }
-                    }
+                // 1) Seção "Ingredientes" (compacta, máximo 6 itens visíveis)
+                val visibleIngredients = ingredientQuantities.take(6)
+                val remainingCount = ingredientQuantities.size - 6
+                val activeCount = ingredientQuantities.count { it.quantity > 0 }
+                val totalCount = ingredientQuantities.size
+                
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp) // Margin top para não encostar no topo
+                        .background(
+                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp)
                 ) {
-                    // Lista vertical de ingredientes com controles de quantidade
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(0.dp) // Sem espaçamento automático, controlado manualmente
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        ingredientQuantities.forEachIndexed { index, ingredient ->
-                            // Separador sutil entre itens (exceto no primeiro)
-                            if (index > 0) {
-                                Spacer(modifier = Modifier.height(12.dp))
+                        // Header: Ícone + Título + Subtexto
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Restaurant,
+                                    contentDescription = null,
+                                    tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "Ingredientes",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = SpeedMenuColors.TextPrimary,
+                                    fontSize = 14.sp
+                                )
+                            }
+                            // Subtexto: "3 de 6 ingredientes"
+                            Text(
+                                text = "$activeCount de $totalCount ingredientes",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Normal,
+                                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.7f),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(start = 22.dp) // Alinhado com o título
+                            )
+                        }
+                        
+                        // Lista de ingredientes (máximo 6)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(0.dp)
+                        ) {
+                            visibleIngredients.forEachIndexed { index, ingredient ->
+                                if (index > 0) {
+                                    // Divisória sutil entre itens
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(1.dp)
+                                            .background(
+                                                color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
+                                            )
+                                    )
+                                }
+                                
+                                // Item com padding vertical de 10.dp
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(1.dp)
-                                        .background(
-                                            color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f)
-                                        )
-                                )
-                                Spacer(modifier = Modifier.height(12.dp))
+                                        .padding(vertical = 10.dp)
+                                ) {
+                                    IngredientQuantityItem(
+                                        name = ingredient.name,
+                                        quantity = ingredient.quantity,
+                                        isBase = ingredient.isBase,
+                                        maxQuantity = 5,
+                                        onQuantityChange = { newQuantity ->
+                                            val actualIndex = ingredientQuantities.indexOf(ingredient)
+                                            if (actualIndex >= 0) {
+                                                ingredientQuantities[actualIndex] = ingredient.copy(quantity = newQuantity)
+                                            }
+                                        },
+                                        onRemoveBaseIngredient = if (ingredient.isBase) {
+                                            {
+                                                val actualIndex = ingredientQuantities.indexOf(ingredient)
+                                                if (actualIndex >= 0) {
+                                                    pendingIngredientIndex = actualIndex
+                                                    showRemoveBaseIngredientDialog = true
+                                                }
+                                            }
+                                        } else null
+                                    )
+                                }
                             }
-                            
-                            IngredientQuantityItem(
-                                name = ingredient.name,
-                                quantity = ingredient.quantity,
-                                isBase = ingredient.isBase,
-                                maxQuantity = 5,
-                                onQuantityChange = { newQuantity ->
-                                    ingredientQuantities[index] = ingredient.copy(quantity = newQuantity)
-                                },
-                                onRemoveBaseIngredient = if (ingredient.isBase) {
-                                    {
-                                        // Dispara confirmação ao tentar remover ingrediente base (1 -> 0)
-                                        pendingIngredientIndex = index
-                                        showRemoveBaseIngredientDialog = true
-                                    }
-                                } else null
+                        }
+                        
+                        // Botão "+N itens" se houver mais de 6
+                        if (remainingCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(
+                                        color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
+                                    )
                             )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showIngredientsModal = true }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "+$remainingCount itens",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = SpeedMenuColors.PrimaryLight,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
                 
-                // 2) Seção "Observações" (accordion com resumo)
-                AccordionSection(
-                    title = "Observações",
-                    icon = Icons.Default.Edit,
-                    expanded = isObservationsExpanded,
-                    onExpandedChange = { isObservationsExpanded = it },
-                    summary = if (observationsText.isEmpty()) "Sem observações" else observationsText.take(40) + if (observationsText.length > 40) "..." else ""
+                // 2) Botão "Adicionar observações"
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .clickable { showObservationsModal = true }
+                        .padding(12.dp)
                 ) {
-                    MinimalTextField(
-                        value = observationsText,
-                        onValueChange = { observationsText = it },
-                        placeholder = "Ex: sem cebola, bem passado..."
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null,
+                                tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.6f),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = if (observationsText.isEmpty()) {
+                                    "Adicionar observações"
+                                } else {
+                                    "Com observações"
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (observationsText.isEmpty()) {
+                                    SpeedMenuColors.TextSecondary
+                                } else {
+                                    SpeedMenuColors.TextPrimary
+                                },
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
                 }
                 
                 // 3) Quantidade: stepper compacto
@@ -318,81 +397,378 @@ fun VerPratoScreen(
                     price = productPrice * quantity,
                     onClick = onAddToCart
                 )
-                    }
-                }
-            }
-            
-            // Dialog de confirmação para remover ingrediente base
-            pendingIngredientIndex?.let { index ->
-                RemoveBaseIngredientDialog(
-                    visible = showRemoveBaseIngredientDialog,
-                    ingredientName = ingredientQuantities.getOrNull(index)?.name ?: "",
-                    onConfirm = {
-                        // Confirma remoção: seta quantidade = 0
-                        if (index < ingredientQuantities.size) {
-                            ingredientQuantities[index] = ingredientQuantities[index].copy(quantity = 0)
-                        }
-                        showRemoveBaseIngredientDialog = false
-                        pendingIngredientIndex = null
-                    },
-                    onDismiss = {
-                        // Cancela: mantém em 1 (não faz nada)
-                        showRemoveBaseIngredientDialog = false
-                        pendingIngredientIndex = null
-                    }
-                )
             }
         }
     }
+    
+    // Modal de ingredientes (lista completa)
+    if (showIngredientsModal) {
+        IngredientsModal(
+            ingredients = ingredientQuantities,
+            onDismiss = { showIngredientsModal = false },
+            onQuantityChange = { index, newQuantity ->
+                if (index < ingredientQuantities.size) {
+                    ingredientQuantities[index] = ingredientQuantities[index].copy(quantity = newQuantity)
+                }
+            },
+            onRemoveBaseIngredient = { index ->
+                pendingIngredientIndex = index
+                showRemoveBaseIngredientDialog = true
+            }
+        )
+    }
+    
+    // Modal de observações
+    if (showObservationsModal) {
+        ObservationsModal(
+            observations = observationsText,
+            onDismiss = { showObservationsModal = false },
+            onSave = { text ->
+                observationsText = text
+                showObservationsModal = false
+            }
+        )
+    }
+    
+    // Dialog de confirmação para remover ingrediente base
+    pendingIngredientIndex?.let { index ->
+        RemoveBaseIngredientDialog(
+            visible = showRemoveBaseIngredientDialog,
+            ingredientName = ingredientQuantities.getOrNull(index)?.name ?: "",
+            onConfirm = {
+                // Confirma remoção: seta quantidade = 0
+                if (index < ingredientQuantities.size) {
+                    ingredientQuantities[index] = ingredientQuantities[index].copy(quantity = 0)
+                }
+                showRemoveBaseIngredientDialog = false
+                pendingIngredientIndex = null
+            },
+            onDismiss = {
+                // Cancela: mantém em 1 (não faz nada)
+                showRemoveBaseIngredientDialog = false
+                pendingIngredientIndex = null
+            }
+        )
+    }
+    
+    // Dialog de garçom chamado
+    if (showWaiterCalledDialog) {
+        WaiterCalledDialog(
+            visible = showWaiterCalledDialog,
+            onDismiss = { showWaiterCalledDialog = false },
+            onConfirm = { showWaiterCalledDialog = false }
+        )
+    }
+}
 
 /**
- * Chip de proteína selecionável (menor, mais sutil) com ícone check quando selecionado.
+ * Modal com lista completa de ingredientes (scrollável dentro do modal).
  */
 @Composable
-private fun ProteinChip(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
+private fun IngredientsModal(
+    ingredients: List<IngredientQuantity>,
+    onDismiss: () -> Unit,
+    onQuantityChange: (Int, Int) -> Unit,
+    onRemoveBaseIngredient: (Int) -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.82f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .widthIn(max = 640.dp)
+                    .fillMaxWidth(0.75f)
+                    .heightIn(max = 600.dp)
+                    .padding(horizontal = 24.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .shadow(
+                            elevation = 20.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            spotColor = Color.Black.copy(alpha = 0.35f),
+                            ambientColor = Color.Black.copy(alpha = 0.18f)
+                        )
+                )
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(28.dp)
+                ) {
+                    // Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Ingredientes",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SpeedMenuColors.TextPrimary,
+                            fontSize = 24.sp
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Fechar",
+                            tint = SpeedMenuColors.TextSecondary,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable(onClick = onDismiss)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    // Lista scrollável de ingredientes
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(0.dp)
+                    ) {
+                        ingredients.forEachIndexed { index, ingredient ->
+                            if (index > 0) {
+                                // Divisória sutil entre itens
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(
+                                            color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
+                                        )
+                                )
+                            }
+                            
+                            // Item com padding vertical de 10.dp
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                            ) {
+                                IngredientQuantityItem(
+                                    name = ingredient.name,
+                                    quantity = ingredient.quantity,
+                                    isBase = ingredient.isBase,
+                                    maxQuantity = 5,
+                                    onQuantityChange = { newQuantity ->
+                                        onQuantityChange(index, newQuantity)
+                                    },
+                                    onRemoveBaseIngredient = if (ingredient.isBase) {
+                                        { onRemoveBaseIngredient(index) }
+                                    } else null
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Modal para adicionar observações.
+ */
+@Composable
+private fun ObservationsModal(
+    observations: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var text by remember { mutableStateOf(observations) }
+    
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.82f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .widthIn(max = 640.dp)
+                    .fillMaxWidth(0.75f)
+                    .heightIn(max = 500.dp)
+                    .padding(horizontal = 24.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .shadow(
+                            elevation = 20.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            spotColor = Color.Black.copy(alpha = 0.35f),
+                            ambientColor = Color.Black.copy(alpha = 0.18f)
+                        )
+                )
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(28.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    // Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Observações",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SpeedMenuColors.TextPrimary,
+                            fontSize = 24.sp
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Fechar",
+                            tint = SpeedMenuColors.TextSecondary,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable(onClick = onDismiss)
+                        )
+                    }
+                    
+                    // TextField grande (multiline)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 120.dp, max = 200.dp)
+                            .background(
+                                color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        androidx.compose.foundation.text.BasicTextField(
+                            value = text,
+                            onValueChange = { text = it },
+                            modifier = Modifier.fillMaxSize(),
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                color = SpeedMenuColors.TextPrimary,
+                                fontSize = 16.sp,
+                                lineHeight = 24.sp
+                            ),
+                            maxLines = 8,
+                            decorationBox = { innerTextField ->
+                                if (text.isEmpty()) {
+                                    Text(
+                                        text = "Ex: sem cebola, bem passado, sem sal...",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = SpeedMenuColors.TextTertiary,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.weight(1f))
+                    
+                    // Botões
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Cancelar
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp)
+                                .background(
+                                    color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                                    shape = RoundedCornerShape(999.dp)
+                                )
+                                .clickable(onClick = onDismiss),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Cancelar",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = SpeedMenuColors.TextSecondary,
+                                fontSize = 16.sp
+                            )
+                        }
+                        
+                        // Salvar
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp)
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            SpeedMenuColors.Primary,
+                                            SpeedMenuColors.PrimaryDark
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(999.dp)
+                                )
+                                .clickable(onClick = { onSave(text) }),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Salvar",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = SpeedMenuColors.TextOnPrimary,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Imagem do prato com altura fixa e rounded corners.
+ */
+@Composable
+private fun ProductImage(
+    imageResId: Int,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
-            .height(32.dp)
-            .background(
-                color = if (isSelected) {
-                    SpeedMenuColors.Primary.copy(alpha = 0.25f) // Mais sólido quando selecionado
-                } else {
-                    SpeedMenuColors.Surface.copy(alpha = 0.2f) // Mais sutil
-                },
-                shape = RoundedCornerShape(16.dp)
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp),
-        contentAlignment = Alignment.Center
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = SpeedMenuColors.PrimaryLight,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (isSelected) {
-                    SpeedMenuColors.PrimaryLight
-                } else {
-                    SpeedMenuColors.TextSecondary.copy(alpha = 0.8f)
-                },
-                fontSize = 13.sp
-            )
-        }
+        HeroImage(
+            imageResId = imageResId,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
