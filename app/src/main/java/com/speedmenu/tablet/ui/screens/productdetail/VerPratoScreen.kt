@@ -137,7 +137,8 @@ fun VerPratoScreen(
             tableNumber = tableNumber,
             onCallWaiterClick = {
                 showWaiterCalledDialog = true
-            }
+            },
+            onCartClick = onNavigateToCart
         )
         
         // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========

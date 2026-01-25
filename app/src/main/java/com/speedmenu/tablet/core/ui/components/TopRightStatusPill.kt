@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Icon
@@ -33,12 +34,13 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Componente reutilizável de status no topo direito.
- * Exibe: Conectado, Mesa e botão Garçom.
+ * Exibe: Conectado, Mesa, botão Garçom e botão Pedido.
  * Posicionamento pixel-perfect consistente em todas as telas.
  */
 @Composable
 fun TopRightStatusPill(
     onWaiterClick: () -> Unit = {},
+    onCartClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Container agrupado com fundo semi-transparente
@@ -52,7 +54,7 @@ fun TopRightStatusPill(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // Status de conexão (ícone + indicador)
             Row(
@@ -161,6 +163,62 @@ fun TopRightStatusPill(
                     text = "Garçom",
                     style = MaterialTheme.typography.bodySmall,
                     color = waiterTextColor,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // Divisor sutil
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(24.dp)
+                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+            )
+
+            // Ação rápida: Ver pedido (com micro-interação)
+            val cartInteractionSource = remember { MutableInteractionSource() }
+            val isCartPressed by cartInteractionSource.collectIsPressedAsState()
+            
+            val cartIconColor by animateColorAsState(
+                targetValue = if (isCartPressed) {
+                    SpeedMenuColors.PrimaryLight
+                } else {
+                    SpeedMenuColors.PrimaryLight.copy(alpha = 0.8f)
+                },
+                animationSpec = tween(150),
+                label = "cart_icon_color"
+            )
+            
+            val cartTextColor by animateColorAsState(
+                targetValue = if (isCartPressed) {
+                    SpeedMenuColors.TextPrimary
+                } else {
+                    SpeedMenuColors.TextSecondary
+                },
+                animationSpec = tween(150),
+                label = "cart_text_color"
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.clickable(
+                    interactionSource = cartInteractionSource,
+                    indication = null,
+                    onClick = onCartClick
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = "Ver pedido",
+                    tint = cartIconColor,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "Pedido",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = cartTextColor,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )

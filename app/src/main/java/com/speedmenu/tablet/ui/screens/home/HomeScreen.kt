@@ -385,6 +385,9 @@ private fun HomeContent(
                 TopRightStatusPill(
                     onWaiterClick = {
                         onShowWaiterDialog(true)
+                    },
+                    onCartClick = {
+                        // TODO: Implementar navegação para carrinho
                     }
                 )
             }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
@@ -34,18 +35,19 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Componente reutilizável de status no topo direito para o fluxo de pedidos.
- * Exibe: Status de conexão, Número da mesa e botão para chamar garçom.
+ * Exibe: Status de conexão, Número da mesa, botão para chamar garçom e botão de pedido.
  * 
  * Características:
  * - 100% reutilizável e independente de layout específico
  * - Posicionamento consistente (topo direito com padding)
  * - Visual premium com fundo translúcido e cantos arredondados
  * - Acessível com áreas clicáveis confortáveis e contentDescription
- * - Micro-interações suaves no botão de garçom
+ * - Micro-interações suaves no botão de garçom e pedido
  * 
  * @param isConnected Status da conexão (true = conectado, false = desconectado)
  * @param tableNumber Número da mesa (String ou Int, será formatado como "Mesa {number}")
  * @param onCallWaiterClick Callback quando o botão "Garçom" é clicado
+ * @param onCartClick Callback quando o botão "Pedido" é clicado
  * @param enabled Se o botão de garçom está habilitado (padrão: true)
  * @param modifier Modifier para customização adicional
  */
@@ -54,6 +56,7 @@ fun OrderTopStatusPill(
     isConnected: Boolean = true,
     tableNumber: String = "17", // Aceita String para flexibilidade
     onCallWaiterClick: () -> Unit = {},
+    onCartClick: () -> Unit = {},
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -68,7 +71,7 @@ fun OrderTopStatusPill(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // Status de conexão (ícone + indicador)
             Row(
@@ -182,6 +185,62 @@ fun OrderTopStatusPill(
                     text = "Garçom",
                     style = MaterialTheme.typography.bodySmall,
                     color = waiterTextColor,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // Divisor sutil
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(24.dp)
+                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+            )
+
+            // Ação rápida: Ver pedido (com micro-interação)
+            val cartInteractionSource = remember { MutableInteractionSource() }
+            val isCartPressed by cartInteractionSource.collectIsPressedAsState()
+            
+            val cartIconColor by animateColorAsState(
+                targetValue = if (isCartPressed) {
+                    SpeedMenuColors.PrimaryLight
+                } else {
+                    SpeedMenuColors.PrimaryLight.copy(alpha = 0.8f)
+                },
+                animationSpec = tween(150),
+                label = "cart_icon_color"
+            )
+            
+            val cartTextColor by animateColorAsState(
+                targetValue = if (isCartPressed) {
+                    SpeedMenuColors.TextPrimary
+                } else {
+                    SpeedMenuColors.TextSecondary
+                },
+                animationSpec = tween(150),
+                label = "cart_text_color"
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.clickable(
+                    interactionSource = cartInteractionSource,
+                    indication = null,
+                    onClick = onCartClick
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = "Ver pedido",
+                    tint = cartIconColor,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "Pedido",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = cartTextColor,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )

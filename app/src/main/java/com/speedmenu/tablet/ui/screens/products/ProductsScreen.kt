@@ -164,7 +164,8 @@ fun ProductsScreen(
             tableNumber = tableNumber,
             onCallWaiterClick = {
                 showWaiterCalledDialog = true
-            }
+            },
+            onCartClick = onNavigateToCart
         )
         
         // ========== CONTEÚDO PRINCIPAL ==========

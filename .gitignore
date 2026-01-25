@@ -14,3 +14,73 @@
 .cxx
 local.properties
 
+# Build files
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Build directories
+build/
+app/build/
+**/build/
+**/out/
+**/bin/
+**/gen/
+**/generated/
+**/intermediates/
+**/outputs/
+**/tmp/
+**/snapshot/
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# Kotlin
+*.kotlin_module
+*.kt.swp
+*.kt~
+.kotlin/
+
+# Android Studio
+.idea/
+*.iws
+*.ipr
+out/
+
+# Generated files
+**/R.java
+**/BuildConfig.java
+**/Manifest.java
+**/BR.java
+
+# Proguard
+proguard/
+*.pro
+
+# NDK
+obj/
+.externalNativeBuild/
+
+# Signing files
+*.jks
+*.keystore
+
+# Misc
+*.log
+*.swp
+*~
+.navigation/
+captures/
+

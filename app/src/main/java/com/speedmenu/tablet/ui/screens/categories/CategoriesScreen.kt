@@ -143,6 +143,9 @@ fun CategoriesScreen(
         tableNumber = tableNumber,
         onCallWaiterClick = {
             showWaiterCalledDialog = true
+        },
+        onCartClick = {
+            // TODO: Implementar navegação para carrinho
         }
     ) {
         Row(
