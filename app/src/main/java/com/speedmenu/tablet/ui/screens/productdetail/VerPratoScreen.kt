@@ -31,11 +31,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +56,7 @@ import com.speedmenu.tablet.core.ui.components.AccordionSection
 import com.speedmenu.tablet.core.ui.components.HeroImage
 import com.speedmenu.tablet.core.ui.components.IngredientQuantityItem
 import com.speedmenu.tablet.core.ui.components.MinimalTextField
+import com.speedmenu.tablet.core.ui.components.DiscreteToast
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.PriceHeader
 import com.speedmenu.tablet.core.ui.components.QuantityStepper
@@ -113,8 +116,12 @@ fun VerPratoScreen(
         )
     }
     
-    // Mock de carrinho
-    val cartItemCount = remember { 0 }
+    // Estado do carrinho (mockado, em produção viria de ViewModel)
+    var cartItemCount by remember { mutableStateOf(0) }
+    
+    // Estado para feedback de adição ao pedido
+    var isAddedToCart by remember { mutableStateOf(false) }
+    var showToast by remember { mutableStateOf(false) }
     
     // Estado para controlar visibilidade do dialog de garçom
     var showWaiterCalledDialog by remember { mutableStateOf(false) }
@@ -138,7 +145,8 @@ fun VerPratoScreen(
             onCallWaiterClick = {
                 showWaiterCalledDialog = true
             },
-            onCartClick = onNavigateToCart
+            onCartClick = onNavigateToCart,
+            cartItemCount = cartItemCount
         )
         
         // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========
@@ -394,9 +402,17 @@ fun VerPratoScreen(
                 
                 // 4) CTA fixo no rodapé
                 PrimaryCTA(
-                    text = "Adicionar ao pedido",
-                    price = productPrice * quantity,
-                    onClick = onAddToCart
+                    text = if (isAddedToCart) "Adicionado ao pedido" else "Adicionar ao pedido",
+                    price = if (isAddedToCart) 0.0 else productPrice * quantity,
+                    onClick = {
+                        // Atualiza estado de feedback
+                        isAddedToCart = true
+                        cartItemCount += quantity
+                        showToast = true
+                        
+                        // Chama callback original
+                        onAddToCart()
+                    }
                 )
             }
         }
@@ -459,6 +475,35 @@ fun VerPratoScreen(
             onDismiss = { showWaiterCalledDialog = false },
             onConfirm = { showWaiterCalledDialog = false }
         )
+    }
+    
+    // Toast discreto de confirmação
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 100.dp) // Posiciona abaixo da TopActionBar
+    ) {
+        DiscreteToast(
+            message = "Item adicionado ao pedido",
+            visible = showToast,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+    }
+    
+    // Auto-dismiss do toast após 2 segundos
+    LaunchedEffect(showToast) {
+        if (showToast) {
+            delay(2000)
+            showToast = false
+        }
+    }
+    
+    // Reseta estado do botão após 1 segundo
+    LaunchedEffect(isAddedToCart) {
+        if (isAddedToCart) {
+            delay(1000)
+            isAddedToCart = false
+        }
     }
 }
 

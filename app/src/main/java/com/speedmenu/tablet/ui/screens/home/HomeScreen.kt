@@ -77,7 +77,9 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
  */
 @Composable
 fun HomeScreen(
-    onNavigateToCategories: () -> Unit = {}
+    onNavigateToCategories: () -> Unit = {},
+    onNavigateToCart: () -> Unit = {},
+    cartItemCount: Int = 0
 ) {
     // Estado para controlar animação de entrada
     var isVisible by remember { mutableStateOf(false) }
@@ -152,7 +154,9 @@ fun HomeScreen(
                             .weight(1f)
                             .fillMaxHeight(),
                         showWaiterDialog = showWaiterDialog,
-                        onShowWaiterDialog = { showWaiterDialog = it }
+                        onShowWaiterDialog = { showWaiterDialog = it },
+                        onNavigateToCart = onNavigateToCart,
+                        cartItemCount = cartItemCount
                     )
                 }
                 
@@ -367,7 +371,9 @@ private fun RestaurantLogo() {
 private fun HomeContent(
     modifier: Modifier = Modifier,
     showWaiterDialog: Boolean,
-    onShowWaiterDialog: (Boolean) -> Unit
+    onShowWaiterDialog: (Boolean) -> Unit,
+    onNavigateToCart: () -> Unit = {},
+    cartItemCount: Int = 0
 ) {
     Box(modifier = modifier) {
         // Banner principal com imagem de fundo
@@ -386,9 +392,8 @@ private fun HomeContent(
                     onWaiterClick = {
                         onShowWaiterDialog(true)
                     },
-                    onCartClick = {
-                        // TODO: Implementar navegação para carrinho
-                    }
+                    onCartClick = onNavigateToCart,
+                    cartItemCount = cartItemCount
                 )
             }
         )

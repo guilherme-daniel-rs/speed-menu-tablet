@@ -11,10 +11,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import com.speedmenu.tablet.ui.screens.order.CartItem
 import com.speedmenu.tablet.ui.screens.home.HomeScreen
 import com.speedmenu.tablet.ui.screens.home.MenuMockupScenario
 import com.speedmenu.tablet.ui.screens.home.firstCategoryId
 import com.speedmenu.tablet.ui.screens.home.getMenuMockup
+import com.speedmenu.tablet.ui.screens.order.CartEmptyScreen
+import com.speedmenu.tablet.ui.screens.order.CartSummaryScreen
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderScreen
 import com.speedmenu.tablet.ui.screens.productdetail.VerPratoScreen
 import com.speedmenu.tablet.ui.screens.products.ProductsScreen
@@ -46,7 +49,10 @@ fun NavGraph(
             )
         }
 
-        composable(route = Screen.Home.route) {
+        composable(route = Screen.Home.route) { backStackEntry ->
+            // Mock de dados do carrinho (em produção viria de um ViewModel/Repository)
+            val cartItemCount = 0 // TODO: Obter quantidade real do carrinho
+            
             HomeScreen(
                 onNavigateToCategories = {
                     // Navega diretamente para a primeira categoria do primeiro tópico
@@ -65,7 +71,13 @@ fun NavGraph(
                     }
                     // Se não houver categorias, não navega (caso raro)
                     // Em produção, isso seria tratado com um estado de erro/empty state
-                }
+                },
+                onNavigateToCart = {
+                    // Salva dados do carrinho no savedStateHandle antes de navegar
+                    backStackEntry.savedStateHandle["cartItemCount"] = cartItemCount
+                    navController.navigate(Screen.Cart.route)
+                },
+                cartItemCount = cartItemCount
             )
         }
 
@@ -84,6 +96,9 @@ fun NavGraph(
             val savedCategoryId = backStackEntry.savedStateHandle.get<String>("selectedCategoryId")
             val initialCategoryId = savedCategoryId ?: categoryName.lowercase()
             
+            // Mock de dados do carrinho (em produção viria de um ViewModel/Repository)
+            val productsCartItemCount = 0 // TODO: Obter quantidade real do carrinho
+            
             ProductsScreen(
                 categoryName = categoryName,
                 initialSelectedCategoryId = initialCategoryId, // Prioriza savedStateHandle para preservar estado ao voltar do prato
@@ -91,7 +106,9 @@ fun NavGraph(
                     // Não usado - TopActionBar usa onNavigateToHome
                 },
                 onNavigateToCart = {
-                    // TODO: Implementar navegação para carrinho
+                    // Salva dados do carrinho no savedStateHandle antes de navegar
+                    backStackEntry.savedStateHandle["cartItemCount"] = productsCartItemCount
+                    navController.navigate(Screen.Cart.route)
                 },
                 onNavigateToProductDetail = { productId ->
                     // Salva a categoria selecionada antes de navegar para o prato
@@ -140,6 +157,10 @@ fun NavGraph(
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
             // Mock de dados do produto (em produção viria de um ViewModel/Repository)
+            // Mock de dados do carrinho (em produção viria de um ViewModel/Repository)
+            // Obtém do savedStateHandle ou usa valor padrão
+            val detailCartItemCount = backStackEntry.savedStateHandle.get<Int>("cartItemCount") ?: 0
+            
             VerPratoScreen(
                 productId = productId,
                 productName = "Filé Mignon ao Molho",
@@ -157,7 +178,11 @@ fun NavGraph(
                     }
                 },
                 onNavigateToCart = {
-                    // TODO: Implementar navegação para carrinho
+                    // Salva dados do carrinho no savedStateHandle antes de navegar
+                    // Atualiza com o valor atual do carrinho (que pode ter sido modificado na tela)
+                    val currentCartCount = backStackEntry.savedStateHandle.get<Int>("cartItemCount") ?: detailCartItemCount
+                    backStackEntry.savedStateHandle["cartItemCount"] = currentCartCount
+                    navController.navigate(Screen.Cart.route)
                 },
                 onAddToCart = {
                     // TODO: Implementar lógica de adicionar ao carrinho
@@ -168,6 +193,70 @@ fun NavGraph(
 
         composable(route = Screen.Placeholder.route) {
             PlaceholderScreen()
+        }
+
+        composable(route = Screen.Cart.route) { backStackEntry ->
+            // Obtém dados do carrinho do savedStateHandle
+            val cartItemCount = backStackEntry.savedStateHandle.get<Int>("cartItemCount") ?: 0
+            
+            if (cartItemCount == 0) {
+                // Tela de pedido vazio
+                CartEmptyScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToMenu = {
+                        // Navega para a primeira categoria
+                        val defaultScenario = MenuMockupScenario.LONG_SCROLL
+                        val topics = getMenuMockup(defaultScenario)
+                        val firstCategory = firstCategoryId(topics)
+                        
+                        if (firstCategory != null) {
+                            navController.navigate(Screen.Products.createRoute(firstCategory)) {
+                                popUpTo(Screen.Cart.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        } else {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Cart.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    cartItemCount = cartItemCount
+                )
+            } else {
+                // Tela de resumo do pedido
+                // Mock de itens do carrinho (em produção viria de um ViewModel/Repository)
+                val mockCartItems = listOf(
+                    CartItem(
+                        id = "1",
+                        name = "Filé Mignon ao Molho",
+                        quantity = 2,
+                        unitPrice = 68.90,
+                        totalPrice = 137.80
+                    ),
+                    CartItem(
+                        id = "2",
+                        name = "Risotto de Camarão",
+                        quantity = 1,
+                        unitPrice = 54.90,
+                        totalPrice = 54.90
+                    )
+                )
+                
+                CartSummaryScreen(
+                    items = mockCartItems,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onFinishOrder = {
+                        // TODO: Implementar lógica de finalizar pedido
+                        // Por enquanto, apenas volta
+                        navController.popBackStack()
+                    },
+                    cartItemCount = cartItemCount
+                )
+            }
         }
     }
 }

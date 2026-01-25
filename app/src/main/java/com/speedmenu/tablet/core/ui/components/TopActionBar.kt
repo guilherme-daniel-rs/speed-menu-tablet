@@ -41,6 +41,7 @@ fun TopActionBar(
     tableNumber: String = "17",
     onCallWaiterClick: () -> Unit = {},
     onCartClick: () -> Unit = {},
+    cartItemCount: Int = 0,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -85,6 +86,7 @@ fun TopActionBar(
                 tableNumber = tableNumber,
                 onCallWaiterClick = onCallWaiterClick,
                 onCartClick = onCartClick,
+                cartItemCount = cartItemCount,
                 enabled = enabled
             )
         }

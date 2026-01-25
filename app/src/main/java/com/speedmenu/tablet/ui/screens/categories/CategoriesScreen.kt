@@ -137,6 +137,9 @@ fun CategoriesScreen(
         )
     }
 
+    // Mock de carrinho
+    val cartItemCount = remember { 0 }
+    
     // OrderFlowScaffold envolve toda a tela para garantir posicionamento consistente do status pill
     OrderFlowScaffold(
         isConnected = isConnected,
@@ -146,7 +149,8 @@ fun CategoriesScreen(
         },
         onCartClick = {
             // TODO: Implementar navegação para carrinho
-        }
+        },
+        cartItemCount = cartItemCount
     ) {
         Row(
             modifier = Modifier

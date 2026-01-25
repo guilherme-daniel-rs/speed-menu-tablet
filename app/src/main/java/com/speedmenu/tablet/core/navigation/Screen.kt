@@ -33,5 +33,10 @@ sealed class Screen(val route: String) {
      * Tela placeholder para desenvolvimento futuro
      */
     object Placeholder : Screen("placeholder")
+
+    /**
+     * Tela de pedido/carrinho
+     */
+    object Cart : Screen("cart")
 }
 

@@ -165,7 +165,8 @@ fun ProductsScreen(
             onCallWaiterClick = {
                 showWaiterCalledDialog = true
             },
-            onCartClick = onNavigateToCart
+            onCartClick = onNavigateToCart,
+            cartItemCount = cartItemCount
         )
         
         // ========== CONTEÚDO PRINCIPAL ==========

@@ -88,7 +88,11 @@ fun PrimaryCTA(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "$text • ${CurrencyFormatter.formatCurrencyBR(price)}",
+            text = if (price > 0.0) {
+                "$text • ${CurrencyFormatter.formatCurrencyBR(price)}"
+            } else {
+                text
+            },
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             color = SpeedMenuColors.TextOnPrimary,
