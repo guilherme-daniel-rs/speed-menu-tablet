@@ -61,6 +61,12 @@ object SpeedMenuColors {
      */
     val TextOnPrimary = Color(0xFFFFFFFF) // Branco
     
+    /**
+     * Cor para elementos sobre Surface (equivalente a OnSurface no Material Design).
+     * Em tema dark, geralmente é branco ou cinza muito claro.
+     */
+    val OnSurface = Color(0xFFFFFFFF) // Branco (equivalente a TextPrimary em tema dark)
+    
     // ==================== ESTADOS ====================
     
     /**

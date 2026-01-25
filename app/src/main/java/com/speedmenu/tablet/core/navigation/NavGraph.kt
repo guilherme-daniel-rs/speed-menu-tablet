@@ -6,8 +6,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.speedmenu.tablet.ui.screens.categories.CategoriesScreen
 import com.speedmenu.tablet.ui.screens.home.HomeScreen
+import com.speedmenu.tablet.ui.screens.home.MenuMockupScenario
+import com.speedmenu.tablet.ui.screens.home.firstCategoryId
+import com.speedmenu.tablet.ui.screens.home.getMenuMockup
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderScreen
 import com.speedmenu.tablet.ui.screens.productdetail.VerPratoScreen
 import com.speedmenu.tablet.ui.screens.products.ProductsScreen
@@ -42,19 +44,22 @@ fun NavGraph(
         composable(route = Screen.Home.route) {
             HomeScreen(
                 onNavigateToCategories = {
-                    navController.navigate(Screen.Categories.route)
-                }
-            )
-        }
-
-        composable(route = Screen.Categories.route) {
-            CategoriesScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
-                onNavigateToCategory = { categoryId ->
-                    // Navega para tela de produtos da categoria
-                    navController.navigate(Screen.Products.createRoute(categoryId))
+                    // Navega diretamente para a primeira categoria do primeiro tópico
+                    // Usa o mesmo mockup scenario padrão usado nas outras telas
+                    val defaultScenario = MenuMockupScenario.LONG_SCROLL
+                    val topics = getMenuMockup(defaultScenario)
+                    val firstCategory = firstCategoryId(topics)
+                    
+                    if (firstCategory != null) {
+                        navController.navigate(Screen.Products.createRoute(firstCategory)) {
+                            // Limpa a pilha até a Home (inclusive) para garantir navegação limpa
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                    // Se não houver categorias, não navega (caso raro)
+                    // Em produção, isso seria tratado com um estado de erro/empty state
                 }
             )
         }
@@ -77,13 +82,33 @@ fun NavGraph(
                     // TODO: Implementar navegação para carrinho
                 },
                 onNavigateToProductDetail = { productId ->
+                    // Navega para detalhes do prato SEM limpar stack
+                    // Back natural retornará para a categoria atual
                     navController.navigate(Screen.ProductDetail.createRoute(productId))
                 },
                 onNavigateToCategory = { categoryId ->
-                    // Navegação direta para outra categoria
-                    navController.navigate(Screen.Products.createRoute(categoryId)) {
-                        // Substitui a tela atual na pilha para evitar acúmulo
-                        popUpTo(Screen.Categories.route) { inclusive = false }
+                    // Navegação direta para outra categoria pelo menu lateral
+                    // Substitui a tela Products atual na pilha para evitar acúmulo
+                    // Mantém o resto da pilha (ex: Home) intacto
+                    val currentRoute = navController.currentBackStackEntry?.destination?.route
+                    if (currentRoute?.startsWith("products/") == true) {
+                        // Se já estamos em uma tela Products, substitui ela
+                        navController.navigate(Screen.Products.createRoute(categoryId)) {
+                            popUpTo(currentRoute) { inclusive = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    } else {
+                        // Se não estamos em Products (ex: vindo de Home), apenas navega
+                        navController.navigate(Screen.Products.createRoute(categoryId)) {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
                     }
                 }
             )

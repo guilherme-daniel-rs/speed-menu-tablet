@@ -43,10 +43,12 @@ import com.speedmenu.tablet.core.ui.components.AccordionSection
 import com.speedmenu.tablet.core.ui.components.HeroImage
 import com.speedmenu.tablet.core.ui.components.IngredientQuantityItem
 import com.speedmenu.tablet.core.ui.components.MinimalTextField
+import com.speedmenu.tablet.core.ui.components.OrderFlowScaffold
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.PriceHeader
 import com.speedmenu.tablet.core.ui.components.QuantityStepper
 import com.speedmenu.tablet.core.ui.components.RemoveBaseIngredientDialog
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
@@ -98,20 +100,78 @@ fun VerPratoScreen(
     // Mock de carrinho
     val cartItemCount = remember { 0 }
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+    // Estado para controlar visibilidade do dialog de garçom
+    var showWaiterCalledDialog by remember { mutableStateOf(false) }
+    
+    // Estados mockados (em produção viriam de um ViewModel)
+    val isConnected = remember { true } // Mock: sempre conectado
+    val tableNumber = remember { "17" } // Mock: mesa 17
+    
+    OrderFlowScaffold(
+        isConnected = isConnected,
+        tableNumber = tableNumber,
+        onCallWaiterClick = {
+            showWaiterCalledDialog = true
+        },
+        topLeftContent = {
+            // Breadcrumb "← Menu / Início" no topo esquerdo
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // "← Menu" (clicável)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.clickable(onClick = onNavigateBack)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Voltar",
+                        tint = SpeedMenuColors.TextSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Menu",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = SpeedMenuColors.TextSecondary,
+                        fontSize = 16.sp
+                    )
+                }
+                
+                // Separador "/"
+                Text(
+                    text = "/",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Normal,
+                    color = SpeedMenuColors.TextTertiary.copy(alpha = 0.5f),
+                    fontSize = 16.sp
+                )
+                
+                // "Início" (clicável, menor opacidade)
+                Text(
+                    text = "Início",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Normal,
+                    color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .clickable(onClick = onNavigateToHome)
+                        .padding(horizontal = 8.dp, vertical = 4.dp) // Touch target correto
+                )
+            }
+        }
     ) {
-        // ========== TOPBAR ==========
-        TopBar(
-            onBackClick = onNavigateBack,
-            onHomeClick = onNavigateToHome,
-            cartItemCount = cartItemCount,
-            onCartClick = onNavigateToCart
-        )
-        
-        // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(SpeedMenuColors.BackgroundPrimary)
+        ) {
+            // TopBar removido - breadcrumb agora no topLeftContent do OrderFlowScaffold
+            // "Ver pedido" pode ser adicionado no topRightContent se necessário no futuro
+            
+            // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========
         Row(
             modifier = Modifier
                 .fillMaxSize()
@@ -283,104 +343,7 @@ fun VerPratoScreen(
                 )
             }
         }
-
-/**
- * TopBar padrão do app.
- */
-@Composable
-private fun TopBar(
-    onBackClick: () -> Unit,
-    onHomeClick: () -> Unit,
-    cartItemCount: Int,
-    onCartClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .padding(horizontal = 40.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Esquerda: Breadcrumb minimalista "← Menu / Início"
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // "← Menu" (clicável)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.clickable(onClick = onBackClick)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = SpeedMenuColors.TextSecondary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Menu",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = SpeedMenuColors.TextSecondary,
-                    fontSize = 16.sp
-                )
-            }
-            
-            // Separador "/"
-            Text(
-                text = "/",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Normal,
-                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.5f),
-                fontSize = 16.sp
-            )
-            
-            // "Início" (clicável, menor opacidade)
-            Text(
-                text = "Início",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Normal,
-                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .clickable(onClick = onHomeClick)
-                    .padding(horizontal = 8.dp, vertical = 4.dp) // Touch target correto
-            )
-        }
-        
-        // Direita: "Ver pedido (0)" estilo pill
-        if (cartItemCount > 0) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(SpeedMenuColors.PrimaryContainer.copy(alpha = 0.3f))
-                    .clickable(onClick = onCartClick)
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = "Ver pedido",
-                        tint = SpeedMenuColors.PrimaryLight,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Ver pedido ($cartItemCount)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = SpeedMenuColors.PrimaryLight,
-                        fontSize = 15.sp
-                    )
-                }
-            }
-        }
     }
-}
 
 /**
  * Chip de proteína selecionável (menor, mais sutil) com ícone check quando selecionado.

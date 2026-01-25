@@ -16,11 +16,6 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
 
     /**
-     * Tela de Categorias do Cardápio
-     */
-    object Categories : Screen("categories")
-
-    /**
      * Tela de Produtos/Pratos de uma categoria
      */
     object Products : Screen("products/{categoryName}") {

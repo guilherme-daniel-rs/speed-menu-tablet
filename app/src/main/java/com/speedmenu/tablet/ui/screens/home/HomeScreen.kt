@@ -171,7 +171,6 @@ fun HomeScreen(
 /**
  * Sidebar fixa com logo, CTA principal e itens de menu.
  * Elemento forte de identidade visual com gradiente vertical sutil e continuidade com o ambiente.
- * Compartilhada entre Home e Categories.
  */
 @Composable
 internal fun Sidebar(

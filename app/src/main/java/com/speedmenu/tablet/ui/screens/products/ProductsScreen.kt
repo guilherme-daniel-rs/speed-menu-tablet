@@ -1,5 +1,7 @@
 package com.speedmenu.tablet.ui.screens.products
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,11 +30,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.speedmenu.tablet.R
+import com.speedmenu.tablet.core.ui.components.OrderFlowScaffold
 import com.speedmenu.tablet.core.ui.components.ProductCard
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
 import com.speedmenu.tablet.ui.screens.home.MenuTopic
 import com.speedmenu.tablet.ui.screens.home.MenuCategory
+import com.speedmenu.tablet.ui.screens.home.MenuMockupScenario
+import com.speedmenu.tablet.ui.screens.home.getMenuMockup
+import com.speedmenu.tablet.ui.screens.home.getSelectedCategoryIdForScenario
 
 /**
  * Tela de listagem de produtos/pratos de uma categoria.
@@ -44,7 +51,8 @@ fun ProductsScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
     onNavigateToProductDetail: (String) -> Unit = {},
-    onNavigateToCategory: (String) -> Unit = {} // Navegação direta para outra categoria
+    onNavigateToCategory: (String) -> Unit = {}, // Navegação direta para outra categoria
+    onNavigateToHome: () -> Unit = {} // Callback para navegar para HOME
 ) {
     // Estado para controlar bottom sheet
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
@@ -52,41 +60,30 @@ fun ProductsScreen(
     // Estado mockado do carrinho
     var cartItemCount by remember { mutableStateOf(0) }
     
+    // Estado para controlar visibilidade do dialog de garçom
+    var showWaiterCalledDialog by remember { mutableStateOf(false) }
+    
+    // Estados mockados (em produção viriam de um ViewModel)
+    val isConnected = remember { true } // Mock: sempre conectado
+    val tableNumber = remember { "17" } // Mock: mesa 17
+    
+    // ========== MOCKUP SCENARIO SELECTOR ==========
+    // Altere este valor para testar diferentes cenários:
+    // - FEW_TOPICS_MANY_CATEGORIES: Poucos tópicos, muitas categorias
+    // - MANY_TOPICS_FEW_CATEGORIES: Muitos tópicos, poucas categorias
+    // - LONG_CATEGORY_NAMES: Categorias com nomes longos
+    // - SELECTED_IN_MIDDLE: Categoria selecionada no meio
+    // - LONG_SCROLL: Menu com scroll longo
+    val mockupScenario = MenuMockupScenario. LONG_SCROLL // Altere aqui para testar
+    
     // Estado para categoria selecionada no sidebar
-    var selectedCategoryId by remember { mutableStateOf(categoryName.lowercase()) }
+    var selectedCategoryId by remember { 
+        mutableStateOf(getSelectedCategoryIdForScenario(mockupScenario) ?: categoryName.lowercase())
+    }
     
     // Dados mockados de tópicos e categorias para o sidebar hierárquico
-    val menuTopics = remember {
-        listOf(
-            MenuTopic(
-                id = "starters",
-                title = "Para começar",
-                categories = listOf(
-                    MenuCategory("entradas", "Entradas", "starters")
-                )
-            ),
-            MenuTopic(
-                id = "main",
-                title = "Pratos principais",
-                categories = listOf(
-                    MenuCategory("pratos principais", "Pratos Principais", "main")
-                )
-            ),
-            MenuTopic(
-                id = "drinks",
-                title = "Bebidas",
-                categories = listOf(
-                    MenuCategory("bebidas", "Bebidas", "drinks")
-                )
-            ),
-            MenuTopic(
-                id = "desserts",
-                title = "Sobremesas",
-                categories = listOf(
-                    MenuCategory("sobremesas", "Sobremesas", "desserts")
-                )
-            )
-        )
+    val menuTopics = remember(mockupScenario) {
+        getMenuMockup(mockupScenario)
     }
     
     // Dados mockados de produtos (usando imagens das categorias como placeholder)
@@ -136,107 +133,122 @@ fun ProductsScreen(
         }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+    // OrderFlowScaffold envolve toda a tela para garantir posicionamento consistente do status pill
+    OrderFlowScaffold(
+        isConnected = isConnected,
+        tableNumber = tableNumber,
+        onCallWaiterClick = {
+            showWaiterCalledDialog = true
+        }
     ) {
-        // Sidebar fixa à esquerda (novo menu hierárquico)
-        Box(
+        Row(
             modifier = Modifier
-                .width(280.dp)
-                .fillMaxHeight()
+                .fillMaxSize()
+                .background(SpeedMenuColors.BackgroundPrimary)
         ) {
-            OrderFlowSidebar(
-                topics = menuTopics,
-                selectedCategoryId = selectedCategoryId,
-                onCategoryClick = { categoryId ->
-                    // Navegação direta para a listagem da categoria selecionada
-                    if (categoryId != categoryName.lowercase()) {
-                        onNavigateToCategory(categoryId)
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-            
-            // Borda sutil à direita
+            // Sidebar fixa à esquerda (novo menu hierárquico)
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(0.5.dp)
+                    .width(280.dp)
+                    .fillMaxHeight()
+            ) {
+                OrderFlowSidebar(
+                    topics = menuTopics,
+                    selectedCategoryId = selectedCategoryId,
+                    onCategoryClick = { categoryId ->
+                        // Navegação direta para a listagem da categoria selecionada
+                        if (categoryId != categoryName.lowercase()) {
+                            onNavigateToCategory(categoryId)
+                        }
+                    },
+                    onNavigateToHome = onNavigateToHome, // Botão "Voltar para início"
+                    modifier = Modifier.fillMaxSize()
+                )
+                
+                // Borda sutil à direita
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .width(0.5.dp)
+                        .fillMaxHeight()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
+                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+            }
+
+            // Área principal à direita
+            Column(
+                modifier = Modifier
+                    .weight(1f)
                     .fillMaxHeight()
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                Color.Transparent,
-                                SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
-                                SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                Color.Transparent
+                                SpeedMenuColors.BackgroundPrimary,
+                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.08f, green = 0.10f, blue = 0.08f),
+                                SpeedMenuColors.BackgroundSecondary
                             )
                         )
                     )
-            )
-        }
-
-        // Área principal à direita
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            SpeedMenuColors.BackgroundPrimary,
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.08f, green = 0.10f, blue = 0.08f),
-                            SpeedMenuColors.BackgroundSecondary
-                        )
-                    )
-                )
-                .padding(horizontal = 40.dp, vertical = 32.dp)
-        ) {
-            // ========== HEADER ==========
-            ProductsHeader(
-                categoryName = categoryName,
-                productCount = products.size,
-                cartItemCount = cartItemCount,
-                onBackClick = onNavigateBack,
-                onCartClick = onNavigateToCart,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
-
-            // ========== GRID DE PRODUTOS ==========
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2), // 2 colunas para tablet
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                    .padding(horizontal = 40.dp, vertical = 32.dp)
             ) {
-                items(products) { product ->
-                    // Badge emocional apenas para alguns produtos específicos
-                    val badgeText = when (product.id) {
-                        "1" -> "Mais pedido" // Bruschetta Italiana
-                        "9" -> "Chef recomenda" // Filé Mignon ao Molho
-                        "25" -> "Mais pedido" // Brownie com Sorvete
-                        else -> null
+                // ========== HEADER ==========
+                ProductsHeader(
+                    categoryName = categoryName,
+                    productCount = products.size,
+                    cartItemCount = cartItemCount,
+                    onCartClick = onNavigateToCart,
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+
+                // ========== GRID DE PRODUTOS COM FADE-IN SUAVE ==========
+                Crossfade(
+                    targetState = categoryName,
+                    animationSpec = tween(durationMillis = 220), // Duração entre 200-250ms
+                    label = "products_content_fade"
+                ) { currentCategory ->
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2), // 2 colunas para tablet
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                    ) {
+                        items(products) { product ->
+                            // Badge emocional apenas para alguns produtos específicos
+                            val badgeText = when (product.id) {
+                                "1" -> "Mais pedido" // Bruschetta Italiana
+                                "9" -> "Chef recomenda" // Filé Mignon ao Molho
+                                "25" -> "Mais pedido" // Brownie com Sorvete
+                                else -> null
+                            }
+                            
+                            ProductCard(
+                                name = product.name,
+                                price = product.price,
+                                imageResId = product.imageResId,
+                                onClick = {
+                                    // Navega para tela de detalhes do produto
+                                    onNavigateToProductDetail(product.id)
+                                },
+                                onSelectClick = {
+                                    // Adiciona ao carrinho (mockado)
+                                    cartItemCount++
+                                    // TODO: Implementar lógica real de carrinho
+                                },
+                                badgeText = badgeText
+                            )
+                        }
                     }
-                    
-                    ProductCard(
-                        name = product.name,
-                        price = product.price,
-                        imageResId = product.imageResId,
-                        onClick = {
-                            // Navega para tela de detalhes do produto
-                            onNavigateToProductDetail(product.id)
-                        },
-                        onSelectClick = {
-                            // Adiciona ao carrinho (mockado)
-                            cartItemCount++
-                            // TODO: Implementar lógica real de carrinho
-                        },
-                        badgeText = badgeText
-                    )
                 }
             }
         }
@@ -252,6 +264,16 @@ fun ProductsScreen(
                 selectedProduct = null
                 // TODO: Implementar lógica real de carrinho
             }
+        )
+    }
+    
+    // ========== DIALOG DE GARÇOM CHAMADO ==========
+    // Fora do scaffold para não ser afetado pelo overlay
+    if (showWaiterCalledDialog) {
+        WaiterCalledDialog(
+            visible = showWaiterCalledDialog,
+            onDismiss = { showWaiterCalledDialog = false },
+            onConfirm = { showWaiterCalledDialog = false }
         )
     }
 }

@@ -15,36 +15,21 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.zIndex
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.LocalDining
 import androidx.compose.material.icons.filled.LocalBar
 import androidx.compose.material.icons.filled.Cake
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -55,16 +40,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
 import com.speedmenu.tablet.R
-import com.speedmenu.tablet.core.ui.components.AppTopBarContainer
 import com.speedmenu.tablet.core.ui.components.CategoryCard
-import com.speedmenu.tablet.core.ui.components.SidebarMenuItem
-import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
-import com.speedmenu.tablet.core.ui.components.TopRightStatusPill
+import com.speedmenu.tablet.core.ui.components.OrderFlowScaffold
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
 import com.speedmenu.tablet.ui.screens.home.MenuTopic
 import com.speedmenu.tablet.ui.screens.home.MenuCategory
+import com.speedmenu.tablet.ui.screens.home.MenuMockupScenario
+import com.speedmenu.tablet.ui.screens.home.getMenuMockup
+import com.speedmenu.tablet.ui.screens.home.getSelectedCategoryIdForScenario
 
 /**
  * Dados mockados de categoria.
@@ -85,49 +70,33 @@ data class CategoryData(
 @Composable
 fun CategoriesScreen(
     onNavigateBack: () -> Unit = {},
-    onNavigateToCategory: (String) -> Unit = {}
+    onNavigateToCategory: (String) -> Unit = {},
+    onNavigateToHome: () -> Unit = {} // Callback para navegar para HOME
 ) {
-    // Estado para filtro selecionado
-    var selectedFilter by remember { mutableStateOf<String?>(null) }
-    
     // Estado para controlar visibilidade do dialog de garçom
     var showWaiterCalledDialog by remember { mutableStateOf(false) }
     
+    // Estados mockados (em produção viriam de um ViewModel)
+    val isConnected = remember { true } // Mock: sempre conectado
+    val tableNumber = remember { "17" } // Mock: mesa 17
+    
+    // ========== MOCKUP SCENARIO SELECTOR ==========
+    // Altere este valor para testar diferentes cenários:
+    // - FEW_TOPICS_MANY_CATEGORIES: Poucos tópicos, muitas categorias
+    // - MANY_TOPICS_FEW_CATEGORIES: Muitos tópicos, poucas categorias
+    // - LONG_CATEGORY_NAMES: Categorias com nomes longos
+    // - SELECTED_IN_MIDDLE: Categoria selecionada no meio
+    // - LONG_SCROLL: Menu com scroll longo
+    val mockupScenario = MenuMockupScenario. LONG_SCROLL // Altere aqui para testar
+    
     // Estado para categoria selecionada no sidebar
-    var selectedCategoryId by remember { mutableStateOf<String?>(null) }
+    var selectedCategoryId by remember { 
+        mutableStateOf<String?>(getSelectedCategoryIdForScenario(mockupScenario))
+    }
     
     // Dados mockados de tópicos e categorias para o sidebar hierárquico
-    val menuTopics = remember {
-        listOf(
-            MenuTopic(
-                id = "starters",
-                title = "Para começar",
-                categories = listOf(
-                    MenuCategory("entradas", "Entradas", "starters")
-                )
-            ),
-            MenuTopic(
-                id = "main",
-                title = "Pratos principais",
-                categories = listOf(
-                    MenuCategory("pratos", "Pratos Principais", "main")
-                )
-            ),
-            MenuTopic(
-                id = "drinks",
-                title = "Bebidas",
-                categories = listOf(
-                    MenuCategory("bebidas", "Bebidas", "drinks")
-                )
-            ),
-            MenuTopic(
-                id = "desserts",
-                title = "Sobremesas",
-                categories = listOf(
-                    MenuCategory("sobremesas", "Sobremesas", "desserts")
-                )
-            )
-        )
+    val menuTopics = remember(mockupScenario) {
+        getMenuMockup(mockupScenario)
     }
     
     // Dados mockados de categorias
@@ -167,248 +136,75 @@ fun CategoriesScreen(
             )
         )
     }
-    
-    // Filtros mockados
-    val filters = remember {
-        listOf(
-            "Favoritos da casa",
-            "Novidades",
-            "Menu degustação",
-            "Opções veganas",
-            "Sem glúten"
-        )
-    }
 
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+    // OrderFlowScaffold envolve toda a tela para garantir posicionamento consistente do status pill
+    OrderFlowScaffold(
+        isConnected = isConnected,
+        tableNumber = tableNumber,
+        onCallWaiterClick = {
+            showWaiterCalledDialog = true
+        }
     ) {
-        // Sidebar fixa à esquerda (novo menu hierárquico)
-        Box(
+        Row(
             modifier = Modifier
-                .width(280.dp)
-                .fillMaxHeight()
+                .fillMaxSize()
+                .background(SpeedMenuColors.BackgroundPrimary)
         ) {
-            OrderFlowSidebar(
-                topics = menuTopics,
-                selectedCategoryId = selectedCategoryId,
-                onCategoryClick = { categoryId ->
-                    // Navegação direta para a listagem da categoria
-                    selectedCategoryId = categoryId
-                    onNavigateToCategory(categoryId)
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-            
-            // Borda sutil à direita
+            // Sidebar fixa à esquerda (novo menu hierárquico)
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(0.5.dp)
+                    .width(280.dp)
                     .fillMaxHeight()
-                    .background(
-                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
-                                SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-        }
-
-        // Área principal à direita
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            SpeedMenuColors.BackgroundPrimary,
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.08f, green = 0.10f, blue = 0.08f),
-                            SpeedMenuColors.BackgroundSecondary
-                        )
-                    )
+            ) {
+                OrderFlowSidebar(
+                    topics = menuTopics,
+                    selectedCategoryId = selectedCategoryId,
+                    onCategoryClick = { categoryId ->
+                        // Navegação direta para a listagem da categoria
+                        selectedCategoryId = categoryId
+                        onNavigateToCategory(categoryId)
+                    },
+                    onNavigateToHome = onNavigateToHome, // Botão "Voltar para início"
+                    modifier = Modifier.fillMaxSize()
                 )
-        ) {
-            // ========== TOPBAR: Categorias + Status ==========
-            AppTopBarContainer(
-                modifier = Modifier.padding(horizontal = 40.dp),
-                content = {
-                    // Box com weight(1f) e clipToBounds() já aplicados pelo AppTopBarContainer
-                    Box(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        val scrollState = rememberScrollState()
-                        
-                        // Estado para controlar visibilidade dos chevrons
-                        var canScrollLeft by remember { mutableStateOf(false) }
-                        var canScrollRight by remember { mutableStateOf(true) }
-                        
-                        // Observa mudanças no scroll para atualizar os chevrons
-                        LaunchedEffect(scrollState) {
-                            snapshotFlow { scrollState.value to scrollState.maxValue }
-                                .distinctUntilChanged()
-                                .collect { (value, maxValue) ->
-                                    canScrollLeft = value > 0
-                                    canScrollRight = value < maxValue
-                                }
-                        }
-                        
-                        // Row com categorias scrolláveis (centralizado verticalmente)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .horizontalScroll(scrollState)
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(0.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            filters.forEachIndexed { index, filter ->
-                                val isSelected = selectedFilter == filter
-                                
-                                // Divisória vertical sutil (exceto no primeiro item)
-                                if (index > 0) {
-                                    Box(
-                                        modifier = Modifier
-                                            .width(1.dp)
-                                            .height(16.dp)
-                                            .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.3f))
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                }
-                                
-                                // Item de categoria minimalista
-                                androidx.compose.foundation.layout.Box(
-                                    modifier = Modifier
-                                        .clickable {
-                                            selectedFilter = if (selectedFilter == filter) null else filter
-                                        }
-                                        .padding(horizontal = 16.dp, vertical = 0.dp)
-                                        .drawBehind {
-                                            // Underline discreto para categoria ativa
-                                            if (isSelected) {
-                                                val strokeWidth = 2.dp.toPx()
-                                                drawLine(
-                                                    color = SpeedMenuColors.PrimaryLight,
-                                                    start = Offset(0f, size.height),
-                                                    end = Offset(size.width, size.height),
-                                                    strokeWidth = strokeWidth
-                                                )
-                                            }
-                                        }
-                                ) {
-                                    Text(
-                                        text = filter,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                        color = if (isSelected) {
-                                            SpeedMenuColors.PrimaryLight
-                                        } else {
-                                            SpeedMenuColors.TextSecondary
-                                        },
-                                        fontSize = 15.sp,
-                                        letterSpacing = 0.2.sp
-                                    )
-                                }
-                            }
-                        }
-                        
-                        // Edge fade direito (opcional, quando há mais conteúdo à direita)
-                        if (canScrollRight) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .width(60.dp)
-                                    .fillMaxHeight()
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(
-                                                Color.Transparent,
-                                                SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.95f),
-                                                SpeedMenuColors.BackgroundPrimary
-                                            )
-                                        )
-                                    )
-                                    .zIndex(1f)
+                
+                // Borda sutil à direita
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .width(0.5.dp)
+                        .fillMaxHeight()
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
+                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                    Color.Transparent
+                                )
                             )
-                        }
-                        
-                        // Edge fade esquerdo (opcional, quando já houve scroll)
-                        if (canScrollLeft) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .width(40.dp)
-                                    .fillMaxHeight()
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(
-                                                SpeedMenuColors.BackgroundPrimary,
-                                                SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.95f),
-                                                Color.Transparent
-                                            )
-                                        )
-                                    )
-                                    .zIndex(1f)
-                            )
-                        }
-                        
-                        // Chevron ESQUERDA (só se canScrollLeft)
-                        if (canScrollLeft) {
-                            Icon(
-                                imageVector = Icons.Default.ChevronLeft,
-                                contentDescription = null,
-                                tint = SpeedMenuColors.TextTertiary,
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .padding(start = 6.dp)
-                                    .size(20.dp)
-                                    .alpha(0.55f)
-                                    .zIndex(3f)
-                            )
-                        }
-                        
-                        // Chevron DIREITA (só se canScrollRight)
-                        if (canScrollRight) {
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = SpeedMenuColors.TextTertiary,
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(end = 6.dp)
-                                    .size(20.dp)
-                                    .alpha(0.55f)
-                                    .zIndex(3f)
-                            )
-                        }
-                    }
-                },
-                statusPill = {
-                        TopRightStatusPill(
-                            onWaiterClick = {
-                                showWaiterCalledDialog = true
-                            }
                         )
-                }
-            )
-            
-            // Espaçamento entre TopBar e grid (máximo 12-16dp)
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // ========== CONTEÚDO PRINCIPAL (Grid de categorias) ==========
+                )
+            }
+
+            // Área principal à direita (sem menu superior de tabs - navegação apenas via sidebar)
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 40.dp)
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                SpeedMenuColors.BackgroundPrimary,
+                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.08f, green = 0.10f, blue = 0.08f),
+                                SpeedMenuColors.BackgroundSecondary
+                            )
+                        )
+                    )
+                    .padding(horizontal = 40.dp, vertical = 32.dp)
             ) {
-                // ========== GRID DE CATEGORIAS ==========
+                // ========== CONTEÚDO PRINCIPAL (Grid de categorias) ==========
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2), // 2 colunas para tablet
                     modifier = Modifier.fillMaxSize(),
@@ -435,14 +231,16 @@ fun CategoriesScreen(
                     }
                 }
             }
-            
-            // Dialog de garçom chamado
-            WaiterCalledDialog(
-                visible = showWaiterCalledDialog,
-                onDismiss = { showWaiterCalledDialog = false },
-                onConfirm = { showWaiterCalledDialog = false }
-            )
         }
+    }
+    
+    // Dialog de garçom chamado (fora do scaffold para não ser afetado pelo overlay)
+    if (showWaiterCalledDialog) {
+        WaiterCalledDialog(
+            visible = showWaiterCalledDialog,
+            onDismiss = { showWaiterCalledDialog = false },
+            onConfirm = { showWaiterCalledDialog = false }
+        )
     }
 }
 

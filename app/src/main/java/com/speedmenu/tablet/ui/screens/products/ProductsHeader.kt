@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,51 +24,28 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Header da tela de produtos.
- * Contém botão voltar, título, subtítulo e botão de pedido.
+ * Contém título, subtítulo e botão de pedido.
+ * Botão "Voltar para categorias" removido - navegação apenas via sidebar.
  */
 @Composable
 fun ProductsHeader(
     categoryName: String,
     productCount: Int,
     cartItemCount: Int = 0,
-    onBackClick: () -> Unit,
     onCartClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp) // Espaçamento reduzido (era 16.dp) para subir o título
     ) {
-        // Linha superior: Botão voltar e botão de pedido
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Botão "← Categorias"
+        // Linha superior: Botão de pedido (se houver itens no carrinho)
+        if (cartItemCount > 0) {
             Row(
-                modifier = Modifier
-                    .clickable(onClick = onBackClick),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = SpeedMenuColors.TextSecondary,
-                    modifier = Modifier.padding(4.dp)
-                )
-                Text(
-                    text = "Categorias",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = SpeedMenuColors.TextSecondary,
-                    fontSize = 16.sp
-                )
-            }
-            
-            // Botão "Ver pedido (X)" - estilo pill discreto
-            if (cartItemCount > 0) {
                 Box(
                     modifier = Modifier
                         .background(
@@ -101,7 +77,7 @@ fun ProductsHeader(
             }
         }
         
-        // Título e subtítulo
+        // Título e subtítulo (subiram após remover botão voltar)
         Column(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -124,4 +100,3 @@ fun ProductsHeader(
         }
     }
 }
-

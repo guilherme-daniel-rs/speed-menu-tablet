@@ -2,6 +2,9 @@ package com.speedmenu.tablet.ui.screens.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,17 +17,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -59,9 +71,10 @@ fun OrderFlowSidebar(
     topics: List<MenuTopic>,
     selectedCategoryId: String? = null,
     onCategoryClick: (String) -> Unit,
+    onNavigateToHome: (() -> Unit)? = null, // Callback opcional para navegar para HOME
     modifier: Modifier = Modifier
 ) {
-    // Estado do scroll para preservar posição
+    // Estado do scroll para preservar posição e rolagem suave
     val scrollState = rememberLazyListState()
     
     // Scroll automático para a categoria selecionada quando necessário
@@ -115,29 +128,29 @@ fun OrderFlowSidebar(
             .fillMaxSize()
             .background(SpeedMenuColors.BackgroundPrimary)
             .padding(vertical = 28.dp, horizontal = 24.dp) // Mais espaçamento para tablets
-    ) {
-        LazyColumn(
-            state = scrollState,
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(0.dp),
-            contentPadding = PaddingValues(0.dp)
         ) {
+            // Botão "Voltar para início" (apenas se onNavigateToHome não for null)
+            onNavigateToHome?.let { onHomeClick ->
+                BackToHomeButton(
+                    onClick = onHomeClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp) // Espaçamento antes dos tópicos
+                )
+            }
+            
+            // LazyColumn com scroll suave e sem scrollbar visível
+            LazyColumn(
+                state = scrollState,
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(0.dp),
+                contentPadding = PaddingValues(0.dp)
+            ) {
             topics.forEachIndexed { topicIndex, topic ->
-                // Espaço antes do tópico (exceto o primeiro)
+                // Divisória sutil entre tópicos (exceto o primeiro)
                 if (topicIndex > 0) {
-                    // Espaço antes da divisória
-                    item(key = "spacer_before_divider_$topicIndex") {
-                        Spacer(modifier = Modifier.height(28.dp)) // Espaço respirável antes da divisória
-                    }
-                    
-                    // Divisória sutil entre tópicos
                     item(key = "divider_$topicIndex") {
                         TopicDivider()
-                    }
-                    
-                    // Espaço após a divisória
-                    item(key = "spacer_after_divider_$topicIndex") {
-                        Spacer(modifier = Modifier.height(20.dp)) // Espaço após divisória
                     }
                 }
                 
@@ -149,8 +162,8 @@ fun OrderFlowSidebar(
                             .fillMaxWidth()
                             .padding(
                                 PaddingValues(
-                                    top = 0.dp, // Espaçamento controlado pelos Spacers acima
-                                    bottom = 28.dp // Espaço aumentado entre título e categorias
+                                    top = 0.dp,
+                                    bottom = 16.dp // Espaço reduzido entre título e categorias para melhor agrupamento visual
                                 )
                             )
                     )
@@ -172,9 +185,62 @@ fun OrderFlowSidebar(
     }
 }
 
+/**
+ * Botão discreto "Voltar para início" no topo do menu lateral.
+ * Estilo alinhado ao tema dark com hover/press sutil.
+ */
+@Composable
+private fun BackToHomeButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    Box(
+        modifier = modifier
+            .height(48.dp)
+            .background(
+                color = if (isPressed) {
+                    SpeedMenuColors.Surface.copy(alpha = 0.2f)
+                } else {
+                    Color.Transparent
+                },
+                shape = RoundedCornerShape(10.dp)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Voltar para início",
+                tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = "Voltar ao início",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = SpeedMenuColors.TextSecondary.copy(alpha = 0.9f),
+                fontSize = 15.sp
+            )
+        }
+    }
+}
 
 /**
  * Item de categoria clicável com highlight sutil quando selecionado.
+ * Inclui transições suaves para fundo, barra lateral e cor do texto.
+ * Feedback visual imediato ao clicar (ripple + mudança de cor).
  */
 @Composable
 private fun CategoryItem(
@@ -182,33 +248,74 @@ private fun CategoryItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    // Interaction source para detectar estado pressed
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    // Animações suaves para transição de estados (150-200ms)
+    // Mudança instantânea quando pressionado para feedback imediato
+    val backgroundColor by animateColorAsState(
+        targetValue = when {
+            isSelected -> SpeedMenuColors.Primary.copy(alpha = 0.08f) // Fundo levemente destacado
+            isPressed -> SpeedMenuColors.Surface.copy(alpha = 0.15f) // Feedback imediato ao pressionar
+            else -> Color.Transparent
+        },
+        animationSpec = tween(durationMillis = if (isPressed) 0 else 180), // Mudança instantânea quando pressionado
+        label = "category_background"
+    )
+    
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            SpeedMenuColors.TextPrimary.copy(alpha = 0.98f) // Texto mais claro quando selecionado
+        } else {
+            SpeedMenuColors.TextSecondary.copy(alpha = 0.9f) // Texto secundário
+        },
+        animationSpec = tween(durationMillis = 180),
+        label = "category_text_color"
+    )
+    
+    val indicatorAlpha by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isSelected) 1f else 0f,
+        animationSpec = tween(durationMillis = 180),
+        label = "category_indicator_alpha"
+    )
+    
+    val indicatorWidth by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isSelected) 3.dp.value else 0.dp.value,
+        animationSpec = tween(durationMillis = 180),
+        label = "category_indicator_width"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp) // Altura aumentada para melhor espaçamento vertical
             .background(
-                color = if (isSelected) {
-                    SpeedMenuColors.Primary.copy(alpha = 0.08f) // Fundo muito discreto
-                } else {
-                    Color.Transparent
-                },
+                color = backgroundColor,
                 shape = RoundedCornerShape(8.dp) // Cantos mais arredondados
             )
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = rememberRipple(
+                    color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f), // Ripple discreto
+                    bounded = true
+                ),
+                onClick = onClick
+            )
             .padding(horizontal = 14.dp, vertical = 16.dp), // Padding vertical aumentado
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Indicador visual sutil (linha vertical fina) quando selecionado
-            if (isSelected) {
+            // Indicador visual sutil (barra lateral fina) com animação suave
+            if (indicatorAlpha > 0f) {
                 Box(
                     modifier = Modifier
-                        .width(3.dp)
+                        .width(indicatorWidth.dp)
                         .fillMaxHeight()
                         .background(
-                            color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.65f), // Levemente mais visível
+                            color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.65f * indicatorAlpha),
                             shape = RoundedCornerShape(1.5.dp)
                         )
                 )
@@ -217,17 +324,13 @@ private fun CategoryItem(
                 // Espaço reservado para manter alinhamento quando não selecionado
                 Spacer(modifier = Modifier.width(15.dp))
             }
-            
-            // Texto da categoria
+
+            // Texto da categoria com cor animada
             Text(
                 text = category.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Normal, // Mantém peso regular
-                color = if (isSelected) {
-                    SpeedMenuColors.TextPrimary.copy(alpha = 0.98f) // Texto mais claro quando selecionado
-                } else {
-                    SpeedMenuColors.TextSecondary.copy(alpha = 0.9f) // Texto secundário com melhor legibilidade
-                },
+                color = textColor,
                 fontSize = 17.sp, // Aumentado de 16.sp para melhor legibilidade à distância
                 lineHeight = 24.sp, // Line height aumentado para melhor respiração
                 modifier = Modifier.weight(1f)
@@ -250,9 +353,9 @@ private fun TopicDividerLine(
             .drawBehind {
                 if (this.size.width > 0f && this.size.height > 0f) {
                     val y = this.size.height / 2f
-                    val strokeWidth = 2.dp.toPx()
-                    val baseAlpha = 0.12f
-                    val lineColor = Color.White.copy(alpha = baseAlpha)
+                    val strokeWidth = 2.dp.toPx() // Pode reduzir para 1.5.dp se ficar pesado
+                    val baseAlpha = 0.14f // Ajuste fino: entre 0.11 (sutil) e 0.16 (mais visível)
+                    val lineColor = SpeedMenuColors.OnSurface.copy(alpha = baseAlpha)
                     
                     val width = this.size.width
                     val segment1End = width * 0.12f // 12% inicial
@@ -260,14 +363,14 @@ private fun TopicDividerLine(
                     val segment2End = width * 0.88f // 76% meio (12% + 76% = 88%)
                     val segment3Start = width * 0.88f
                     
-                    // Segmento 1 (12% inicial): fade in (alpha 0.00 -> 0.12)
+                    // Segmento 1 (12% inicial): fade in (alpha 0.00 -> baseAlpha)
                     if (segment1End > 0f) {
                         for (i in 0..10) {
                             val x1 = (segment1End / 10f) * i
                             val x2 = (segment1End / 10f) * (i + 1)
                             val alpha = (baseAlpha * i / 10f).coerceIn(0f, baseAlpha)
                             this.drawLine(
-                                color = Color.White.copy(alpha = alpha),
+                                color = SpeedMenuColors.OnSurface.copy(alpha = alpha),
                                 start = Offset(x1, y),
                                 end = Offset(x2, y),
                                 strokeWidth = strokeWidth
@@ -275,7 +378,7 @@ private fun TopicDividerLine(
                         }
                     }
                     
-                    // Segmento 2 (76% meio): alpha constante 0.12
+                    // Segmento 2 (76% meio): alpha constante baseAlpha
                     if (segment2End > segment2Start) {
                         this.drawLine(
                             color = lineColor,
@@ -285,14 +388,14 @@ private fun TopicDividerLine(
                         )
                     }
                     
-                    // Segmento 3 (12% final): fade out (alpha 0.12 -> 0.00)
+                    // Segmento 3 (12% final): fade out (alpha baseAlpha -> 0.00)
                     if (width > segment3Start) {
                         for (i in 0..10) {
                             val x1 = segment3Start + ((width - segment3Start) / 10f) * i
                             val x2 = segment3Start + ((width - segment3Start) / 10f) * (i + 1)
                             val alpha = (baseAlpha * (10f - i) / 10f).coerceIn(0f, baseAlpha)
                             this.drawLine(
-                                color = Color.White.copy(alpha = alpha),
+                                color = SpeedMenuColors.OnSurface.copy(alpha = alpha),
                                 start = Offset(x1, y),
                                 end = Offset(x2, y),
                                 strokeWidth = strokeWidth
