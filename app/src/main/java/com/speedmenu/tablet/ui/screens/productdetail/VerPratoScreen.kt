@@ -46,6 +46,7 @@ import com.speedmenu.tablet.core.ui.components.MinimalTextField
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.PriceHeader
 import com.speedmenu.tablet.core.ui.components.QuantityStepper
+import com.speedmenu.tablet.core.ui.components.RemoveBaseIngredientDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
@@ -71,10 +72,15 @@ fun VerPratoScreen(
     var isIngredientsExpanded by remember { mutableStateOf(false) }
     var isObservationsExpanded by remember { mutableStateOf(false) }
     var observationsText by remember { mutableStateOf("") }
+    
+    // Estado para dialog de confirmação de remoção de ingrediente base
+    var showRemoveBaseIngredientDialog by remember { mutableStateOf(false) }
+    var pendingIngredientIndex by remember { mutableStateOf<Int?>(null) }
+    
     // Estado de quantidades dos ingredientes
     data class IngredientQuantity(
         val name: String,
-        val isBase: Boolean, // true = ingrediente base (mínimo 1), false = opcional (mínimo 0)
+        val isBase: Boolean, // true = ingrediente base (requer confirmação ao remover de 1 para 0), false = opcional
         var quantity: Int
     )
     
@@ -141,9 +147,15 @@ fun VerPratoScreen(
                     overflow = TextOverflow.Ellipsis
                 )
                 
-                // 4) Indicação discreta de ingredientes (opcional)
+                // 4) Indicação discreta de ingredientes (apenas ativos)
+                val activeIngredientsCount = ingredientQuantities.count { it.quantity > 0 }
+                val totalIngredientsCount = ingredientQuantities.size
                 Text(
-                    text = "Ingredientes: ${ingredientQuantities.size} itens",
+                    text = if (activeIngredientsCount < totalIngredientsCount) {
+                        "Ingredientes: $activeIngredientsCount itens ($totalIngredientsCount disponíveis)"
+                    } else {
+                        "Ingredientes: $activeIngredientsCount itens"
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Normal,
                     color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
@@ -164,7 +176,17 @@ fun VerPratoScreen(
                     icon = Icons.Default.Restaurant,
                     expanded = isIngredientsExpanded,
                     onExpandedChange = { isIngredientsExpanded = it },
-                    summary = "${ingredientQuantities.count { it.quantity > 0 }} ingredientes selecionados"
+                    summary = run {
+                        val activeCount = ingredientQuantities.count { it.quantity > 0 }
+                        val totalCount = ingredientQuantities.size
+                        if (activeCount == 0) {
+                            "Nenhum ingrediente selecionado"
+                        } else if (activeCount < totalCount) {
+                            "$activeCount de $totalCount ingredientes"
+                        } else {
+                            "Todos os $activeCount ingredientes"
+                        }
+                    }
                 ) {
                     // Lista vertical de ingredientes com controles de quantidade
                     Column(
@@ -189,11 +211,18 @@ fun VerPratoScreen(
                             IngredientQuantityItem(
                                 name = ingredient.name,
                                 quantity = ingredient.quantity,
-                                minQuantity = if (ingredient.isBase) 1 else 0,
+                                isBase = ingredient.isBase,
                                 maxQuantity = 5,
                                 onQuantityChange = { newQuantity ->
                                     ingredientQuantities[index] = ingredient.copy(quantity = newQuantity)
-                                }
+                                },
+                                onRemoveBaseIngredient = if (ingredient.isBase) {
+                                    {
+                                        // Dispara confirmação ao tentar remover ingrediente base (1 -> 0)
+                                        pendingIngredientIndex = index
+                                        showRemoveBaseIngredientDialog = true
+                                    }
+                                } else null
                             )
                         }
                     }
@@ -229,10 +258,31 @@ fun VerPratoScreen(
                     price = productPrice * quantity,
                     onClick = onAddToCart
                 )
+                    }
+                }
+            }
+            
+            // Dialog de confirmação para remover ingrediente base
+            pendingIngredientIndex?.let { index ->
+                RemoveBaseIngredientDialog(
+                    visible = showRemoveBaseIngredientDialog,
+                    ingredientName = ingredientQuantities.getOrNull(index)?.name ?: "",
+                    onConfirm = {
+                        // Confirma remoção: seta quantidade = 0
+                        if (index < ingredientQuantities.size) {
+                            ingredientQuantities[index] = ingredientQuantities[index].copy(quantity = 0)
+                        }
+                        showRemoveBaseIngredientDialog = false
+                        pendingIngredientIndex = null
+                    },
+                    onDismiss = {
+                        // Cancela: mantém em 1 (não faz nada)
+                        showRemoveBaseIngredientDialog = false
+                        pendingIngredientIndex = null
+                    }
+                )
             }
         }
-    }
-}
 
 /**
  * TopBar padrão do app.

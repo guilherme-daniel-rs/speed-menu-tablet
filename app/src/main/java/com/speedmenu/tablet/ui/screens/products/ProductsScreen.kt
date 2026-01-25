@@ -29,10 +29,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.ProductCard
-import com.speedmenu.tablet.core.ui.components.SidebarMenuItem
-import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
-import com.speedmenu.tablet.ui.screens.home.Sidebar
+import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
+import com.speedmenu.tablet.ui.screens.home.MenuTopic
+import com.speedmenu.tablet.ui.screens.home.MenuCategory
 
 /**
  * Tela de listagem de produtos/pratos de uma categoria.
@@ -43,13 +43,51 @@ fun ProductsScreen(
     categoryName: String,
     onNavigateBack: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
-    onNavigateToProductDetail: (String) -> Unit = {}
+    onNavigateToProductDetail: (String) -> Unit = {},
+    onNavigateToCategory: (String) -> Unit = {} // Navegação direta para outra categoria
 ) {
     // Estado para controlar bottom sheet
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     
     // Estado mockado do carrinho
     var cartItemCount by remember { mutableStateOf(0) }
+    
+    // Estado para categoria selecionada no sidebar
+    var selectedCategoryId by remember { mutableStateOf(categoryName.lowercase()) }
+    
+    // Dados mockados de tópicos e categorias para o sidebar hierárquico
+    val menuTopics = remember {
+        listOf(
+            MenuTopic(
+                id = "starters",
+                title = "Para começar",
+                categories = listOf(
+                    MenuCategory("entradas", "Entradas", "starters")
+                )
+            ),
+            MenuTopic(
+                id = "main",
+                title = "Pratos principais",
+                categories = listOf(
+                    MenuCategory("pratos principais", "Pratos Principais", "main")
+                )
+            ),
+            MenuTopic(
+                id = "drinks",
+                title = "Bebidas",
+                categories = listOf(
+                    MenuCategory("bebidas", "Bebidas", "drinks")
+                )
+            ),
+            MenuTopic(
+                id = "desserts",
+                title = "Sobremesas",
+                categories = listOf(
+                    MenuCategory("sobremesas", "Sobremesas", "desserts")
+                )
+            )
+        )
+    }
     
     // Dados mockados de produtos (usando imagens das categorias como placeholder)
     val products = remember(categoryName) {
@@ -103,18 +141,22 @@ fun ProductsScreen(
             .fillMaxSize()
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
-        // Sidebar fixa à esquerda (reutilizada)
+        // Sidebar fixa à esquerda (novo menu hierárquico)
         Box(
             modifier = Modifier
                 .width(280.dp)
                 .fillMaxHeight()
         ) {
-            Sidebar(
-                modifier = Modifier.fillMaxSize(),
-                isVisible = true,
-                onStartOrderClick = {
-                    // Já estamos na tela de produtos, não precisa navegar
-                }
+            OrderFlowSidebar(
+                topics = menuTopics,
+                selectedCategoryId = selectedCategoryId,
+                onCategoryClick = { categoryId ->
+                    // Navegação direta para a listagem da categoria selecionada
+                    if (categoryId != categoryName.lowercase()) {
+                        onNavigateToCategory(categoryId)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
             )
             
             // Borda sutil à direita

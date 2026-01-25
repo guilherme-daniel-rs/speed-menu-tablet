@@ -78,6 +78,13 @@ fun NavGraph(
                 },
                 onNavigateToProductDetail = { productId ->
                     navController.navigate(Screen.ProductDetail.createRoute(productId))
+                },
+                onNavigateToCategory = { categoryId ->
+                    // Navegação direta para outra categoria
+                    navController.navigate(Screen.Products.createRoute(categoryId)) {
+                        // Substitui a tela atual na pilha para evitar acúmulo
+                        popUpTo(Screen.Categories.route) { inclusive = false }
+                    }
                 }
             )
         }

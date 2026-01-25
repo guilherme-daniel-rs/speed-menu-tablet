@@ -12,6 +12,8 @@ import androidx.compose.ui.text.font.FontWeight;
 import com.speedmenu.tablet.R;
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle;
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors;
+import com.speedmenu.tablet.ui.screens.home.MenuTopic;
+import com.speedmenu.tablet.ui.screens.home.MenuCategory;
 
 /**
  * Dados mockados de categoria.

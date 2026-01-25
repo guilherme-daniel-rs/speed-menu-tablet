@@ -30,14 +30,23 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Item de ingrediente com controles de quantidade.
+ * 
+ * @param name Nome do ingrediente
+ * @param quantity Quantidade atual
+ * @param isBase Se true, é ingrediente base (requer confirmação ao remover de 1 para 0)
+ * @param maxQuantity Quantidade máxima permitida
+ * @param onQuantityChange Callback quando a quantidade muda
+ * @param onRemoveBaseIngredient Callback quando tenta remover ingrediente base (1 -> 0). Se null, remove direto.
+ * @param modifier Modifier
  */
 @Composable
 fun IngredientQuantityItem(
     name: String,
     quantity: Int,
-    minQuantity: Int = 0,
+    isBase: Boolean = false,
     maxQuantity: Int = 5,
     onQuantityChange: (Int) -> Unit,
+    onRemoveBaseIngredient: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -76,15 +85,21 @@ fun IngredientQuantityItem(
                         color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
                         shape = CircleShape
                     )
-                    .clickable(enabled = quantity > minQuantity) {
-                        onQuantityChange((quantity - 1).coerceAtLeast(minQuantity))
+                    .clickable(enabled = quantity > 0) {
+                        // Se for ingrediente base e estiver em 1, dispara confirmação
+                        if (isBase && quantity == 1 && onRemoveBaseIngredient != null) {
+                            onRemoveBaseIngredient()
+                        } else {
+                            // Caso contrário, remove direto (pode ir até 0)
+                            onQuantityChange(quantity - 1)
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Remove,
                     contentDescription = "Diminuir",
-                    tint = if (quantity > minQuantity) {
+                    tint = if (quantity > 0) {
                         SpeedMenuColors.TextSecondary.copy(alpha = 0.7f)
                     } else {
                         SpeedMenuColors.TextTertiary.copy(alpha = 0.4f)

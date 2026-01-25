@@ -62,7 +62,9 @@ import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
 import com.speedmenu.tablet.core.ui.components.TopRightStatusPill
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
-import com.speedmenu.tablet.ui.screens.home.Sidebar
+import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
+import com.speedmenu.tablet.ui.screens.home.MenuTopic
+import com.speedmenu.tablet.ui.screens.home.MenuCategory
 
 /**
  * Dados mockados de categoria.
@@ -90,6 +92,43 @@ fun CategoriesScreen(
     
     // Estado para controlar visibilidade do dialog de garçom
     var showWaiterCalledDialog by remember { mutableStateOf(false) }
+    
+    // Estado para categoria selecionada no sidebar
+    var selectedCategoryId by remember { mutableStateOf<String?>(null) }
+    
+    // Dados mockados de tópicos e categorias para o sidebar hierárquico
+    val menuTopics = remember {
+        listOf(
+            MenuTopic(
+                id = "starters",
+                title = "Para começar",
+                categories = listOf(
+                    MenuCategory("entradas", "Entradas", "starters")
+                )
+            ),
+            MenuTopic(
+                id = "main",
+                title = "Pratos principais",
+                categories = listOf(
+                    MenuCategory("pratos", "Pratos Principais", "main")
+                )
+            ),
+            MenuTopic(
+                id = "drinks",
+                title = "Bebidas",
+                categories = listOf(
+                    MenuCategory("bebidas", "Bebidas", "drinks")
+                )
+            ),
+            MenuTopic(
+                id = "desserts",
+                title = "Sobremesas",
+                categories = listOf(
+                    MenuCategory("sobremesas", "Sobremesas", "desserts")
+                )
+            )
+        )
+    }
     
     // Dados mockados de categorias
     val categories = remember {
@@ -145,18 +184,21 @@ fun CategoriesScreen(
             .fillMaxSize()
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
-        // Sidebar fixa à esquerda (reutilizada da Home)
+        // Sidebar fixa à esquerda (novo menu hierárquico)
         Box(
             modifier = Modifier
                 .width(280.dp)
                 .fillMaxHeight()
         ) {
-            Sidebar(
-                modifier = Modifier.fillMaxSize(),
-                isVisible = true,
-                onStartOrderClick = {
-                    // Já estamos na tela de categorias, não precisa navegar
-                }
+            OrderFlowSidebar(
+                topics = menuTopics,
+                selectedCategoryId = selectedCategoryId,
+                onCategoryClick = { categoryId ->
+                    // Navegação direta para a listagem da categoria
+                    selectedCategoryId = categoryId
+                    onNavigateToCategory(categoryId)
+                },
+                modifier = Modifier.fillMaxSize()
             )
             
             // Borda sutil à direita
