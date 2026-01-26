@@ -167,8 +167,7 @@ fun VerPratoScreen(
             Column(
                 modifier = Modifier
                     .weight(1.45f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxHeight()
             ) {
                 // 1) Imagem do prato com altura fixa (aumentada para maior destaque)
                 ProductImage(
@@ -178,11 +177,12 @@ fun VerPratoScreen(
                         .height(400.dp)
                 )
                 
-                // 2) PriceHeader (preço sempre unitário, fixo)
+                // 2) PriceHeader (preço sempre unitário, fixo) - espaçamento reduzido abaixo da imagem
                 PriceHeader(
                     name = productName,
                     category = productCategory,
-                    price = productPrice
+                    price = productPrice,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
                 
                 // 3) Descrição curta (máximo 2 linhas)
@@ -193,7 +193,8 @@ fun VerPratoScreen(
                     color = SpeedMenuColors.TextSecondary,
                     fontSize = 15.sp,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 16.dp)
                 )
                 
                 // 4) Indicação discreta de ingredientes (1 linha)
@@ -210,7 +211,8 @@ fun VerPratoScreen(
                     color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
                     fontSize = 13.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
             
