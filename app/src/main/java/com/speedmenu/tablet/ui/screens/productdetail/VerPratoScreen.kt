@@ -170,19 +170,19 @@ fun VerPratoScreen(
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 1) Imagem do prato com altura fixa
+                // 1) Imagem do prato com altura fixa (aumentada para maior destaque)
                 ProductImage(
                     imageResId = productImageResId,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(320.dp)
+                        .height(400.dp)
                 )
                 
-                // 2) PriceHeader
+                // 2) PriceHeader (preço sempre unitário, fixo)
                 PriceHeader(
                     name = productName,
                     category = productCategory,
-                    price = productPrice * quantity
+                    price = productPrice
                 )
                 
                 // 3) Descrição curta (máximo 2 linhas)
@@ -221,129 +221,62 @@ fun VerPratoScreen(
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 1) Seção "Ingredientes" (compacta, máximo 6 itens visíveis)
-                val visibleIngredients = ingredientQuantities.take(6)
-                val remainingCount = ingredientQuantities.size - 6
+                // 1) Seção "Ingredientes" (accordion - inicia fechada)
                 val activeCount = ingredientQuantities.count { it.quantity > 0 }
                 val totalCount = ingredientQuantities.size
+                var isIngredientsExpanded by remember { mutableStateOf(false) }
                 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp) // Margin top para não encostar no topo
-                        .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(12.dp)
+                AccordionSection(
+                    title = "Ingredientes",
+                    icon = Icons.Default.Restaurant,
+                    expanded = isIngredientsExpanded,
+                    onExpandedChange = { isIngredientsExpanded = it },
+                    summary = "$activeCount de $totalCount ingredientes",
+                    modifier = Modifier.fillMaxWidth()
                 ) {
+                    // Lista de ingredientes
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
-                        // Header: Ícone + Título + Subtexto
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Restaurant,
-                                    contentDescription = null,
-                                    tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.6f),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "Ingredientes",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = SpeedMenuColors.TextPrimary,
-                                    fontSize = 14.sp
-                                )
-                            }
-                            // Subtexto: "3 de 6 ingredientes"
-                            Text(
-                                text = "$activeCount de $totalCount ingredientes",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Normal,
-                                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.7f),
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(start = 22.dp) // Alinhado com o título
-                            )
-                        }
-                        
-                        // Lista de ingredientes (máximo 6)
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(0.dp)
-                        ) {
-                            visibleIngredients.forEachIndexed { index, ingredient ->
-                                if (index > 0) {
-                                    // Divisória sutil entre itens
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(1.dp)
-                                            .background(
-                                                color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
-                                            )
-                                    )
-                                }
-                                
-                                // Item com padding vertical de 10.dp
+                        ingredientQuantities.forEachIndexed { index, ingredient ->
+                            if (index > 0) {
+                                // Divisória sutil entre itens
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 10.dp)
-                                ) {
-                                    IngredientQuantityItem(
-                                        name = ingredient.name,
-                                        quantity = ingredient.quantity,
-                                        isBase = ingredient.isBase,
-                                        maxQuantity = 5,
-                                        onQuantityChange = { newQuantity ->
+                                        .height(1.dp)
+                                        .background(
+                                            color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
+                                        )
+                                )
+                            }
+                            
+                            // Item com padding vertical de 10.dp
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                            ) {
+                                IngredientQuantityItem(
+                                    name = ingredient.name,
+                                    quantity = ingredient.quantity,
+                                    isBase = ingredient.isBase,
+                                    maxQuantity = 5,
+                                    onQuantityChange = { newQuantity ->
+                                        val actualIndex = ingredientQuantities.indexOf(ingredient)
+                                        if (actualIndex >= 0) {
+                                            ingredientQuantities[actualIndex] = ingredient.copy(quantity = newQuantity)
+                                        }
+                                    },
+                                    onRemoveBaseIngredient = if (ingredient.isBase) {
+                                        {
                                             val actualIndex = ingredientQuantities.indexOf(ingredient)
                                             if (actualIndex >= 0) {
-                                                ingredientQuantities[actualIndex] = ingredient.copy(quantity = newQuantity)
+                                                pendingIngredientIndex = actualIndex
+                                                showRemoveBaseIngredientDialog = true
                                             }
-                                        },
-                                        onRemoveBaseIngredient = if (ingredient.isBase) {
-                                            {
-                                                val actualIndex = ingredientQuantities.indexOf(ingredient)
-                                                if (actualIndex >= 0) {
-                                                    pendingIngredientIndex = actualIndex
-                                                    showRemoveBaseIngredientDialog = true
-                                                }
-                                            }
-                                        } else null
-                                    )
-                                }
-                            }
-                        }
-                        
-                        // Botão "+N itens" se houver mais de 6
-                        if (remainingCount > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(
-                                        color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
-                                    )
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { showIngredientsModal = true }
-                                    .padding(vertical = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "+$remainingCount itens",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Medium,
-                                    color = SpeedMenuColors.PrimaryLight,
-                                    fontSize = 14.sp
+                                        }
+                                    } else null
                                 )
                             }
                         }
@@ -404,8 +337,9 @@ fun VerPratoScreen(
                 // Spacer para empurrar CTA para o rodapé
                 Spacer(modifier = Modifier.weight(1f))
                 
-                // 4) CTA fixo no rodapé
+                // 4) CTA fixo no rodapé (com espaçamento inferior)
                 PrimaryCTA(
+                    modifier = Modifier.padding(bottom = 24.dp),
                     text = if (isAddedToCart) "Adicionado ao pedido" else "Adicionar ao pedido",
                     price = if (isAddedToCart) 0.0 else productPrice * quantity,
                     onClick = {

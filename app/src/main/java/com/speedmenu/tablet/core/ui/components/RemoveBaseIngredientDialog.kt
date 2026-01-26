@@ -113,7 +113,7 @@ fun RemoveBaseIngredientDialog(
 
                     // Mensagem
                     Text(
-                        text = "Tem certeza que deseja remover '$ingredientName' do prato?",
+                        text = "Tem certeza que deseja remover '$ingredientName' do prato? É um dos ingredientes principais",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Normal,
                         color = SpeedMenuColors.TextSecondary.copy(alpha = 0.75f),
