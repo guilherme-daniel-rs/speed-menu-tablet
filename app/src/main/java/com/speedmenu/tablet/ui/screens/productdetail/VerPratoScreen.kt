@@ -59,7 +59,6 @@ import com.speedmenu.tablet.core.ui.components.IngredientQuantityItem
 import com.speedmenu.tablet.core.ui.components.MinimalTextField
 import com.speedmenu.tablet.core.ui.components.DiscreteToast
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
-import com.speedmenu.tablet.core.ui.components.PriceHeader
 import com.speedmenu.tablet.core.ui.components.QuantityStepper
 import com.speedmenu.tablet.core.ui.components.RemoveBaseIngredientDialog
 import com.speedmenu.tablet.core.ui.components.TopActionBar
@@ -164,54 +163,85 @@ fun VerPratoScreen(
             verticalAlignment = Alignment.Top
         ) {
             // ========== COLUNA ESQUERDA (weight 1.45f) ==========
-            Column(
+            // Imagem ocupa 100% da altura disponível
+            Box(
                 modifier = Modifier
                     .weight(1.45f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxHeight()
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
             ) {
-                // 1) Imagem do prato com altura fixa (aumentada para maior destaque)
-                ProductImage(
+                // Imagem de fundo
+                HeroImage(
                     imageResId = productImageResId,
+                    modifier = Modifier.fillMaxSize()
+                )
+                
+                // Gradiente suave e elegante apenas na base (transição longa e natural)
+                Box(
                     modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Transparent,
+                                    Color.Transparent,
+                                    Color.Transparent,
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.15f),
+                                    Color.Black.copy(alpha = 0.35f),
+                                    Color.Black.copy(alpha = 0.55f),
+                                    Color.Black.copy(alpha = 0.70f),
+                                    Color.Black.copy(alpha = 0.80f)
+                                ),
+                                startY = 0f,
+                                endY = Float.POSITIVE_INFINITY
+                            )
+                        )
+                )
+                
+                // Bloco de texto integrado (canto inferior esquerdo)
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
                         .fillMaxWidth()
-                        .height(400.dp)
-                )
-                
-                // 2) PriceHeader (preço sempre unitário, fixo)
-                PriceHeader(
-                    name = productName,
-                    category = productCategory,
-                    price = productPrice
-                )
-                
-                // 3) Descrição curta (máximo 2 linhas)
-                Text(
-                    text = productDescription,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary,
-                    fontSize = 15.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                
-                // 4) Indicação discreta de ingredientes (1 linha)
-                val activeIngredientsCount = ingredientQuantities.count { it.quantity > 0 }
-                val totalIngredientsCount = ingredientQuantities.size
-                Text(
-                    text = if (activeIngredientsCount < totalIngredientsCount) {
-                        "Ingredientes: $activeIngredientsCount itens ($totalIngredientsCount disponíveis)"
-                    } else {
-                        "Ingredientes: $activeIngredientsCount itens"
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                        .padding(start = 28.dp, end = 28.dp, bottom = 28.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    // Nome do prato (hierarquia principal)
+                    Text(
+                        text = productName,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        fontSize = 36.sp,
+                        lineHeight = 42.sp
+                    )
+                    
+                    // Categoria (hierarquia secundária)
+                    Text(
+                        text = productCategory,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.White.copy(alpha = 0.75f),
+                        fontSize = 15.sp,
+                        lineHeight = 20.sp
+                    )
+                    
+                    // Descrição (hierarquia terciária, máximo 2 linhas)
+                    Text(
+                        text = productDescription,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.White.copy(alpha = 0.70f),
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
             
             // ========== COLUNA DIREITA (weight 0.55f) ==========
@@ -334,12 +364,29 @@ fun VerPratoScreen(
                     onQuantityChange = { quantity = it }
                 )
                 
-                // Spacer para empurrar CTA para o rodapé
+                // Spacer para posicionar preço e CTA mais próximos do centro vertical
                 Spacer(modifier = Modifier.weight(1f))
                 
-                // 4) CTA fixo no rodapé (com espaçamento inferior)
+                // 4) Preço destacado (acima do botão, sempre unitário)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = CurrencyFormatter.formatCurrencyBR(productPrice),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = SpeedMenuColors.PrimaryLight,
+                        fontSize = 24.sp
+                    )
+                }
+                
+                // 5) CTA (com respiro inferior)
                 PrimaryCTA(
-                    modifier = Modifier.padding(bottom = 24.dp),
+                    modifier = Modifier.padding(bottom = 32.dp),
                     text = if (isAddedToCart) "Adicionado ao pedido" else "Adicionar ao pedido",
                     price = if (isAddedToCart) 0.0 else productPrice * quantity,
                     onClick = {
