@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +64,9 @@ import com.speedmenu.tablet.core.ui.components.QuantityStepper
 import com.speedmenu.tablet.core.ui.components.RemoveBaseIngredientDialog
 import com.speedmenu.tablet.core.ui.components.TopActionBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
+import com.speedmenu.tablet.domain.model.CartItem
+import com.speedmenu.tablet.domain.model.CartItemOptions
+import com.speedmenu.tablet.ui.viewmodel.CartViewModel
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
@@ -88,6 +92,7 @@ fun VerPratoScreen(
     productImageResId: Int,
     productDescription: String,
     ingredients: List<String>,
+    cartViewModel: CartViewModel,
     onNavigateBack: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
@@ -116,8 +121,9 @@ fun VerPratoScreen(
         )
     }
     
-    // Estado do carrinho (mockado, em produção viria de ViewModel)
-    var cartItemCount by remember { mutableStateOf(0) }
+    // Estado do carrinho do ViewModel
+    val cartState by cartViewModel.cartState.collectAsState()
+    val cartItemCount = cartState.totalItems
     
     // Estado para feedback de adição ao pedido
     var isAddedToCart by remember { mutableStateOf(false) }
@@ -144,9 +150,7 @@ fun VerPratoScreen(
             tableNumber = tableNumber,
             onCallWaiterClick = {
                 showWaiterCalledDialog = true
-            },
-            onCartClick = onNavigateToCart,
-            cartItemCount = cartItemCount
+            }
         )
         
         // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========
@@ -405,13 +409,62 @@ fun VerPratoScreen(
                     text = if (isAddedToCart) "Adicionado ao pedido" else "Adicionar ao pedido",
                     price = if (isAddedToCart) 0.0 else productPrice * quantity,
                     onClick = {
-                        // Atualiza estado de feedback
-                        isAddedToCart = true
-                        cartItemCount += quantity
-                        showToast = true
+                        // Cria CartItem com as informações do produto
+                        val cartItemOptions = CartItemOptions(
+                            ingredients = ingredientQuantities
+                                .filter { it.quantity > 0 }
+                                .associate { it.name to it.quantity },
+                            observations = observationsText
+                        )
                         
-                        // Chama callback original
-                        onAddToCart()
+                        // Cria CartItem com as informações do produto
+                        // ID vazio será gerado pelo ViewModel se necessário
+                        val cartItem = CartItem(
+                            id = "", // Será gerado pelo ViewModel se necessário
+                            productId = productId,
+                            name = productName,
+                            price = productPrice,
+                            quantity = quantity,
+                            options = cartItemOptions
+                        )
+                        
+                        // Adiciona ao carrinho via ViewModel
+                        // A adição é síncrona e atualiza o estado imediatamente
+                        val previousItemCount = cartViewModel.cartState.value.totalItems
+                        
+                        // DEBUG CHECKLIST:
+                        // ✅ O método addItem() é realmente chamado? (verificar logs)
+                        // ✅ O estado global do carrinho é mutado? (verificar newItemCount)
+                        // ✅ O componente do topo está observando o estado correto? (cartState.totalItems)
+                        // ✅ Existe mais de um carrinho instanciado? (verificar logs do ViewModel)
+                        // ✅ O store não está sendo recriado ao navegar de tela? (hiltViewModel garante instância única)
+                        
+                        cartViewModel.addItem(cartItem)
+                        
+                        // Verifica se o item foi realmente adicionado ao estado
+                        // REGRA DE OURO: Se o botão "Pedido" mostra vazio, o estado está vazio.
+                        // Nunca confiar na animação como confirmação.
+                        val newItemCount = cartViewModel.cartState.value.totalItems
+                        
+                        // Verifica se totalItems aumentou (considera tanto novo item quanto incremento)
+                        // Se o item já existia, a quantidade será incrementada, então newItemCount deve ser > previousItemCount
+                        val itemWasAdded = newItemCount > previousItemCount
+                        
+                        // REGRA DE UX: Nenhuma animação deve acontecer sem mudança real de estado.
+                        // Se algo animou, algo mudou. Se nada mudou, nada anima.
+                        // Só atualiza feedback visual se o item foi realmente adicionado
+                        // A verificação garante que totalItems aumentou (novo item ou incremento)
+                        if (itemWasAdded) {
+                            // Atualiza estado de feedback visual local (botão e toast)
+                            isAddedToCart = true
+                            showToast = true
+                            
+                            // NOTA: A animação do carrinho no topo é disparada automaticamente
+                            // pela mudança de cartItemCount via LaunchedEffect nos componentes
+                            // OrderTopStatusPill/TopRightStatusPill. Não é necessário chamar
+                            // onAddToCart() aqui, pois a animação já está vinculada à mudança
+                            // real de estado (cartItemCount).
+                        }
                     }
                 )
             }

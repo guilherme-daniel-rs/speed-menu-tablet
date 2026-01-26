@@ -21,8 +21,6 @@ import androidx.compose.ui.unit.dp
  * @param isConnected Status da conexão (true = conectado, false = desconectado)
  * @param tableNumber Número da mesa (String, será formatado como "Mesa {number}")
  * @param onCallWaiterClick Callback quando o botão "Garçom" é clicado
- * @param onCartClick Callback quando o botão "Pedido" é clicado
- * @param cartItemCount Quantidade de itens no carrinho (0 = carrinho vazio, sem badge)
  * @param enabled Se o botão de garçom está habilitado (padrão: true)
  * @param topLeftContent Slot opcional para conteúdo do topo esquerdo (ex.: back button, breadcrumb)
  * @param content Conteúdo principal da tela
@@ -32,8 +30,6 @@ fun OrderFlowScaffold(
     isConnected: Boolean = true,
     tableNumber: String = "17",
     onCallWaiterClick: () -> Unit = {},
-    onCartClick: () -> Unit = {},
-    cartItemCount: Int = 0,
     enabled: Boolean = true,
     topLeftContent: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit
@@ -61,8 +57,6 @@ fun OrderFlowScaffold(
             isConnected = isConnected,
             tableNumber = tableNumber,
             onCallWaiterClick = onCallWaiterClick,
-            onCartClick = onCartClick,
-            cartItemCount = cartItemCount,
             enabled = enabled,
             modifier = Modifier
                 .align(Alignment.TopEnd)

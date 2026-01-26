@@ -391,9 +391,7 @@ private fun HomeContent(
                 TopRightStatusPill(
                     onWaiterClick = {
                         onShowWaiterDialog(true)
-                    },
-                    onCartClick = onNavigateToCart,
-                    cartItemCount = cartItemCount
+                    }
                 )
             }
         )

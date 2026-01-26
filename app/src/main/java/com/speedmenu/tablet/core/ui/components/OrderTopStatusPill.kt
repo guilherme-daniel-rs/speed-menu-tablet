@@ -1,7 +1,6 @@
 package com.speedmenu.tablet.core.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,18 +8,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
@@ -28,36 +23,29 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
-import kotlinx.coroutines.delay
 
 /**
  * Componente reutilizável de status no topo direito para o fluxo de pedidos.
- * Exibe: Status de conexão, Número da mesa, botão para chamar garçom e botão de pedido.
+ * Exibe: Status de conexão, Número da mesa e botão para chamar garçom.
  * 
  * Características:
  * - 100% reutilizável e independente de layout específico
  * - Posicionamento consistente (topo direito com padding)
  * - Visual premium com fundo translúcido e cantos arredondados
  * - Acessível com áreas clicáveis confortáveis e contentDescription
- * - Micro-interações suaves no botão de garçom e pedido
+ * - Micro-interações suaves no botão de garçom
  * 
  * @param isConnected Status da conexão (true = conectado, false = desconectado)
  * @param tableNumber Número da mesa (String ou Int, será formatado como "Mesa {number}")
  * @param onCallWaiterClick Callback quando o botão "Garçom" é clicado
- * @param onCartClick Callback quando o botão "Pedido" é clicado
- * @param cartItemCount Quantidade de itens no carrinho (0 = carrinho vazio, sem badge)
  * @param enabled Se o botão de garçom está habilitado (padrão: true)
  * @param modifier Modifier para customização adicional
  */
@@ -66,8 +54,6 @@ fun OrderTopStatusPill(
     isConnected: Boolean = true,
     tableNumber: String = "17", // Aceita String para flexibilidade
     onCallWaiterClick: () -> Unit = {},
-    onCartClick: () -> Unit = {},
-    cartItemCount: Int = 0,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -201,103 +187,6 @@ fun OrderTopStatusPill(
                 )
             }
 
-            // Divisor sutil
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(24.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
-            )
-
-            // Ação rápida: Ver pedido (com micro-interação)
-            val cartInteractionSource = remember { MutableInteractionSource() }
-            val isCartPressed by cartInteractionSource.collectIsPressedAsState()
-            
-            // Animação de scale quando cartItemCount aumenta
-            var previousCount by remember { mutableStateOf(cartItemCount) }
-            var shouldAnimate by remember { mutableStateOf(false) }
-            val scale by animateFloatAsState(
-                targetValue = if (shouldAnimate) 1.05f else 1.0f,
-                animationSpec = tween(250),
-                label = "cart_scale"
-            )
-            
-            // Detecta aumento no cartItemCount e anima
-            LaunchedEffect(cartItemCount) {
-                if (cartItemCount > previousCount && cartItemCount > 0) {
-                    shouldAnimate = true
-                    kotlinx.coroutines.delay(250)
-                    shouldAnimate = false
-                }
-                previousCount = cartItemCount
-            }
-            
-            val cartIconColor by animateColorAsState(
-                targetValue = if (isCartPressed) {
-                    SpeedMenuColors.PrimaryLight
-                } else {
-                    SpeedMenuColors.PrimaryLight.copy(alpha = 0.8f)
-                },
-                animationSpec = tween(150),
-                label = "cart_icon_color"
-            )
-            
-            val cartTextColor by animateColorAsState(
-                targetValue = if (isCartPressed) {
-                    SpeedMenuColors.TextPrimary
-                } else {
-                    SpeedMenuColors.TextSecondary
-                },
-                animationSpec = tween(150),
-                label = "cart_text_color"
-            )
-            
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier
-                    .scale(scale)
-                    .clickable(
-                        interactionSource = cartInteractionSource,
-                        indication = null,
-                        onClick = onCartClick
-                    )
-            ) {
-                // Container para ícone com badge (garante espaço fixo)
-                Box(
-                    modifier = Modifier.size(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = "Ver pedido",
-                        tint = cartIconColor,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    
-                    // Badge discreto quando há itens no carrinho
-                    if (cartItemCount > 0) {
-                        // Badge circular pequeno no canto superior direito do ícone
-                        // Mostra apenas indicador visual (ponto) para manter discreto
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .offset(x = 4.dp, y = (-2).dp)
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    color = SpeedMenuColors.PrimaryLight
-                                )
-                        )
-                    }
-                }
-                Text(
-                    text = "Pedido",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = cartTextColor,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
         }
     }
 }

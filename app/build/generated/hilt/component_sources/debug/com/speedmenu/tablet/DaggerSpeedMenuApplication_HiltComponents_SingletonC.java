@@ -11,6 +11,8 @@ import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel;
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.speedmenu.tablet.ui.viewmodel.CartViewModel;
+import com.speedmenu.tablet.ui.viewmodel.CartViewModel_HiltModules_KeyModule_ProvideFactory;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
 import dagger.hilt.android.flags.HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule;
@@ -381,7 +383,7 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     @Override
     public Set<String> getViewModelKeys() {
-      return SetBuilder.<String>newSetBuilder(2).add(PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(SplashViewModel_HiltModules_KeyModule_ProvideFactory.provide()).build();
+      return SetBuilder.<String>newSetBuilder(3).add(CartViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(SplashViewModel_HiltModules_KeyModule_ProvideFactory.provide()).build();
     }
 
     @Override
@@ -407,6 +409,8 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     private final ViewModelCImpl viewModelCImpl = this;
 
+    private Provider<CartViewModel> cartViewModelProvider;
+
     private Provider<PlaceholderViewModel> placeholderViewModelProvider;
 
     private Provider<SplashViewModel> splashViewModelProvider;
@@ -424,13 +428,14 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
     @SuppressWarnings("unchecked")
     private void initialize(final SavedStateHandle savedStateHandleParam,
         final ViewModelLifecycle viewModelLifecycleParam) {
-      this.placeholderViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
-      this.splashViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.cartViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
+      this.placeholderViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.splashViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
     }
 
     @Override
     public Map<String, Provider<ViewModel>> getHiltViewModelMap() {
-      return MapBuilder.<String, Provider<ViewModel>>newMapBuilder(2).put("com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel", ((Provider) placeholderViewModelProvider)).put("com.speedmenu.tablet.ui.screens.splash.SplashViewModel", ((Provider) splashViewModelProvider)).build();
+      return MapBuilder.<String, Provider<ViewModel>>newMapBuilder(3).put("com.speedmenu.tablet.ui.viewmodel.CartViewModel", ((Provider) cartViewModelProvider)).put("com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel", ((Provider) placeholderViewModelProvider)).put("com.speedmenu.tablet.ui.screens.splash.SplashViewModel", ((Provider) splashViewModelProvider)).build();
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -454,10 +459,13 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel 
+          case 0: // com.speedmenu.tablet.ui.viewmodel.CartViewModel 
+          return (T) new CartViewModel();
+
+          case 1: // com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel 
           return (T) new PlaceholderViewModel();
 
-          case 1: // com.speedmenu.tablet.ui.screens.splash.SplashViewModel 
+          case 2: // com.speedmenu.tablet.ui.screens.splash.SplashViewModel 
           return (T) new SplashViewModel();
 
           default: throw new AssertionError(id);
@@ -543,7 +551,7 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
     }
 
     @Override
-    public void injectSpeedMenuApplication(SpeedMenuApplication arg0) {
+    public void injectSpeedMenuApplication(SpeedMenuApplication speedMenuApplication) {
     }
 
     @Override

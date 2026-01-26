@@ -49,9 +49,7 @@ fun CartEmptyScreen(
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,
-            onCallWaiterClick = {},
-            onCartClick = {},
-            cartItemCount = cartItemCount
+            onCallWaiterClick = {}
         )
         
         // Conteúdo centralizado

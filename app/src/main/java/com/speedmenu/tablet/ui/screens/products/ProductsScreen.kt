@@ -54,13 +54,11 @@ fun ProductsScreen(
     onNavigateToCart: () -> Unit = {},
     onNavigateToProductDetail: (String) -> Unit = {},
     onNavigateToCategory: (String) -> Unit = {}, // Navegação direta para outra categoria
-    onNavigateToHome: () -> Unit = {} // Callback para navegar para HOME
+    onNavigateToHome: () -> Unit = {}, // Callback para navegar para HOME
+    cartItemCount: Int = 0 // Quantidade de itens no carrinho (vem do ViewModel)
 ) {
     // Estado para controlar bottom sheet
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    
-    // Estado mockado do carrinho
-    var cartItemCount by remember { mutableStateOf(0) }
     
     // Estado para controlar visibilidade do dialog de garçom
     var showWaiterCalledDialog by remember { mutableStateOf(false) }
@@ -164,9 +162,7 @@ fun ProductsScreen(
             tableNumber = tableNumber,
             onCallWaiterClick = {
                 showWaiterCalledDialog = true
-            },
-            onCartClick = onNavigateToCart,
-            cartItemCount = cartItemCount
+            }
         )
         
         // ========== CONTEÚDO PRINCIPAL ==========
@@ -272,9 +268,9 @@ fun ProductsScreen(
                                     onNavigateToProductDetail(product.id)
                                 },
                                 onSelectClick = {
-                                    // Adiciona ao carrinho (mockado)
-                                    cartItemCount++
-                                    // TODO: Implementar lógica real de carrinho
+                                    // Navega para tela de detalhes do produto
+                                    // O carrinho será gerenciado na tela de detalhes
+                                    onNavigateToProductDetail(product.id)
                                 },
                                 badgeText = badgeText
                             )
@@ -291,9 +287,9 @@ fun ProductsScreen(
             product = product,
             onDismiss = { selectedProduct = null },
             onAddToCart = {
-                cartItemCount++
                 selectedProduct = null
-                // TODO: Implementar lógica real de carrinho
+                // TODO: Implementar lógica real de carrinho quando necessário
+                // Por enquanto, apenas fecha o bottom sheet
             }
         )
     }

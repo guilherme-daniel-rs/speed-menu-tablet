@@ -10,6 +10,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke;
 import androidx.compose.ui.text.font.FontWeight;
 import androidx.compose.ui.text.style.TextOverflow;
 import androidx.compose.ui.window.DialogProperties;
+import com.speedmenu.tablet.domain.model.CartItem;
+import com.speedmenu.tablet.domain.model.CartItemOptions;
+import com.speedmenu.tablet.ui.viewmodel.CartViewModel;
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors;
 import com.speedmenu.tablet.core.utils.CurrencyFormatter;
 
