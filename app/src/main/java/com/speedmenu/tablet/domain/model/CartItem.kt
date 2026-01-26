@@ -10,6 +10,7 @@ data class CartItem(
     val name: String,
     val price: Double,
     val quantity: Int,
+    val imageResId: Int = 0, // ID do recurso de imagem do prato
     val options: CartItemOptions = CartItemOptions()
 ) {
     /**

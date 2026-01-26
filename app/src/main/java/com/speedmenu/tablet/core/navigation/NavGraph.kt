@@ -228,8 +228,7 @@ fun NavGraph(
                         // TODO: Implementar lógica de finalizar pedido
                         // Por enquanto, apenas volta
                         navController.popBackStack()
-                    },
-                    cartItemCount = cartState.totalItems
+                    }
                 )
             }
         }

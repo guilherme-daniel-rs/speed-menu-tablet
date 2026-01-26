@@ -419,6 +419,7 @@ fun VerPratoScreen(
                             name = productName,
                             price = productPrice,
                             quantity = quantity,
+                            imageResId = productImageResId,
                             options = cartItemOptions
                         )
                         

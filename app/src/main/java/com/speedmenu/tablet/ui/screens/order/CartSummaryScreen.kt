@@ -1,12 +1,12 @@
 package com.speedmenu.tablet.ui.screens.order
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,23 +40,28 @@ import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
 
 /**
- * Tela de resumo do pedido.
- * Exibida quando o carrinho possui itens.
+ * Tela de carrinho - revisão do pedido antes de finalizar.
+ * Design clean, escuro e sofisticado com foco em clareza e elegância.
+ * 
+ * Estrutura:
+ * 1. Lista de produtos do carrinho
+ * 2. Resumo financeiro (subtotal e total)
+ * 3. Botão de finalizar pedido
  */
 @Composable
 fun CartSummaryScreen(
     items: List<CartItem> = emptyList(),
     cartViewModel: CartViewModel? = null,
     onNavigateBack: () -> Unit = {},
-    onFinishOrder: () -> Unit = {},
-    cartItemCount: Int = 0
+    onFinishOrder: () -> Unit = {}
 ) {
     // Estados mockados
     val isConnected = true
     val tableNumber = "17"
     
-    // Calcula total parcial
+    // Calcula valores
     val subtotal = items.sumOf { it.totalPrice }
+    val total = subtotal // Por enquanto, total = subtotal (taxa de serviço pode ser adicionada depois)
     
     Column(
         modifier = Modifier
@@ -68,273 +76,297 @@ fun CartSummaryScreen(
             onCallWaiterClick = {}
         )
         
-        // Conteúdo scrollável
+        // Título "Seu pedido"
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp, vertical = 24.dp)
+        ) {
+            Text(
+                text = "Seu pedido",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = SpeedMenuColors.TextPrimary,
+                fontSize = 28.sp
+            )
+        }
+        
+        // Divisor visual entre título e lista
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.2f))
+        )
+        
+        // Lista de produtos (scrollável)
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(horizontal = 32.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Título - elegante e confiante
-            Text(
-                text = "Seu pedido",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.SemiBold, // Menos pesado que Bold
-                color = SpeedMenuColors.TextPrimary.copy(alpha = 0.95f), // Ligeiramente mais suave
-                fontSize = 30.sp, // Ligeiramente menor
-                letterSpacing = 0.3.sp // Espaçamento refinado
-            )
-            
-            // Lista de itens
-            if (items.isEmpty()) {
-                // Estado vazio (não deveria aparecer, mas por segurança)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 48.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Nenhum item no pedido",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = SpeedMenuColors.TextSecondary,
-                        fontSize = 16.sp
-                    )
-                }
-            } else {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items.forEach { item ->
-                        CartItemRow(
-                            item = item,
-                            cartViewModel = cartViewModel,
-                            onRemoveItem = {
-                                cartViewModel?.removeItem(item.id)
-                            },
-                            onUpdateQuantity = { newQuantity ->
-                                cartViewModel?.updateItemQuantity(item.id, newQuantity)
-                            }
-                        )
+            items.forEach { item ->
+                CartItemRow(
+                    item = item,
+                    onRemoveItem = {
+                        cartViewModel?.removeItem(item.id)
+                    },
+                    onUpdateQuantity = { newQuantity ->
+                        cartViewModel?.updateItemQuantity(item.id, newQuantity)
                     }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Resumo de valores - premium e discreto
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = SpeedMenuColors.Surface.copy(alpha = 0.12f), // Mais sutil
-                        shape = RoundedCornerShape(18.dp) // Mais suave
-                    )
-                    .padding(24.dp) // Mais espaçoso
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Subtotal
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Subtotal",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.TextSecondary,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = CurrencyFormatter.formatCurrencyBR(subtotal),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
-                            fontSize = 16.sp
-                        )
-                    }
-                    
-                    // Taxa de serviço (opcional, pode ser adicionada depois)
-                    // Total
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Total",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold, // Menos pesado
-                            color = SpeedMenuColors.TextPrimary.copy(alpha = 0.95f),
-                            fontSize = 19.sp,
-                            letterSpacing = 0.2.sp
-                        )
-                        Text(
-                            text = CurrencyFormatter.formatCurrencyBR(subtotal),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold, // Menos pesado
-                            color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.9f), // Mais suave
-                            fontSize = 19.sp,
-                            letterSpacing = 0.2.sp
-                        )
-                    }
-                }
+                )
             }
         }
         
-        // CTA fixo no rodapé
+        // Divisor visual entre lista e resumo financeiro
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 24.dp)
+                .height(1.dp)
+                .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.2f))
+        )
+        
+        // Resumo financeiro (fixo, não rola) - área fixa na parte inferior
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = SpeedMenuColors.Surface.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                )
+                .padding(horizontal = 32.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Subtotal (menor destaque visual)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Subtotal",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Normal,
+                    color = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                    fontSize = 15.sp
+                )
+                Text(
+                    text = CurrencyFormatter.formatCurrencyBR(subtotal),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Normal,
+                    color = SpeedMenuColors.TextSecondary,
+                    fontSize = 15.sp
+                )
+            }
+            
+            // Divisor entre subtotal e total
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.3f))
+            )
+            
+            // Total (maior destaque tipográfico e cor)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Total",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = SpeedMenuColors.TextPrimary,
+                    fontSize = 24.sp
+                )
+                Text(
+                    text = CurrencyFormatter.formatCurrencyBR(total),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = SpeedMenuColors.PrimaryLight,
+                    fontSize = 24.sp
+                )
+            }
+            
+            // Botão "Finalizar pedido" logo abaixo do Total
             PrimaryCTA(
                 text = "Finalizar pedido",
-                price = subtotal,
+                price = total,
                 onClick = onFinishOrder,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             )
         }
+        
+        // Espaçamento confortável entre botão e limite inferior da tela
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp)
+        )
     }
 }
 
 /**
- * Linha de item do carrinho com controles de quantidade e remoção.
+ * Linha de item do carrinho.
+ * Layout: [Imagem à esquerda] | [Informações à direita da imagem] | [Preço total no canto direito]
  */
 @Composable
 private fun CartItemRow(
     item: CartItem,
-    cartViewModel: CartViewModel?,
     onRemoveItem: () -> Unit,
     onUpdateQuantity: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(
-                color = SpeedMenuColors.Surface.copy(alpha = 0.08f), // Mais sutil
-                shape = RoundedCornerShape(14.dp) // Mais suave
-            )
-            .padding(18.dp) // Mais espaçoso
+            .padding(vertical = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        verticalAlignment = Alignment.Top
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        // ========== IMAGEM DO PRATO (esquerda) ==========
+        if (item.imageResId != 0) {
+            Image(
+                painter = painterResource(id = item.imageResId),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
+        
+        // ========== INFORMAÇÕES DO PRATO (direita da imagem) ==========
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Informações do item
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
+            // Nome do prato (destaque principal)
+            Text(
+                text = item.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = SpeedMenuColors.TextPrimary,
+                fontSize = 18.sp
+            )
+            
+            // Quantidade × Preço unitário
+            Text(
+                text = "${item.quantity} × ${CurrencyFormatter.formatCurrencyBR(item.price)}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Normal,
+                color = SpeedMenuColors.TextSecondary,
+                fontSize = 15.sp
+            )
+            
+            // Seção "Observações" (se houver observações ou ingredientes)
+            val hasObservations = item.options.observations.isNotBlank()
+            val hasIngredients = item.options.ingredients.isNotEmpty()
+            
+            if (hasObservations || hasIngredients) {
+                // Constrói lista de itens separados por vírgula
+                val itemsList = mutableListOf<String>()
+                
+                // Adiciona observações
+                if (hasObservations) {
+                    itemsList.add(item.options.observations)
+                }
+                
+                // Adiciona ingredientes (ajustes e modificações)
+                item.options.ingredients.forEach { (ingredientName, quantity) ->
+                    val ingredientText = when {
+                        quantity > 1 -> "$ingredientName (${quantity}x)"
+                        quantity == 1 -> ingredientName
+                        else -> "Sem $ingredientName"
+                    }
+                    itemsList.add(ingredientText)
+                }
+                
+                // Exibe tudo em uma única linha
                 Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium, // Mais leve
-                    color = SpeedMenuColors.TextPrimary.copy(alpha = 0.95f), // Ligeiramente mais suave
-                    fontSize = 16.sp,
-                    letterSpacing = 0.1.sp
-                )
-                Text(
-                    text = "${item.quantity}x ${CurrencyFormatter.formatCurrencyBR(item.price)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Light, // Mais leve
-                    color = SpeedMenuColors.TextSecondary.copy(alpha = 0.75f), // Mais discreto
-                    fontSize = 14.sp,
-                    letterSpacing = 0.2.sp
+                    text = "Observações: ${itemsList.joinToString(", ")}",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Normal,
+                    color = SpeedMenuColors.TextTertiary,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
             
-            // Controles de quantidade e preço
+            // Controles de quantidade (discretos, abaixo das informações)
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 8.dp)
             ) {
-                // Controles de quantidade (discretos)
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                // Botão diminuir
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .clickable {
+                            if (item.quantity > 1) {
+                                onUpdateQuantity(item.quantity - 1)
+                            } else {
+                                onRemoveItem()
+                            }
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Botão diminuir
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = SpeedMenuColors.Surface.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable {
-                                if (item.quantity > 1) {
-                                    onUpdateQuantity(item.quantity - 1)
-                                } else {
-                                    onRemoveItem()
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Remove,
-                            contentDescription = "Diminuir quantidade",
-                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    
-                    // Quantidade
-                    Text(
-                        text = "${item.quantity}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.TextPrimary,
-                        fontSize = 15.sp,
-                        modifier = Modifier.width(24.dp)
+                    Icon(
+                        imageVector = Icons.Default.Remove,
+                        contentDescription = "Diminuir quantidade",
+                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                        modifier = Modifier.size(16.dp)
                     )
-                    
-                    // Botão aumentar
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = SpeedMenuColors.Surface.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable {
-                                onUpdateQuantity(item.quantity + 1)
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Aumentar quantidade",
-                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
                 }
                 
-                // Preço total do item - discreto mas claro
+                // Quantidade
                 Text(
-                    text = CurrencyFormatter.formatCurrencyBR(item.totalPrice),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium, // Mais leve
-                    color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.85f), // Mais suave
-                    fontSize = 16.sp,
-                    letterSpacing = 0.1.sp,
-                    modifier = Modifier.width(80.dp)
+                    text = "${item.quantity}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = SpeedMenuColors.TextPrimary,
+                    fontSize = 15.sp,
+                    modifier = Modifier.width(24.dp)
                 )
+                
+                // Botão aumentar
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .clickable {
+                            onUpdateQuantity(item.quantity + 1)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Aumentar quantidade",
+                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
                 
                 // Botão remover (discreto)
                 Box(
                     modifier = Modifier
                         .size(32.dp)
                         .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                            color = SpeedMenuColors.Surface.copy(alpha = 0.12f),
                             shape = RoundedCornerShape(8.dp)
                         )
                         .clickable(onClick = onRemoveItem),
@@ -343,11 +375,28 @@ private fun CartItemRow(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Remover item",
-                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.6f),
+                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f),
                         modifier = Modifier.size(16.dp)
                     )
                 }
             }
+        }
+        
+        // ========== PREÇO TOTAL DO ITEM (canto direito) ==========
+        // Alinhamento consistente e destaque visual
+        Box(
+            modifier = Modifier
+                .width(120.dp)
+                .padding(start = 16.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            Text(
+                text = CurrencyFormatter.formatCurrencyBR(item.totalPrice),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = SpeedMenuColors.PrimaryLight,
+                fontSize = 20.sp
+            )
         }
     }
 }
