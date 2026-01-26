@@ -15,6 +15,9 @@ public final class ProductsHeaderKt {
      * Header da tela de produtos.
      * Contém título, subtítulo e botão de carrinho (CTA oficial e único de acesso ao carrinho).
      * Botão "Voltar para categorias" removido - navegação apenas via sidebar.
+     *
+     * REGRA DE CONSISTÊNCIA: O botão de carrinho SEMPRE aparece, independentemente do estado
+     * (vazio ou com itens), garantindo previsibilidade e UX profissional.
      */
     @androidx.compose.runtime.Composable()
     public static final void ProductsHeader(@org.jetbrains.annotations.NotNull()

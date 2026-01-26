@@ -84,7 +84,7 @@ fun CartEmptyScreen(
                 
                 // Mensagem principal - elegante e discreta
                 Text(
-                    text = "Seu pedido está vazio",
+                    text = "O carrinho está vazio",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Medium, // Mais leve que SemiBold
                     color = SpeedMenuColors.TextPrimary.copy(alpha = 0.9f), // Ligeiramente mais suave
