@@ -169,8 +169,13 @@ fun VerPratoScreen(
                     .weight(1.45f)
                     .fillMaxHeight()
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(18.dp))
+                    .padding(bottom = 20.dp)
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(18.dp))
+                ) {
                 // Imagem de fundo
                 HeroImage(
                     imageResId = productImageResId,
@@ -241,6 +246,7 @@ fun VerPratoScreen(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
+                }
                 }
             }
             
@@ -368,12 +374,11 @@ fun VerPratoScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 
                 // 4) Preço destacado (acima do botão, sempre unitário)
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalAlignment = Alignment.End
                 ) {
                     Text(
                         text = CurrencyFormatter.formatCurrencyBR(productPrice),
@@ -381,6 +386,14 @@ fun VerPratoScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = SpeedMenuColors.PrimaryLight,
                         fontSize = 24.sp
+                    )
+                    Text(
+                        text = "valor unitário",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Normal,
+                        color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                 }
                 
