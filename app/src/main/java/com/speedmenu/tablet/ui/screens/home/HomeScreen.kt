@@ -547,40 +547,6 @@ private fun HomeBanner() {
                 )
             }
         }
-
-
-        // ========== CAMADA 6: Conteúdo principal (texto) ==========
-        // Texto de destaque agrupado em Column, alinhado à direita
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(horizontal = 80.dp, vertical = 64.dp),
-            horizontalAlignment = Alignment.End
-        ) {
-            // Texto secundário: menor e mais leve
-            Text(
-                text = "Cremosamente",
-                style = MaterialTheme.typography.bodyMedium,
-                color = SpeedMenuColors.PrimaryLight, // Laranja claro (estilo gastronômico)
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Light,
-                letterSpacing = 1.2.sp
-            )
-
-            // Espaçamento aumentado para melhor hierarquia visual
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Texto principal: muito grande e bold para máximo impacto
-            Text(
-                text = "IRRESISTÍVEL!",
-                style = MaterialTheme.typography.displayLarge,
-                color = SpeedMenuColors.TextPrimary,
-                fontSize = 96.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 100.sp,
-                letterSpacing = (-1).sp
-            )
-        }
     }
 }
 
