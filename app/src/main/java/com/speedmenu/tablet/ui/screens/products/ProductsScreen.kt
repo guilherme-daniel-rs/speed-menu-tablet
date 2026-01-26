@@ -225,7 +225,7 @@ fun ProductsScreen(
                             )
                         )
                     )
-                    .padding(top = 18.dp)
+                    .padding(top = 8.dp) // Reduzido de 18.dp para aproximar do menu superior
                     .padding(horizontal = 24.dp)
             ) {
                 // ========== HEADER ==========

@@ -13,7 +13,7 @@ public final class ProductsHeaderKt {
     
     /**
      * Header da tela de produtos.
-     * Contém título, subtítulo e botão de pedido.
+     * Contém título, subtítulo e botão de carrinho (CTA oficial e único de acesso ao carrinho).
      * Botão "Voltar para categorias" removido - navegação apenas via sidebar.
      */
     @androidx.compose.runtime.Composable()

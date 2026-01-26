@@ -272,6 +272,8 @@ internal fun Sidebar(
                     .padding(horizontal = 28.dp) // Padding aplicado apenas nos itens secundários
             ) {
                 // Item 1: Ver meu pedido (com animação de entrada sutil)
+                // ATENÇÃO: Este é para VER PEDIDO JÁ CONFIRMADO, não o carrinho temporário
+                // Carrinho ≠ Ver pedido (são fluxos diferentes)
                 AnimatedVisibility(
                     visible = isVisible,
                     enter = fadeIn(
@@ -285,7 +287,7 @@ internal fun Sidebar(
                         text = "Ver meu pedido",
                         icon = Icons.Default.Visibility,
                         onClick = {
-                            // TODO: Implementar navegação para tela de pedido
+                            // TODO: Implementar navegação para tela de pedido confirmado
                         },
                         style = SidebarMenuItemStyle.SECONDARY,
                         modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
