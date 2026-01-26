@@ -7,18 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,20 +27,19 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.speedmenu.tablet.R
-import com.speedmenu.tablet.core.ui.components.ProductCard
+import com.speedmenu.tablet.core.ui.components.ProductListItem
 import com.speedmenu.tablet.core.ui.components.TopActionBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
+import com.speedmenu.tablet.ui.screens.products.ProductDetailsBottomSheet
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
-import com.speedmenu.tablet.ui.screens.home.MenuTopic
-import com.speedmenu.tablet.ui.screens.home.MenuCategory
 import com.speedmenu.tablet.ui.screens.home.MenuMockupScenario
 import com.speedmenu.tablet.ui.screens.home.getMenuMockup
 import com.speedmenu.tablet.ui.screens.home.getSelectedCategoryIdForScenario
 
 /**
  * Tela de listagem de produtos/pratos de uma categoria.
- * Layout minimalista e premium com foco em imagens e decisão rápida.
+ * Layout de lista vertical (1 prato por linha) focado em leitura, descrição longa e decisão rápida.
  */
 @Composable
 fun ProductsScreen(
@@ -237,17 +232,15 @@ fun ProductsScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                // ========== GRID DE PRODUTOS COM FADE-IN SUAVE ==========
+                // ========== LISTA VERTICAL DE PRODUTOS COM FADE-IN SUAVE ==========
                 Crossfade(
                     targetState = categoryName,
                     animationSpec = tween(durationMillis = 220), // Duração entre 200-250ms
                     label = "products_content_fade"
                 ) { currentCategory ->
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2), // 2 colunas para tablet
+                    LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                     ) {
                         items(products) { product ->
@@ -259,8 +252,9 @@ fun ProductsScreen(
                                 else -> null
                             }
                             
-                            ProductCard(
+                            ProductListItem(
                                 name = product.name,
+                                description = product.shortDescription,
                                 price = product.price,
                                 imageResId = product.imageResId,
                                 onClick = {
