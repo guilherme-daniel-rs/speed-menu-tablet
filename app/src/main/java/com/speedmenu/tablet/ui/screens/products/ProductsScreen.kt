@@ -50,7 +50,6 @@ fun ProductsScreen(
     categoryName: String,
     initialSelectedCategoryId: String? = null, // Categoria selecionada restaurada do savedStateHandle
     navController: androidx.navigation.NavController? = null, // NavController para observar savedStateHandle
-    onNavigateBack: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
     onNavigateToProductDetail: (String) -> Unit = {},
     onNavigateToCategory: (String) -> Unit = {}, // Navegação direta para outra categoria
@@ -107,7 +106,6 @@ fun ProductsScreen(
         mutableStateOf(
             initialSelectedCategoryId 
                 ?: categoryName.lowercase()
-                ?: getSelectedCategoryIdForScenario(mockupScenario)
         )
     }
     
@@ -266,7 +264,7 @@ fun ProductsScreen(
                     targetState = categoryName,
                     animationSpec = tween(durationMillis = 220), // Duração entre 200-250ms
                     label = "products_content_fade"
-                ) { currentCategory ->
+                ) { _ ->
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -347,8 +345,8 @@ fun ProductsScreen(
                     set("itemAddedEventId", "")
                     set("addedProductName", "")
                 }
-                // Navega diretamente para a tela de scanner de QRCode
-                navController?.navigate(com.speedmenu.tablet.core.navigation.Screen.QrScanner.route)
+                // Navega diretamente para a tela de scanner de QRCode no modo FINISH_ORDER
+                navController?.navigate(com.speedmenu.tablet.core.navigation.Screen.QrScanner.createRoute("finish_order"))
             },
             onContinueShopping = {
                 showItemAddedDialog = false

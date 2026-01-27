@@ -215,13 +215,16 @@ fun CartSummaryScreen(
 /**
  * Linha de item do carrinho.
  * Layout: [Imagem à esquerda] | [Informações à direita da imagem] | [Preço total no canto direito]
+ * 
+ * @param readOnly Se true, não mostra botões de quantidade/remover, apenas texto "Qtd: X"
  */
 @Composable
-private fun CartItemRow(
+fun CartItemRow(
     item: CartItem,
-    onRemoveItem: () -> Unit,
-    onUpdateQuantity: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    onRemoveItem: () -> Unit = {},
+    onUpdateQuantity: (Int) -> Unit = {},
+    modifier: Modifier = Modifier,
+    readOnly: Boolean = false
 ) {
     Row(
         modifier = modifier
@@ -299,85 +302,98 @@ private fun CartItemRow(
                 )
             }
             
-            // Controles de quantidade (discretos, abaixo das informações)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                // Botão diminuir
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .clickable {
-                            if (item.quantity > 1) {
-                                onUpdateQuantity(item.quantity - 1)
-                            } else {
-                                onRemoveItem()
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Remove,
-                        contentDescription = "Diminuir quantidade",
-                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-                
-                // Quantidade
+            // Controles de quantidade ou texto read-only
+            if (readOnly) {
+                // Modo read-only: apenas texto discreto "Qtd: X"
                 Text(
-                    text = "${item.quantity}",
+                    text = "Qtd: ${item.quantity}",
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = SpeedMenuColors.TextPrimary,
-                    fontSize = 15.sp,
-                    modifier = Modifier.width(24.dp)
+                    fontWeight = FontWeight.Normal,
+                    color = SpeedMenuColors.TextTertiary,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
-                
-                // Botão aumentar
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .clickable {
-                            onUpdateQuantity(item.quantity + 1)
-                        },
-                    contentAlignment = Alignment.Center
+            } else {
+                // Modo editável: botões de quantidade e remover
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Aumentar quantidade",
-                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-                
-                // Botão remover (discreto)
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.12f),
-                            shape = RoundedCornerShape(8.dp)
+                    // Botão diminuir
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(
+                                color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable {
+                                if (item.quantity > 1) {
+                                    onUpdateQuantity(item.quantity - 1)
+                                } else {
+                                    onRemoveItem()
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = "Diminuir quantidade",
+                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                            modifier = Modifier.size(16.dp)
                         )
-                        .clickable(onClick = onRemoveItem),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Remover item",
-                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f),
-                        modifier = Modifier.size(16.dp)
+                    }
+                    
+                    // Quantidade
+                    Text(
+                        text = "${item.quantity}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = SpeedMenuColors.TextPrimary,
+                        fontSize = 15.sp,
+                        modifier = Modifier.width(24.dp)
                     )
+                    
+                    // Botão aumentar
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(
+                                color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable {
+                                onUpdateQuantity(item.quantity + 1)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Aumentar quantidade",
+                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    
+                    // Botão remover (discreto)
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(
+                                color = SpeedMenuColors.Surface.copy(alpha = 0.12f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable(onClick = onRemoveItem),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Remover item",
+                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         }

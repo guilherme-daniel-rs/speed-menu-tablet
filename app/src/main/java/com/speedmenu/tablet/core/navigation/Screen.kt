@@ -40,8 +40,17 @@ sealed class Screen(val route: String) {
     object Cart : Screen("cart")
     
     /**
-     * Tela de scanner de QR Code para finalizar pedido
+     * Tela de scanner de QR Code para finalizar pedido ou ver pedido
      */
-    object QrScanner : Screen("qr_scanner")
+    object QrScanner : Screen("qr_scanner/{mode}") {
+        fun createRoute(mode: String) = "qr_scanner/$mode"
+    }
+    
+    /**
+     * Tela de visualização de pedido por comanda (read-only)
+     */
+    object ViewOrder : Screen("view_order/{comandaCode}") {
+        fun createRoute(comandaCode: String) = "view_order/$comandaCode"
+    }
 }
 

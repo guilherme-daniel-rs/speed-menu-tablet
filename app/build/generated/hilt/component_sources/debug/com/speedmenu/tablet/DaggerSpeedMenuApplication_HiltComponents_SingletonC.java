@@ -7,12 +7,16 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
 import com.speedmenu.tablet.core.di.AppModule;
+import com.speedmenu.tablet.data.repository.OrderRepositoryImpl;
+import com.speedmenu.tablet.domain.repository.OrderRepository;
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel;
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel;
+import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel_HiltModules_KeyModule_ProvideFactory;
 import dagger.hilt.android.ActivityRetainedLifecycle;
 import dagger.hilt.android.ViewModelLifecycle;
 import dagger.hilt.android.flags.HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule;
@@ -383,7 +387,7 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     @Override
     public Set<String> getViewModelKeys() {
-      return SetBuilder.<String>newSetBuilder(3).add(CartViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(SplashViewModel_HiltModules_KeyModule_ProvideFactory.provide()).build();
+      return SetBuilder.<String>newSetBuilder(4).add(CartViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(SplashViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(ViewOrderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).build();
     }
 
     @Override
@@ -415,6 +419,8 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     private Provider<SplashViewModel> splashViewModelProvider;
 
+    private Provider<ViewOrderViewModel> viewOrderViewModelProvider;
+
     private ViewModelCImpl(SingletonCImpl singletonCImpl,
         ActivityRetainedCImpl activityRetainedCImpl, SavedStateHandle savedStateHandleParam,
         ViewModelLifecycle viewModelLifecycleParam) {
@@ -431,11 +437,12 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
       this.cartViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
       this.placeholderViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
       this.splashViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.viewOrderViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
     }
 
     @Override
     public Map<String, Provider<ViewModel>> getHiltViewModelMap() {
-      return MapBuilder.<String, Provider<ViewModel>>newMapBuilder(3).put("com.speedmenu.tablet.ui.viewmodel.CartViewModel", ((Provider) cartViewModelProvider)).put("com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel", ((Provider) placeholderViewModelProvider)).put("com.speedmenu.tablet.ui.screens.splash.SplashViewModel", ((Provider) splashViewModelProvider)).build();
+      return MapBuilder.<String, Provider<ViewModel>>newMapBuilder(4).put("com.speedmenu.tablet.ui.viewmodel.CartViewModel", ((Provider) cartViewModelProvider)).put("com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel", ((Provider) placeholderViewModelProvider)).put("com.speedmenu.tablet.ui.screens.splash.SplashViewModel", ((Provider) splashViewModelProvider)).put("com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel", ((Provider) viewOrderViewModelProvider)).build();
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -467,6 +474,9 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
           case 2: // com.speedmenu.tablet.ui.screens.splash.SplashViewModel 
           return (T) new SplashViewModel();
+
+          case 3: // com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel 
+          return (T) new ViewOrderViewModel(singletonCImpl.bindOrderRepositoryProvider.get());
 
           default: throw new AssertionError(id);
         }
@@ -545,13 +555,24 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
   private static final class SingletonCImpl extends SpeedMenuApplication_HiltComponents.SingletonC {
     private final SingletonCImpl singletonCImpl = this;
 
+    private Provider<OrderRepositoryImpl> orderRepositoryImplProvider;
+
+    private Provider<OrderRepository> bindOrderRepositoryProvider;
+
     private SingletonCImpl() {
 
+      initialize();
 
     }
 
+    @SuppressWarnings("unchecked")
+    private void initialize() {
+      this.orderRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 0);
+      this.bindOrderRepositoryProvider = DoubleCheck.provider((Provider) orderRepositoryImplProvider);
+    }
+
     @Override
-    public void injectSpeedMenuApplication(SpeedMenuApplication arg0) {
+    public void injectSpeedMenuApplication(SpeedMenuApplication speedMenuApplication) {
     }
 
     @Override
@@ -567,6 +588,28 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
     @Override
     public ServiceComponentBuilder serviceComponentBuilder() {
       return new ServiceCBuilder(singletonCImpl);
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.speedmenu.tablet.data.repository.OrderRepositoryImpl 
+          return (T) new OrderRepositoryImpl();
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 }

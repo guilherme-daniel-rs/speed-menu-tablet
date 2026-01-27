@@ -49,6 +49,7 @@ import com.speedmenu.tablet.core.ui.components.TopActionBar
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
+import android.util.Log
 
 /**
  * Detecta se o app está rodando em um emulador Android.
@@ -75,13 +76,30 @@ private fun isRunningOnEmulator(): Boolean {
  * - Simula leitura de QR Code após 3 segundos OU
  * - Via gesto oculto: tocar 5x no retângulo de mira
  */
+/**
+ * Modo de uso do scanner de QR Code.
+ */
+enum class QrScannerMode {
+    /** Modo para finalizar pedido: mostra dialog de sucesso e navega para Home */
+    FINISH_ORDER,
+    /** Modo para ver pedido: navega direto para view_order */
+    VIEW_ORDER
+}
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun QrScannerScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToHome: () -> Unit
+    mode: QrScannerMode = QrScannerMode.VIEW_ORDER,
+    onNavigateToViewOrder: (String) -> Unit = {},
+    onNavigateToHome: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    
+    // Log do modo recebido
+    LaunchedEffect(mode) {
+        Log.d("QrScannerScreen", "🔍 Scanner aberto no modo: $mode")
+    }
     
     // Estado para controlar se já escaneou
     var hasScanned by remember { mutableStateOf(false) }
@@ -104,7 +122,7 @@ fun QrScannerScreen(
     
     // Permissão de câmera
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
-    val hasCameraPermission = when (val status = cameraPermissionState.status) {
+    val hasCameraPermission = when (cameraPermissionState.status) {
         is PermissionStatus.Granted -> true
         is PermissionStatus.Denied -> false
         else -> false
@@ -119,7 +137,21 @@ fun QrScannerScreen(
         if (!hasScanned) {
             hasScanned = true
             comandaCode = "COMANDA-TESTE-17"
-            showOrderPlacedDialog = true
+            Log.d("QrScannerScreen", "📱 Scan simulado - comandaCode: $comandaCode, modo: $mode")
+            
+            // Comportamento diferente baseado no modo
+            when (mode) {
+                QrScannerMode.FINISH_ORDER -> {
+                    Log.d("QrScannerScreen", "✅ Modo FINISH_ORDER - Mostrando dialog")
+                    // Mostra dialog de sucesso
+                    showOrderPlacedDialog = true
+                }
+                QrScannerMode.VIEW_ORDER -> {
+                    Log.d("QrScannerScreen", "👁️ Modo VIEW_ORDER - Navegando para view_order")
+                    // Navega diretamente para view_order
+                    onNavigateToViewOrder(comandaCode)
+                }
+            }
         }
     }
     
@@ -159,8 +191,28 @@ fun QrScannerScreen(
                     onBarcodeDetected = { barcodeValue ->
                         if (!hasScanned && barcodeValue.isNotBlank()) {
                             hasScanned = true
-                            comandaCode = barcodeValue
-                            showOrderPlacedDialog = true
+                            comandaCode = barcodeValue.trim()
+                            Log.d("QrScannerScreen", "📷 QR escaneado - comandaCode: $comandaCode, modo: $mode")
+                            
+                            // Comportamento diferente baseado no modo
+                            if (comandaCode.isNotBlank()) {
+                                when (mode) {
+                                    QrScannerMode.FINISH_ORDER -> {
+                                        Log.d("QrScannerScreen", "✅ Modo FINISH_ORDER - Mostrando dialog")
+                                        // Mostra dialog de sucesso
+                                        showOrderPlacedDialog = true
+                                    }
+                                    QrScannerMode.VIEW_ORDER -> {
+                                        Log.d("QrScannerScreen", "👁️ Modo VIEW_ORDER - Navegando para view_order")
+                                        // Navega diretamente para view_order
+                                        onNavigateToViewOrder(comandaCode)
+                                    }
+                                }
+                            } else {
+                                Log.w("QrScannerScreen", "⚠️ QR inválido (vazio) - resetando scan")
+                                // QR inválido - reseta o scan para tentar novamente
+                                hasScanned = false
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxSize()
@@ -264,16 +316,25 @@ fun QrScannerScreen(
         }
     }
     
-    // Dialog de pedido realizado
-    if (showOrderPlacedDialog) {
+    // Dialog de pedido realizado (apenas no modo FINISH_ORDER)
+    LaunchedEffect(mode, showOrderPlacedDialog) {
+        if (mode == QrScannerMode.FINISH_ORDER) {
+            Log.d("QrScannerScreen", "💬 Dialog estado - showOrderPlacedDialog: $showOrderPlacedDialog, modo: $mode")
+        }
+    }
+    
+    if (mode == QrScannerMode.FINISH_ORDER && showOrderPlacedDialog) {
+        Log.d("QrScannerScreen", "🎉 Renderizando OrderPlacedDialog")
         OrderPlacedDialog(
             visible = showOrderPlacedDialog,
             comandaCode = comandaCode,
             onDismiss = {
+                Log.d("QrScannerScreen", "❌ Dialog dismiss - navegando para Home")
                 showOrderPlacedDialog = false
                 onNavigateToHome()
             },
             onGoToHome = {
+                Log.d("QrScannerScreen", "🏠 Dialog onGoToHome - navegando para Home")
                 showOrderPlacedDialog = false
                 onNavigateToHome()
             }

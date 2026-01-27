@@ -79,6 +79,7 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 fun HomeScreen(
     onNavigateToCategories: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
+    onNavigateToViewOrder: () -> Unit = {},
     cartItemCount: Int = 0
 ) {
     // Estado para controlar animação de entrada
@@ -114,7 +115,8 @@ fun HomeScreen(
                 Sidebar(
                     modifier = Modifier.fillMaxSize(),
                     isVisible = isVisible,
-                    onStartOrderClick = onNavigateToCategories
+                    onStartOrderClick = onNavigateToCategories,
+                    onViewOrderClick = onNavigateToViewOrder
                 )
                 
                 // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
@@ -153,10 +155,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
-                        showWaiterDialog = showWaiterDialog,
-                        onShowWaiterDialog = { showWaiterDialog = it },
-                        onNavigateToCart = onNavigateToCart,
-                        cartItemCount = cartItemCount
+                        onShowWaiterDialog = { showWaiterDialog = it }
                     )
                 }
                 
@@ -180,7 +179,8 @@ fun HomeScreen(
 internal fun Sidebar(
     modifier: Modifier = Modifier,
     isVisible: Boolean = true,
-    onStartOrderClick: () -> Unit = {}
+    onStartOrderClick: () -> Unit = {},
+    onViewOrderClick: () -> Unit = {}
 ) {
     Box(modifier = modifier) {
         // ========== CAMADA 1: Gradiente vertical base refinado (dark → um pouco mais claro) ==========
@@ -286,9 +286,7 @@ internal fun Sidebar(
                     SidebarMenuItem(
                         text = "Ver meu pedido",
                         icon = Icons.Default.Visibility,
-                        onClick = {
-                            // TODO: Implementar navegação para tela de pedido confirmado
-                        },
+                        onClick = onViewOrderClick,
                         style = SidebarMenuItemStyle.SECONDARY,
                         modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
                     )
@@ -372,10 +370,7 @@ private fun RestaurantLogo() {
 @Composable
 private fun HomeContent(
     modifier: Modifier = Modifier,
-    showWaiterDialog: Boolean,
-    onShowWaiterDialog: (Boolean) -> Unit,
-    onNavigateToCart: () -> Unit = {},
-    cartItemCount: Int = 0
+    onShowWaiterDialog: (Boolean) -> Unit
 ) {
     Box(modifier = modifier) {
         // Banner principal com imagem de fundo

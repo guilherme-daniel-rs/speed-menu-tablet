@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import android.util.Log
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -21,9 +22,11 @@ import com.speedmenu.tablet.ui.screens.home.firstCategoryId
 import com.speedmenu.tablet.ui.screens.home.getMenuMockup
 import com.speedmenu.tablet.ui.screens.order.CartEmptyScreen
 import com.speedmenu.tablet.ui.screens.order.CartSummaryScreen
+import com.speedmenu.tablet.ui.screens.order.ViewOrderScreen
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderScreen
 import com.speedmenu.tablet.ui.screens.productdetail.VerPratoScreen
 import com.speedmenu.tablet.ui.screens.products.ProductsScreen
+import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerMode
 import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerScreen
 import com.speedmenu.tablet.ui.screens.splash.SplashScreen
 
@@ -58,7 +61,7 @@ fun NavGraph(
             )
         }
 
-        composable(route = Screen.Home.route) { backStackEntry ->
+        composable(route = Screen.Home.route) {
             HomeScreen(
                 onNavigateToCategories = {
                     // Navega diretamente para a primeira categoria do primeiro tópico
@@ -80,6 +83,10 @@ fun NavGraph(
                 },
                 onNavigateToCart = {
                     navController.navigate(Screen.Cart.route)
+                },
+                onNavigateToViewOrder = {
+                    // Navega para a tela de scanner de QR Code para escanear a comanda (modo VIEW_ORDER)
+                    navController.navigate(Screen.QrScanner.createRoute("view_order"))
                 },
                 cartItemCount = cartState.totalItems
             )
@@ -104,9 +111,6 @@ fun NavGraph(
                 categoryName = categoryName,
                 initialSelectedCategoryId = initialCategoryId, // Prioriza savedStateHandle para preservar estado ao voltar do prato
                 navController = navController,
-                onNavigateBack = {
-                    // Não usado - TopActionBar usa onNavigateToHome
-                },
                 onNavigateToCart = {
                     navController.navigate(Screen.Cart.route)
                 },
@@ -191,7 +195,7 @@ fun NavGraph(
             PlaceholderScreen()
         }
 
-        composable(route = Screen.Cart.route) { backStackEntry ->
+        composable(route = Screen.Cart.route) {
             if (cartState.items.isEmpty()) {
                 // Tela de pedido vazio
                 CartEmptyScreen(
@@ -226,22 +230,74 @@ fun NavGraph(
                         navController.popBackStack()
                     },
                     onFinishOrder = {
-                        // Navega para a tela de scanner de QR Code
-                        navController.navigate(Screen.QrScanner.route)
+                        // Navega para a tela de scanner de QR Code no modo FINISH_ORDER
+                        navController.navigate(Screen.QrScanner.createRoute("finish_order"))
                     }
                 )
             }
         }
 
-        composable(route = Screen.QrScanner.route) {
+        composable(
+            route = Screen.QrScanner.route,
+            arguments = listOf(
+                navArgument("mode") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            // Obtém o modo do parâmetro da rota
+            val modeParam = backStackEntry.arguments?.getString("mode") ?: "view_order"
+            val scannerMode = when (modeParam) {
+                "finish_order" -> QrScannerMode.FINISH_ORDER
+                "view_order" -> QrScannerMode.VIEW_ORDER
+                else -> {
+                    Log.w("NavGraph", "⚠️ Modo desconhecido: $modeParam, usando VIEW_ORDER como padrão")
+                    QrScannerMode.VIEW_ORDER
+                }
+            }
+            
+            Log.d("NavGraph", "🔍 QrScanner aberto - modeParam: $modeParam, scannerMode: $scannerMode")
+            
             QrScannerScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
+                mode = scannerMode,
+                onNavigateToViewOrder = { comandaCode ->
+                    Log.d("NavGraph", "👁️ onNavigateToViewOrder chamado - comandaCode: $comandaCode")
+                    // Navega para view_order removendo o scanner do backstack
+                    navController.navigate(Screen.ViewOrder.createRoute(comandaCode)) {
+                        // Remove o scanner do backstack para não voltar nele sem querer
+                        // Usa pattern matching para remover qualquer rota qr_scanner
+                        popUpTo("qr_scanner") { inclusive = true }
+                    }
+                },
                 onNavigateToHome = {
+                    Log.d("NavGraph", "🏠 onNavigateToHome chamado")
                     // Navega para Home limpando o backstack do fluxo de pedido
                     navController.navigate(Screen.Home.route) {
                         popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Screen.ViewOrder.route,
+            arguments = listOf(
+                navArgument("comandaCode") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val comandaCode = backStackEntry.arguments?.getString("comandaCode") ?: ""
+            
+            ViewOrderScreen(
+                comandaCode = comandaCode,
+                onNavigateBack = {
+                    // Volta para Home (não volta para o scanner)
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
                     }
                 }
             )
