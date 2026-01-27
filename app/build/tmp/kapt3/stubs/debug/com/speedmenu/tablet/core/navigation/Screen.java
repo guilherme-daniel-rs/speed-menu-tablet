@@ -4,7 +4,7 @@ package com.speedmenu.tablet.core.navigation;
  * Sealed class que define todas as rotas de navegação da aplicação.
  * Cada objeto representa uma tela do aplicativo.
  */
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000,\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0000\n\u0002\u0010\u000e\n\u0002\b\t\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0006\u0007\b\t\n\u000b\fB\u000f\b\u0004\u0012\u0006\u0010\u0002\u001a\u00020\u0003\u00a2\u0006\u0002\u0010\u0004R\u0011\u0010\u0002\u001a\u00020\u0003\u00a2\u0006\b\n\u0000\u001a\u0004\b\u0005\u0010\u0006\u0082\u0001\u0006\r\u000e\u000f\u0010\u0011\u0012\u00a8\u0006\u0013"}, d2 = {"Lcom/speedmenu/tablet/core/navigation/Screen;", "", "route", "", "(Ljava/lang/String;)V", "getRoute", "()Ljava/lang/String;", "Cart", "Home", "Placeholder", "ProductDetail", "Products", "Splash", "Lcom/speedmenu/tablet/core/navigation/Screen$Cart;", "Lcom/speedmenu/tablet/core/navigation/Screen$Home;", "Lcom/speedmenu/tablet/core/navigation/Screen$Placeholder;", "Lcom/speedmenu/tablet/core/navigation/Screen$ProductDetail;", "Lcom/speedmenu/tablet/core/navigation/Screen$Products;", "Lcom/speedmenu/tablet/core/navigation/Screen$Splash;", "app_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u00000\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0000\n\u0002\u0010\u000e\n\u0002\b\n\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0007\u0007\b\t\n\u000b\f\rB\u000f\b\u0004\u0012\u0006\u0010\u0002\u001a\u00020\u0003\u00a2\u0006\u0002\u0010\u0004R\u0011\u0010\u0002\u001a\u00020\u0003\u00a2\u0006\b\n\u0000\u001a\u0004\b\u0005\u0010\u0006\u0082\u0001\u0007\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u00a8\u0006\u0015"}, d2 = {"Lcom/speedmenu/tablet/core/navigation/Screen;", "", "route", "", "(Ljava/lang/String;)V", "getRoute", "()Ljava/lang/String;", "Cart", "Home", "Placeholder", "ProductDetail", "Products", "QrScanner", "Splash", "Lcom/speedmenu/tablet/core/navigation/Screen$Cart;", "Lcom/speedmenu/tablet/core/navigation/Screen$Home;", "Lcom/speedmenu/tablet/core/navigation/Screen$Placeholder;", "Lcom/speedmenu/tablet/core/navigation/Screen$ProductDetail;", "Lcom/speedmenu/tablet/core/navigation/Screen$Products;", "Lcom/speedmenu/tablet/core/navigation/Screen$QrScanner;", "Lcom/speedmenu/tablet/core/navigation/Screen$Splash;", "app_debug"})
 public abstract class Screen {
     @org.jetbrains.annotations.NotNull()
     private final java.lang.String route = null;
@@ -87,6 +87,18 @@ public abstract class Screen {
         public final java.lang.String createRoute(@org.jetbrains.annotations.NotNull()
         java.lang.String categoryName) {
             return null;
+        }
+    }
+    
+    /**
+     * Tela de scanner de QR Code para finalizar pedido
+     */
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\f\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\b\u00c6\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002\u00a8\u0006\u0003"}, d2 = {"Lcom/speedmenu/tablet/core/navigation/Screen$QrScanner;", "Lcom/speedmenu/tablet/core/navigation/Screen;", "()V", "app_debug"})
+    public static final class QrScanner extends com.speedmenu.tablet.core.navigation.Screen {
+        @org.jetbrains.annotations.NotNull()
+        public static final com.speedmenu.tablet.core.navigation.Screen.QrScanner INSTANCE = null;
+        
+        private QrScanner() {
         }
     }
     

@@ -17,10 +17,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.navigation.compose.currentBackStackEntryAsState
+import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -29,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.ProductListItem
 import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.ItemAddedDialog
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.ui.screens.products.ProductDetailsBottomSheet
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
@@ -45,6 +49,7 @@ import com.speedmenu.tablet.ui.screens.home.getSelectedCategoryIdForScenario
 fun ProductsScreen(
     categoryName: String,
     initialSelectedCategoryId: String? = null, // Categoria selecionada restaurada do savedStateHandle
+    navController: androidx.navigation.NavController? = null, // NavController para observar savedStateHandle
     onNavigateBack: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
     onNavigateToProductDetail: (String) -> Unit = {},
@@ -57,6 +62,30 @@ fun ProductsScreen(
     
     // Estado para controlar visibilidade do dialog de garçom
     var showWaiterCalledDialog by remember { mutableStateOf(false) }
+    
+    // Estado para controlar visibilidade do dialog de item adicionado
+    var showItemAddedDialog by remember { mutableStateOf(false) }
+    var productNameForDialog by remember { mutableStateOf<String?>(null) }
+    
+    // Observa savedStateHandle como StateFlow para detectar eventos de item adicionado
+    val currentBackStackEntry = navController?.currentBackStackEntryAsState()?.value
+    val eventId by remember(currentBackStackEntry) {
+        currentBackStackEntry?.savedStateHandle?.getStateFlow<String>("itemAddedEventId", "")
+            ?: MutableStateFlow("")
+    }.collectAsState()
+    
+    val addedProductName by remember(currentBackStackEntry) {
+        currentBackStackEntry?.savedStateHandle?.getStateFlow<String>("addedProductName", "")
+            ?: MutableStateFlow("")
+    }.collectAsState()
+    
+    // Dispara o dialog quando eventId mudar e NÃO for vazio
+    LaunchedEffect(eventId) {
+        if (eventId.isNotBlank()) {
+            productNameForDialog = if (addedProductName.isNotBlank()) addedProductName else null
+            showItemAddedDialog = true
+        }
+    }
     
     // Estados mockados (em produção viriam de um ViewModel)
     val isConnected = remember { true } // Mock: sempre conectado
@@ -295,6 +324,40 @@ fun ProductsScreen(
             visible = showWaiterCalledDialog,
             onDismiss = { showWaiterCalledDialog = false },
             onConfirm = { showWaiterCalledDialog = false }
+        )
+    }
+    
+    // Dialog de item adicionado ao carrinho
+    if (showItemAddedDialog) {
+        ItemAddedDialog(
+            visible = showItemAddedDialog,
+            productName = productNameForDialog,
+            onDismiss = {
+                showItemAddedDialog = false
+                // Limpa o evento SOMENTE ao fechar o dialog
+                currentBackStackEntry?.savedStateHandle?.apply {
+                    set("itemAddedEventId", "")
+                    set("addedProductName", "")
+                }
+            },
+            onFinishOrder = {
+                showItemAddedDialog = false
+                // Limpa o evento antes de navegar
+                currentBackStackEntry?.savedStateHandle?.apply {
+                    set("itemAddedEventId", "")
+                    set("addedProductName", "")
+                }
+                // Navega diretamente para a tela de scanner de QRCode
+                navController?.navigate(com.speedmenu.tablet.core.navigation.Screen.QrScanner.route)
+            },
+            onContinueShopping = {
+                showItemAddedDialog = false
+                // Limpa o evento ao continuar comprando
+                currentBackStackEntry?.savedStateHandle?.apply {
+                    set("itemAddedEventId", "")
+                    set("addedProductName", "")
+                }
+            }
         )
     }
 }

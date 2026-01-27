@@ -38,5 +38,10 @@ sealed class Screen(val route: String) {
      * Tela de pedido/carrinho
      */
     object Cart : Screen("cart")
+    
+    /**
+     * Tela de scanner de QR Code para finalizar pedido
+     */
+    object QrScanner : Screen("qr_scanner")
 }
 

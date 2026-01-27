@@ -24,6 +24,7 @@ import com.speedmenu.tablet.ui.screens.order.CartSummaryScreen
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderScreen
 import com.speedmenu.tablet.ui.screens.productdetail.VerPratoScreen
 import com.speedmenu.tablet.ui.screens.products.ProductsScreen
+import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerScreen
 import com.speedmenu.tablet.ui.screens.splash.SplashScreen
 
 /**
@@ -102,6 +103,7 @@ fun NavGraph(
             ProductsScreen(
                 categoryName = categoryName,
                 initialSelectedCategoryId = initialCategoryId, // Prioriza savedStateHandle para preservar estado ao voltar do prato
+                navController = navController,
                 onNavigateBack = {
                     // Não usado - TopActionBar usa onNavigateToHome
                 },
@@ -166,6 +168,7 @@ fun NavGraph(
                 productDescription = "Filé grelhado com molho especial e acompanhamentos",
                 ingredients = listOf("Filé mignon", "Molho especial", "Batatas", "Legumes", "Ervas"),
                 cartViewModel = cartViewModel,
+                navController = navController,
                 onNavigateBack = {
                     navController.popBackStack()
                 },
@@ -177,11 +180,9 @@ fun NavGraph(
                 onNavigateToCart = {
                     navController.navigate(Screen.Cart.route)
                 },
-                onAddToCart = {
-                    // A animação do carrinho é disparada automaticamente pela mudança
-                    // de estado (cartItemCount) via LaunchedEffect nos componentes.
-                    // Não é necessário fazer nada aqui - a animação já está vinculada
-                    // à mudança real de estado.
+                onAddToCart = { _ ->
+                    // A lógica de salvar no savedStateHandle agora é feita diretamente no VerPratoScreen
+                    // antes de fazer popBackStack, garantindo que o evento seja escrito no backStack correto
                 }
             )
         }
@@ -225,12 +226,25 @@ fun NavGraph(
                         navController.popBackStack()
                     },
                     onFinishOrder = {
-                        // TODO: Implementar lógica de finalizar pedido
-                        // Por enquanto, apenas volta
-                        navController.popBackStack()
+                        // Navega para a tela de scanner de QR Code
+                        navController.navigate(Screen.QrScanner.route)
                     }
                 )
             }
+        }
+
+        composable(route = Screen.QrScanner.route) {
+            QrScannerScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    // Navega para Home limpando o backstack do fluxo de pedido
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

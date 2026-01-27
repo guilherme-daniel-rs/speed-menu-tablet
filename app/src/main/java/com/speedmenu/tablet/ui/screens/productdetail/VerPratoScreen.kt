@@ -92,10 +92,11 @@ fun VerPratoScreen(
     productDescription: String,
     ingredients: List<String>,
     cartViewModel: CartViewModel,
+    navController: androidx.navigation.NavController? = null, // NavController para acessar previousBackStackEntry
     onNavigateBack: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
-    onAddToCart: () -> Unit = {}
+    onAddToCart: (String) -> Unit = {} // Agora recebe o nome do produto
 ) {
     // Estados locais
     var quantity by remember { mutableStateOf(1) }
@@ -450,15 +451,21 @@ fun VerPratoScreen(
                         // Só atualiza feedback visual se o item foi realmente adicionado
                         // A verificação garante que totalItems aumentou (novo item ou incremento)
                         if (itemWasAdded) {
-                            // Atualiza estado de feedback visual local (botão e toast)
-                            isAddedToCart = true
-                            showToast = true
+                            // Gera ID único para o evento
+                            val eventId = System.currentTimeMillis().toString()
                             
-                            // NOTA: A animação do carrinho no topo é disparada automaticamente
-                            // pela mudança de cartItemCount via LaunchedEffect nos componentes
-                            // OrderTopStatusPill/TopRightStatusPill. Não é necessário chamar
-                            // onAddToCart() aqui, pois a animação já está vinculada à mudança
-                            // real de estado (cartItemCount).
+                            // Escreve no previousBackStackEntry ANTES de fazer popBackStack
+                            // Isso garante que o ProductsScreen receberá o evento
+                            navController?.previousBackStackEntry?.savedStateHandle?.apply {
+                                set("itemAddedEventId", eventId)
+                                set("addedProductName", productName)
+                            }
+                            
+                            // Chama callback para notificar que item foi adicionado (passa o nome do produto)
+                            onAddToCart(productName)
+                            
+                            // Navega de volta para a tela anterior após adicionar ao carrinho
+                            onNavigateBack()
                         }
                     }
                 )
