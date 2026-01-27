@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
@@ -70,7 +70,8 @@ fun ViewOrderScreen(
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
         // Top Action Bar
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,
@@ -281,7 +282,8 @@ private fun ViewOrderEmptyScreen(
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
         // Top Action Bar
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack,
             isConnected = true,
             tableNumber = "17",
@@ -366,7 +368,8 @@ private fun ViewOrderErrorScreen(
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
         // Top Action Bar
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack,
             isConnected = true,
             tableNumber = "17",

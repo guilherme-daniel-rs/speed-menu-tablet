@@ -45,7 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
@@ -81,7 +81,8 @@ fun CartSummaryScreen(
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
         // Top Action Bar
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,

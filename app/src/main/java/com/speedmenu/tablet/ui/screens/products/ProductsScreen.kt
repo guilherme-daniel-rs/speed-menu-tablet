@@ -31,7 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.ProductListItem
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.ItemAddedDialog
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.ui.screens.products.ProductDetailsBottomSheet
@@ -176,9 +176,10 @@ fun ProductsScreen(
             .fillMaxSize()
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
-        // ========== TOP ACTION BAR FIXA ==========
+        // ========== TOP ACTION BAR PADRONIZADA ==========
         // REGRA: Botão "Voltar" na tela de categoria navega para HOME
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateToHome, // Voltar navega para HOME
             isConnected = isConnected,
             tableNumber = tableNumber,

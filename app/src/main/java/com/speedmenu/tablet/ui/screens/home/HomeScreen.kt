@@ -64,11 +64,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.R
-import com.speedmenu.tablet.core.ui.components.AppTopBarContainer
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItem
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
 import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
-import com.speedmenu.tablet.core.ui.components.TopRightStatusPill
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
@@ -97,85 +96,102 @@ fun HomeScreen(
         isVisible = true
     }
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
-        // Sidebar fixa à esquerda com animação de entrada
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(
-                animationSpec = tween(600, easing = LinearEasing)
-            ) + slideInHorizontally(
-                initialOffsetX = { -it },
-                animationSpec = tween(600, easing = LinearEasing)
-            )
+        // ========== TOP ACTION BAR PADRONIZADA ==========
+        AppTopBar(
+            showBackButton = false, // Home não tem botão voltar
+            isConnected = true,
+            tableNumber = "17",
+            onCallWaiterClick = {
+                showWaiterDialog = true
+            }
+        )
+        
+        // ========== CONTEÚDO PRINCIPAL ==========
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(SpeedMenuColors.BackgroundPrimary)
         ) {
-            Box(
-                modifier = Modifier
-                    .width(280.dp)
-                    .fillMaxHeight()
-            ) {
-                Sidebar(
-                    modifier = Modifier.fillMaxSize(),
-                    isVisible = isVisible,
-                    onStartOrderClick = onNavigateToCategories,
-                    onViewOrderClick = onNavigateToViewOrder,
-                    onRatePlaceClick = onNavigateToRatePlace,
-                    onGamesClick = onNavigateToGames,
-                    onAiAssistantClick = onNavigateToAiAssistant
+            // Sidebar fixa à esquerda com animação de entrada
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(
+                    animationSpec = tween(600, easing = LinearEasing)
+                ) + slideInHorizontally(
+                    initialOffsetX = { -it },
+                    animationSpec = tween(600, easing = LinearEasing)
                 )
-                
-                // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
-                // Apenas uma sugestão visual mínima, não um divisor - integração total com o ambiente
+            ) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .width(0.5.dp) // Ainda mais fino
+                        .width(280.dp)
                         .fillMaxHeight()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f), // Quase imperceptível
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f), // Apenas sugestão mínima
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                    Color.Transparent
+                ) {
+                    Sidebar(
+                        modifier = Modifier.fillMaxSize(),
+                        isVisible = isVisible,
+                        onStartOrderClick = onNavigateToCategories,
+                        onViewOrderClick = onNavigateToViewOrder,
+                        onRatePlaceClick = onNavigateToRatePlace,
+                        onGamesClick = onNavigateToGames,
+                        onAiAssistantClick = onNavigateToAiAssistant
+                    )
+                    
+                    // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
+                    // Apenas uma sugestão visual mínima, não um divisor - integração total com o ambiente
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .width(0.5.dp) // Ainda mais fino
+                            .fillMaxHeight()
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f), // Quase imperceptível
+                                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f), // Apenas sugestão mínima
+                                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                        Color.Transparent
+                                    )
                                 )
                             )
-                        )
+                    )
+                }
+            }
+
+            // Conteúdo principal à direita com animação de entrada
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(
+                    animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
+                ) + slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
+                )
+            ) {
+                HomeContent(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    onShowWaiterDialog = { showWaiterDialog = it }
                 )
             }
         }
-
-                // Conteúdo principal à direita com animação de entrada
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(
-                        animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
-                    ) + slideInHorizontally(
-                        initialOffsetX = { it },
-                        animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
-                    )
-                ) {
-                    HomeContent(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        onShowWaiterDialog = { showWaiterDialog = it }
-                    )
-                }
-                
-                // Dialog de garçom chamado (fora do AnimatedVisibility para garantir renderização)
-                WaiterCalledDialog(
-                    visible = showWaiterDialog,
-                    onDismiss = { showWaiterDialog = false },
-                    onConfirm = {
-                        showWaiterDialog = false
-                        // TODO: Implementar lógica de chamar garçom
-                    }
-                )
+        
+        // Dialog de garçom chamado (fora do AnimatedVisibility para garantir renderização)
+        WaiterCalledDialog(
+            visible = showWaiterDialog,
+            onDismiss = { showWaiterDialog = false },
+            onConfirm = {
+                showWaiterDialog = false
+                // TODO: Implementar lógica de chamar garçom
+            }
+        )
     }
 }
 
@@ -440,23 +456,6 @@ private fun HomeContent(
     Box(modifier = modifier) {
         // Banner principal com imagem de fundo
         HomeBanner()
-
-        // TopBar com status pill (pixel-perfect)
-        AppTopBarContainer(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(horizontal = 24.dp), // Padding horizontal consistente
-            content = {
-                // Conteúdo vazio na Home (apenas banner)
-            },
-            statusPill = {
-                TopRightStatusPill(
-                    onWaiterClick = {
-                        onShowWaiterDialog(true)
-                    }
-                )
-            }
-        )
     }
 }
 

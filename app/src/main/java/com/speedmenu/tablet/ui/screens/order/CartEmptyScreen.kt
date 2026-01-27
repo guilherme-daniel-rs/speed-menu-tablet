@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
@@ -45,7 +45,8 @@ fun CartEmptyScreen(
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
         // Top Action Bar
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,

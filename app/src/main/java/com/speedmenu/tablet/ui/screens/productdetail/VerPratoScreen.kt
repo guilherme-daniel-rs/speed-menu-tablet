@@ -60,7 +60,7 @@ import com.speedmenu.tablet.core.ui.components.DiscreteToast
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.QuantityStepper
 import com.speedmenu.tablet.core.ui.components.RemoveBaseIngredientDialog
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.domain.model.CartItemOptions
@@ -140,7 +140,8 @@ fun VerPratoScreen(
         // ========== TOP ACTION BAR FIXA ==========
         // REGRA: Botão "Voltar" na tela de prato retorna para a categoria anterior (popBackStack)
         // Mantém categoria selecionada preservada via savedStateHandle
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack, // Retorna para a categoria anterior (popBackStack)
             isConnected = isConnected,
             tableNumber = tableNumber,

@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
@@ -61,8 +61,9 @@ fun GamesHubScreen(
             .fillMaxSize()
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
-        // TopActionBar no topo (igual ao ProductsScreen)
-        TopActionBar(
+        // AppTopBar padronizado no topo
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,

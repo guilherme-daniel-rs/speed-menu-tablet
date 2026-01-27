@@ -49,7 +49,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.speedmenu.tablet.core.ui.components.OrderPlacedDialog
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
 import com.speedmenu.tablet.ui.viewmodel.FinalizationState
@@ -191,7 +191,8 @@ fun QrScannerScreen(
             .background(SpeedMenuColors.BackgroundPrimary)
     ) {
         // Top Action Bar
-        TopActionBar(
+        AppTopBar(
+            showBackButton = true,
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,

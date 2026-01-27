@@ -77,7 +77,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.SpeedMenuPrimaryButton
-import com.speedmenu.tablet.core.ui.components.TopActionBar
+import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import kotlinx.coroutines.delay
 
@@ -127,7 +127,8 @@ fun RatePlaceScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             // Top Action Bar
-            TopActionBar(
+            AppTopBar(
+                showBackButton = true,
                 onBackClick = onNavigateBack,
                 isConnected = isConnected,
                 tableNumber = tableNumber,
