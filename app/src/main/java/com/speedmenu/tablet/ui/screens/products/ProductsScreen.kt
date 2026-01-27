@@ -345,8 +345,8 @@ fun ProductsScreen(
                     set("itemAddedEventId", "")
                     set("addedProductName", "")
                 }
-                // Navega diretamente para a tela de scanner de QRCode no modo FINISH_ORDER
-                navController?.navigate(com.speedmenu.tablet.core.navigation.Screen.QrScanner.createRoute("finish_order"))
+                // Navega diretamente para a tela de scanner de QRCode no modo CHECKOUT
+                navController?.navigate(com.speedmenu.tablet.core.navigation.Screen.QrScanner.createRoute("checkout"))
             },
             onContinueShopping = {
                 showItemAddedDialog = false

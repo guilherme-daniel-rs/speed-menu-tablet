@@ -14,5 +14,13 @@ interface OrderRepository {
      * @return Lista de itens do pedido ou lista vazia se não encontrado
      */
     suspend fun getOrderByComandaCode(comandaCode: String): Result<List<CartItem>>
+    
+    /**
+     * Finaliza um pedido associando-o a uma comanda.
+     * @param comandaCode Código da comanda (extraído do QRCode)
+     * @param items Lista de itens do carrinho a serem finalizados
+     * @return Result indicando sucesso ou falha
+     */
+    suspend fun finalizeOrder(comandaCode: String, items: List<CartItem>): Result<Unit>
 }
 

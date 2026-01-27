@@ -14,6 +14,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
@@ -47,6 +51,12 @@ import com.google.mlkit.vision.common.InputImage
 import com.speedmenu.tablet.core.ui.components.OrderPlacedDialog
 import com.speedmenu.tablet.core.ui.components.TopActionBar
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.CartViewModel
+import com.speedmenu.tablet.ui.viewmodel.FinalizationState
+import com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel
+import com.speedmenu.tablet.ui.viewmodel.ScanState
+import com.speedmenu.tablet.ui.viewmodel.ScanState.Error
+import com.speedmenu.tablet.ui.viewmodel.ScanState.Success
 import kotlinx.coroutines.delay
 import java.util.concurrent.Executors
 import android.util.Log
@@ -80,9 +90,9 @@ private fun isRunningOnEmulator(): Boolean {
  * Modo de uso do scanner de QR Code.
  */
 enum class QrScannerMode {
-    /** Modo para finalizar pedido: mostra dialog de sucesso e navega para Home */
-    FINISH_ORDER,
-    /** Modo para ver pedido: navega direto para view_order */
+    /** Modo para finalizar pedido (checkout): mostra carrinho e permite finalizar após escanear */
+    CHECKOUT,
+    /** Modo para ver pedido da comanda: mostra pedido em modo read-only após escanear */
     VIEW_ORDER
 }
 
@@ -92,23 +102,26 @@ fun QrScannerScreen(
     onNavigateBack: () -> Unit,
     mode: QrScannerMode = QrScannerMode.VIEW_ORDER,
     onNavigateToViewOrder: (String) -> Unit = {},
-    onNavigateToHome: () -> Unit = {}
+    onNavigateToHome: () -> Unit = {},
+    qrScannerViewModel: QrScannerViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel // Recebe do NavGraph para garantir mesma instância compartilhada
 ) {
     val context = LocalContext.current
+    val uiState by qrScannerViewModel.uiState.collectAsState()
+    val cartState by cartViewModel.cartState.collectAsState()
     
-    // Log do modo recebido
+    // Inicializa ViewModel apenas com o modo (não precisa copiar itens)
     LaunchedEffect(mode) {
-        Log.d("QrScannerScreen", "🔍 Scanner aberto no modo: $mode")
+        qrScannerViewModel.initialize(
+            mode = mode,
+            cartItems = emptyList() // Não usa mais - lê diretamente do cartState
+        )
     }
-    
-    // Estado para controlar se já escaneou
-    var hasScanned by remember { mutableStateOf(false) }
-    var comandaCode by remember { mutableStateOf("") }
-    var showOrderPlacedDialog by remember { mutableStateOf(false) }
     
     // Estado para gesto oculto (5 toques no retângulo de mira)
     var tapCount by remember { mutableStateOf(0) }
     var lastTapTime by remember { mutableStateOf(0L) }
+    var showOrderPlacedDialog by remember { mutableStateOf(false) }
     
     // Detecta se está em modo MOCK (DEBUG + EMULADOR)
     val isMockMode = remember {
@@ -134,34 +147,41 @@ fun QrScannerScreen(
     
     // Função para simular scan (usada no modo MOCK)
     val simulateScan = {
-        if (!hasScanned) {
-            hasScanned = true
-            comandaCode = "COMANDA-TESTE-17"
-            Log.d("QrScannerScreen", "📱 Scan simulado - comandaCode: $comandaCode, modo: $mode")
-            
-            // Comportamento diferente baseado no modo
-            when (mode) {
-                QrScannerMode.FINISH_ORDER -> {
-                    Log.d("QrScannerScreen", "✅ Modo FINISH_ORDER - Mostrando dialog")
-                    // Mostra dialog de sucesso
-                    showOrderPlacedDialog = true
-                }
-                QrScannerMode.VIEW_ORDER -> {
-                    Log.d("QrScannerScreen", "👁️ Modo VIEW_ORDER - Navegando para view_order")
-                    // Navega diretamente para view_order
-                    onNavigateToViewOrder(comandaCode)
-                }
-            }
+        if (uiState.scanState !is ScanState.Success) {
+            val mockComandaCode = "COMANDA-TESTE-17"
+            qrScannerViewModel.onQrCodeScanned(mockComandaCode)
+            Log.d("QrScannerScreen", "📱 Scan simulado - comandaCode: $mockComandaCode, modo: $mode")
         }
     }
     
     // Auto-scan após 3 segundos no modo MOCK (apenas se ainda não escaneou)
-    if (isMockMode && !hasScanned) {
+    if (isMockMode && uiState.scanState !is ScanState.Success) {
         LaunchedEffect(Unit) {
             delay(3000) // 3 segundos
-            if (!hasScanned) {
+            if (uiState.scanState !is ScanState.Success) {
                 simulateScan()
             }
+        }
+    }
+    
+    // Auto-finaliza após scan no CHECKOUT (apenas uma vez)
+    LaunchedEffect(uiState.scanState, uiState.mode, uiState.finalizationState, cartState.items) {
+        if (uiState.mode == QrScannerMode.CHECKOUT 
+            && uiState.scanState is ScanState.Success 
+            && uiState.finalizationState is FinalizationState.Idle
+            && cartState.items.isNotEmpty()
+            && uiState.comandaCode != null) {
+            // Auto-finaliza quando QRCode é escaneado no CHECKOUT
+            // Proteção: só finaliza se ainda está em Idle (não finalizou ainda)
+            qrScannerViewModel.finalizeCheckout(cartState.items)
+        }
+    }
+    
+    // Mostra dialog de sucesso quando finalização é bem-sucedida
+    LaunchedEffect(uiState.finalizationState) {
+        if (uiState.mode == QrScannerMode.CHECKOUT 
+            && uiState.finalizationState is FinalizationState.Success) {
+            showOrderPlacedDialog = true
         }
     }
     
@@ -178,123 +198,143 @@ fun QrScannerScreen(
             onCallWaiterClick = {}
         )
         
-        // Conteúdo principal
-        Box(
+        // Split View: 40% câmera + 60% carrinho/pedido
+        Row(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxSize()
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (hasCameraPermission) {
-                // Preview da câmera
-                CameraPreview(
-                    hasScanned = hasScanned,
+            // Painel esquerdo (40%) - Câmera / QRCode
+            Box(
+                modifier = Modifier
+                    .weight(0.4f)
+                    .fillMaxHeight()
+            ) {
+                CameraPanel(
+                    hasCameraPermission = hasCameraPermission,
+                    scanState = uiState.scanState,
+                    isMockMode = isMockMode,
                     onBarcodeDetected = { barcodeValue ->
-                        if (!hasScanned && barcodeValue.isNotBlank()) {
-                            hasScanned = true
-                            comandaCode = barcodeValue.trim()
-                            Log.d("QrScannerScreen", "📷 QR escaneado - comandaCode: $comandaCode, modo: $mode")
-                            
-                            // Comportamento diferente baseado no modo
-                            if (comandaCode.isNotBlank()) {
-                                when (mode) {
-                                    QrScannerMode.FINISH_ORDER -> {
-                                        Log.d("QrScannerScreen", "✅ Modo FINISH_ORDER - Mostrando dialog")
-                                        // Mostra dialog de sucesso
-                                        showOrderPlacedDialog = true
-                                    }
-                                    QrScannerMode.VIEW_ORDER -> {
-                                        Log.d("QrScannerScreen", "👁️ Modo VIEW_ORDER - Navegando para view_order")
-                                        // Navega diretamente para view_order
-                                        onNavigateToViewOrder(comandaCode)
-                                    }
-                                }
-                            } else {
-                                Log.w("QrScannerScreen", "⚠️ QR inválido (vazio) - resetando scan")
-                                // QR inválido - reseta o scan para tentar novamente
-                                hasScanned = false
-                            }
+                        // Proteção: só processa se ainda não escaneou E não está finalizando
+                        if (uiState.scanState !is ScanState.Success 
+                            && uiState.finalizationState !is FinalizationState.Finalizing
+                            && uiState.finalizationState !is FinalizationState.Success
+                            && barcodeValue.isNotBlank()) {
+                            qrScannerViewModel.onQrCodeScanned(barcodeValue.trim())
                         }
                     },
-                    modifier = Modifier.fillMaxSize()
-                )
-                
-                // Overlay de mira
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Retângulo de mira
-                        Box(
-                            modifier = Modifier
-                                .size(250.dp)
-                                .border(
-                                    width = 2.dp,
-                                    color = SpeedMenuColors.PrimaryLight,
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .then(
-                                    // Gesto oculto: 5 toques no retângulo (apenas em modo MOCK)
-                                    if (isMockMode && !hasScanned) {
-                                        Modifier.clickable {
-                                            val currentTime = System.currentTimeMillis()
-                                            // Reset contador se passou mais de 2 segundos desde o último toque
-                                            if (currentTime - lastTapTime > 2000) {
-                                                tapCount = 0
-                                            }
-                                            
-                                            tapCount++
-                                            lastTapTime = currentTime
-                                            
-                                            // Se tocou 5 vezes, simula scan
-                                            if (tapCount >= 5) {
-                                                tapCount = 0
-                                                simulateScan()
-                                            }
-                                        }
-                                    } else {
-                                        Modifier
-                                    }
-                                )
-                        )
-                        
-                        // Texto de instrução
-                        Text(
-                            text = "Aponte para o QRCode da comanda",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.TextPrimary,
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .background(
-                                    color = SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.8f),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(horizontal = 20.dp, vertical = 12.dp)
-                        )
+                    onResetScan = {
+                        qrScannerViewModel.resetScan()
+                    },
+                    onRequestPermission = {
+                        cameraPermissionState.launchPermissionRequest()
+                    },
+                    onMockScan = {
+                        simulateScan()
+                    },
+                    tapCount = tapCount,
+                    lastTapTime = lastTapTime,
+                    onTapCountChanged = { count, time ->
+                        tapCount = count
+                        lastTapTime = time
                     }
-                }
-            } else {
-                // Placeholder quando não tem permissão
+                )
+            }
+            
+            // Painel direito (60%) - Carrinho / Pedido compacto
+            Box(
+                modifier = Modifier
+                    .weight(0.6f)
+                    .fillMaxHeight()
+            ) {
+                CompactOrderPanel(
+                    mode = mode,
+                    // CHECKOUT: usa diretamente cartState.items do CartViewModel compartilhado
+                    // VIEW_ORDER: usa orderItems do QrScannerViewModel
+                    items = if (mode == QrScannerMode.CHECKOUT) cartState.items else uiState.orderItems,
+                    isLoading = uiState.isLoadingOrder,
+                    error = uiState.orderError,
+                    comandaCode = uiState.comandaCode,
+                    // CHECKOUT: sempre passa finalizationState (mesmo que seja Idle inicialmente)
+                    // VIEW_ORDER: passa null (não tem finalização)
+                    finalizationState = if (mode == QrScannerMode.CHECKOUT) uiState.finalizationState else null,
+                    onUpdateQuantity = { itemId, newQuantity ->
+                        cartViewModel.updateItemQuantity(itemId, newQuantity)
+                    },
+                    onRemoveItem = { itemId ->
+                        cartViewModel.removeItem(itemId)
+                    },
+                    onRetryFinalization = {
+                        if (mode == QrScannerMode.CHECKOUT) {
+                            qrScannerViewModel.retryFinalization(cartState.items)
+                        }
+                    }
+                )
+            }
+        }
+    }
+    
+    // Dialog de pedido realizado (apenas no modo CHECKOUT após finalização bem-sucedida)
+    if (mode == QrScannerMode.CHECKOUT 
+        && showOrderPlacedDialog 
+        && uiState.finalizationState is FinalizationState.Success) {
+        OrderPlacedDialog(
+            visible = showOrderPlacedDialog,
+            comandaCode = uiState.comandaCode ?: "",
+            onDismiss = {
+                showOrderPlacedDialog = false
+                onNavigateToHome()
+            },
+            onGoToHome = {
+                showOrderPlacedDialog = false
+                onNavigateToHome()
+            }
+        )
+    }
+}
+
+/**
+ * Painel esquerdo (40%) - Câmera / QRCode Scanner.
+ */
+@Composable
+private fun CameraPanel(
+    hasCameraPermission: Boolean,
+    scanState: ScanState,
+    isMockMode: Boolean,
+    onBarcodeDetected: (String) -> Unit,
+    onResetScan: () -> Unit,
+    onRequestPermission: () -> Unit,
+    onMockScan: () -> Unit,
+    tapCount: Int,
+    lastTapTime: Long,
+    onTapCountChanged: (Int, Long) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+            )
+    ) {
+        when {
+            !hasCameraPermission -> {
+                // Sem permissão
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
+                        .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
                         text = "Permissão de câmera necessária",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = SpeedMenuColors.TextPrimary,
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
                     
@@ -302,43 +342,214 @@ fun QrScannerScreen(
                         text = "Para escanear o QRCode da comanda, é necessário permitir o acesso à câmera.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = SpeedMenuColors.TextSecondary,
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 16.dp)
                     )
+                    
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .background(
+                                color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable(onClick = onRequestPermission)
+                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "Permitir câmera",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = SpeedMenuColors.PrimaryLight,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
-                
-                // Solicita permissão automaticamente
-                LaunchedEffect(Unit) {
-                    cameraPermissionState.launchPermissionRequest()
+            }
+            
+            scanState is ScanState.Success -> {
+                // Sucesso
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = SpeedMenuColors.Success.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "✓ Comanda detectada",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SpeedMenuColors.Success,
+                            fontSize = 16.sp
+                        )
+                    }
+                    
+                    Text(
+                        text = "Comanda: ${scanState.comandaCode}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SpeedMenuColors.TextSecondary,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                    
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .background(
+                                color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable(onClick = onResetScan)
+                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "Escanear novamente",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = SpeedMenuColors.PrimaryLight,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+            
+            scanState is ScanState.Error -> {
+                // Erro
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = SpeedMenuColors.Error.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "QRCode inválido",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SpeedMenuColors.Error,
+                            fontSize = 16.sp
+                        )
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .background(
+                                color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable(onClick = onResetScan)
+                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "Tentar novamente",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = SpeedMenuColors.PrimaryLight,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+            
+            else -> {
+                // Escaneando
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CameraPreview(
+                        hasScanned = scanState is ScanState.Success,
+                        onBarcodeDetected = onBarcodeDetected,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    
+                    // Overlay de mira
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Retângulo de mira
+                            Box(
+                                modifier = Modifier
+                                    .size(200.dp)
+                                    .border(
+                                        width = 2.dp,
+                                        color = SpeedMenuColors.PrimaryLight,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .then(
+                                        // Gesto oculto: 5 toques no retângulo (apenas em modo MOCK)
+                                        if (isMockMode && scanState !is ScanState.Success) {
+                                            Modifier.clickable {
+                                                val currentTime = System.currentTimeMillis()
+                                                // Reset contador se passou mais de 2 segundos desde o último toque
+                                                val newTapCount = if (currentTime - lastTapTime > 2000) {
+                                                    1
+                                                } else {
+                                                    tapCount + 1
+                                                }
+                                                
+                                                val newLastTapTime = currentTime
+                                                onTapCountChanged(newTapCount, newLastTapTime)
+                                                
+                                                // Se tocou 5 vezes, simula scan
+                                                if (newTapCount >= 5) {
+                                                    onTapCountChanged(0, currentTime)
+                                                    onMockScan()
+                                                }
+                                            }
+                                        } else {
+                                            Modifier
+                                        }
+                                    )
+                            )
+                            
+                            // Texto de instrução
+                            Text(
+                                text = if (scanState is ScanState.Scanning) {
+                                    "Lendo comanda..."
+                                } else {
+                                    "Aponte para o QRCode da comanda"
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = SpeedMenuColors.TextPrimary,
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .background(
+                                        color = SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.8f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
-    
-    // Dialog de pedido realizado (apenas no modo FINISH_ORDER)
-    LaunchedEffect(mode, showOrderPlacedDialog) {
-        if (mode == QrScannerMode.FINISH_ORDER) {
-            Log.d("QrScannerScreen", "💬 Dialog estado - showOrderPlacedDialog: $showOrderPlacedDialog, modo: $mode")
-        }
-    }
-    
-    if (mode == QrScannerMode.FINISH_ORDER && showOrderPlacedDialog) {
-        Log.d("QrScannerScreen", "🎉 Renderizando OrderPlacedDialog")
-        OrderPlacedDialog(
-            visible = showOrderPlacedDialog,
-            comandaCode = comandaCode,
-            onDismiss = {
-                Log.d("QrScannerScreen", "❌ Dialog dismiss - navegando para Home")
-                showOrderPlacedDialog = false
-                onNavigateToHome()
-            },
-            onGoToHome = {
-                Log.d("QrScannerScreen", "🏠 Dialog onGoToHome - navegando para Home")
-                showOrderPlacedDialog = false
-                onNavigateToHome()
-            }
-        )
     }
 }
 
@@ -432,7 +643,7 @@ private fun CameraPreview(
                         
                         analysis.setAnalyzer(analyzerExecutor) { imageProxy ->
                             try {
-                                // Para análise se já escaneou (mas sempre fecha o imageProxy)
+                                // Para análise se já escaneou ou deve parar (mas sempre fecha o imageProxy)
                                 if (hasScannedRef.get() || shouldStopRef.get()) {
                                     imageProxy.close()
                                     return@setAnalyzer

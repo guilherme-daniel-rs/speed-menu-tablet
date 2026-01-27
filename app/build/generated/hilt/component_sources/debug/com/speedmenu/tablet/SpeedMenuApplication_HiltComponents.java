@@ -7,6 +7,7 @@ import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel_HiltModu
 import com.speedmenu.tablet.ui.screens.rateplace.RatePlaceViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel_HiltModules;
+import com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
@@ -163,6 +164,7 @@ public final class SpeedMenuApplication_HiltComponents {
           FlappyViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           PlaceholderViewModel_HiltModules.KeyModule.class,
+          QrScannerViewModel_HiltModules.KeyModule.class,
           RatePlaceViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
@@ -207,6 +209,7 @@ public final class SpeedMenuApplication_HiltComponents {
           FlappyViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           PlaceholderViewModel_HiltModules.BindsModule.class,
+          QrScannerViewModel_HiltModules.BindsModule.class,
           RatePlaceViewModel_HiltModules.BindsModule.class,
           SplashViewModel_HiltModules.BindsModule.class,
           ViewOrderViewModel_HiltModules.BindsModule.class

@@ -239,8 +239,8 @@ fun NavGraph(
                         navController.popBackStack()
                     },
                     onFinishOrder = {
-                        // Navega para a tela de scanner de QR Code no modo FINISH_ORDER
-                        navController.navigate(Screen.QrScanner.createRoute("finish_order"))
+                        // Navega para a tela de scanner de QR Code no modo CHECKOUT
+                        navController.navigate(Screen.QrScanner.createRoute("checkout"))
                     }
                 )
             }
@@ -256,8 +256,8 @@ fun NavGraph(
         ) { backStackEntry ->
             // Obtém o modo do parâmetro da rota
             val modeParam = backStackEntry.arguments?.getString("mode") ?: "view_order"
-            val scannerMode = when (modeParam) {
-                "finish_order" -> QrScannerMode.FINISH_ORDER
+            val scannerMode = when (modeParam.lowercase()) {
+                "checkout" -> QrScannerMode.CHECKOUT
                 "view_order" -> QrScannerMode.VIEW_ORDER
                 else -> {
                     Log.w("NavGraph", "⚠️ Modo desconhecido: $modeParam, usando VIEW_ORDER como padrão")
@@ -272,6 +272,7 @@ fun NavGraph(
                     navController.popBackStack()
                 },
                 mode = scannerMode,
+                cartViewModel = cartViewModel, // Passa o mesmo CartViewModel compartilhado do NavGraph
                 onNavigateToViewOrder = { comandaCode ->
                     Log.d("NavGraph", "👁️ onNavigateToViewOrder chamado - comandaCode: $comandaCode")
                     // Navega para view_order removendo o scanner do backstack

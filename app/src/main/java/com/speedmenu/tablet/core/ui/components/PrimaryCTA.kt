@@ -35,14 +35,18 @@ fun PrimaryCTA(
     text: String,
     price: Double,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
     // Aumento de brilho ao pressionar (gradiente mais claro)
+    // Se desabilitado, usa cores mais escuras e reduzidas
     val topColor by animateColorAsState(
-        targetValue = if (isPressed) {
+        targetValue = if (!enabled) {
+            SpeedMenuColors.Primary.copy(alpha = 0.5f)
+        } else if (isPressed) {
             SpeedMenuColors.PrimaryLight.copy(alpha = 1f)
         } else {
             SpeedMenuColors.Primary
@@ -52,7 +56,9 @@ fun PrimaryCTA(
     )
     
     val bottomColor by animateColorAsState(
-        targetValue = if (isPressed) {
+        targetValue = if (!enabled) {
+            SpeedMenuColors.PrimaryDark.copy(alpha = 0.5f)
+        } else if (isPressed) {
             SpeedMenuColors.Primary
         } else {
             SpeedMenuColors.PrimaryDark
@@ -83,6 +89,7 @@ fun PrimaryCTA(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                enabled = enabled,
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center
@@ -95,7 +102,7 @@ fun PrimaryCTA(
             },
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            color = SpeedMenuColors.TextOnPrimary,
+            color = if (enabled) SpeedMenuColors.TextOnPrimary else SpeedMenuColors.TextOnPrimary.copy(alpha = 0.6f),
             fontSize = 18.sp
         )
     }

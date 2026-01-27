@@ -27,6 +27,23 @@ class OrderRepositoryImpl @Inject constructor() : OrderRepository {
         }
     }
     
+    override suspend fun finalizeOrder(comandaCode: String, items: List<CartItem>): Result<Unit> {
+        return try {
+            // Simula delay de rede
+            kotlinx.coroutines.delay(1000)
+            
+            // Mock: simula finalização bem-sucedida
+            // Em produção, isso enviará os dados para o backend
+            if (items.isEmpty()) {
+                Result.failure(Exception("Carrinho vazio"))
+            } else {
+                Result.success(Unit)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     /**
      * Cria um pedido mockado para testes.
      * Em produção, isso será substituído por chamada ao backend.

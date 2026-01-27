@@ -22,6 +22,8 @@ import com.speedmenu.tablet.ui.screens.splash.SplashViewModel;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel;
+import com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel;
 import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel_HiltModules_KeyModule_ProvideFactory;
 import dagger.hilt.android.ActivityRetainedLifecycle;
@@ -390,7 +392,7 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     @Override
     public Set<String> getViewModelKeys() {
-      return SetBuilder.<String>newSetBuilder(6).add(CartViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(FlappyViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(RatePlaceViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(SplashViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(ViewOrderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).build();
+      return SetBuilder.<String>newSetBuilder(7).add(CartViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(FlappyViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(PlaceholderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(QrScannerViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(RatePlaceViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(SplashViewModel_HiltModules_KeyModule_ProvideFactory.provide()).add(ViewOrderViewModel_HiltModules_KeyModule_ProvideFactory.provide()).build();
     }
 
     @Override
@@ -422,6 +424,8 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     private Provider<PlaceholderViewModel> placeholderViewModelProvider;
 
+    private Provider<QrScannerViewModel> qrScannerViewModelProvider;
+
     private Provider<RatePlaceViewModel> ratePlaceViewModelProvider;
 
     private Provider<SplashViewModel> splashViewModelProvider;
@@ -444,14 +448,15 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
       this.cartViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
       this.flappyViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
       this.placeholderViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
-      this.ratePlaceViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
-      this.splashViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
-      this.viewOrderViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 5);
+      this.qrScannerViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.ratePlaceViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
+      this.splashViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 5);
+      this.viewOrderViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 6);
     }
 
     @Override
     public Map<String, Provider<ViewModel>> getHiltViewModelMap() {
-      return MapBuilder.<String, Provider<ViewModel>>newMapBuilder(6).put("com.speedmenu.tablet.ui.viewmodel.CartViewModel", ((Provider) cartViewModelProvider)).put("com.speedmenu.tablet.ui.games.flappy.FlappyViewModel", ((Provider) flappyViewModelProvider)).put("com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel", ((Provider) placeholderViewModelProvider)).put("com.speedmenu.tablet.ui.screens.rateplace.RatePlaceViewModel", ((Provider) ratePlaceViewModelProvider)).put("com.speedmenu.tablet.ui.screens.splash.SplashViewModel", ((Provider) splashViewModelProvider)).put("com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel", ((Provider) viewOrderViewModelProvider)).build();
+      return MapBuilder.<String, Provider<ViewModel>>newMapBuilder(7).put("com.speedmenu.tablet.ui.viewmodel.CartViewModel", ((Provider) cartViewModelProvider)).put("com.speedmenu.tablet.ui.games.flappy.FlappyViewModel", ((Provider) flappyViewModelProvider)).put("com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel", ((Provider) placeholderViewModelProvider)).put("com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel", ((Provider) qrScannerViewModelProvider)).put("com.speedmenu.tablet.ui.screens.rateplace.RatePlaceViewModel", ((Provider) ratePlaceViewModelProvider)).put("com.speedmenu.tablet.ui.screens.splash.SplashViewModel", ((Provider) splashViewModelProvider)).put("com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel", ((Provider) viewOrderViewModelProvider)).build();
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -484,13 +489,16 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
           case 2: // com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel 
           return (T) new PlaceholderViewModel();
 
-          case 3: // com.speedmenu.tablet.ui.screens.rateplace.RatePlaceViewModel 
+          case 3: // com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel 
+          return (T) new QrScannerViewModel(singletonCImpl.bindOrderRepositoryProvider.get());
+
+          case 4: // com.speedmenu.tablet.ui.screens.rateplace.RatePlaceViewModel 
           return (T) new RatePlaceViewModel(singletonCImpl.bindRatingRepositoryProvider.get());
 
-          case 4: // com.speedmenu.tablet.ui.screens.splash.SplashViewModel 
+          case 5: // com.speedmenu.tablet.ui.screens.splash.SplashViewModel 
           return (T) new SplashViewModel();
 
-          case 5: // com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel 
+          case 6: // com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel 
           return (T) new ViewOrderViewModel(singletonCImpl.bindOrderRepositoryProvider.get());
 
           default: throw new AssertionError(id);
@@ -574,13 +582,13 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     private Provider<GamePreferences> gamePreferencesProvider;
 
-    private Provider<RatingRepositoryImpl> ratingRepositoryImplProvider;
-
-    private Provider<RatingRepository> bindRatingRepositoryProvider;
-
     private Provider<OrderRepositoryImpl> orderRepositoryImplProvider;
 
     private Provider<OrderRepository> bindOrderRepositoryProvider;
+
+    private Provider<RatingRepositoryImpl> ratingRepositoryImplProvider;
+
+    private Provider<RatingRepository> bindRatingRepositoryProvider;
 
     private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
@@ -591,14 +599,14 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
       this.gamePreferencesProvider = DoubleCheck.provider(new SwitchingProvider<GamePreferences>(singletonCImpl, 0));
-      this.ratingRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 1);
-      this.bindRatingRepositoryProvider = DoubleCheck.provider((Provider) ratingRepositoryImplProvider);
-      this.orderRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 2);
+      this.orderRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 1);
       this.bindOrderRepositoryProvider = DoubleCheck.provider((Provider) orderRepositoryImplProvider);
+      this.ratingRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 2);
+      this.bindRatingRepositoryProvider = DoubleCheck.provider((Provider) ratingRepositoryImplProvider);
     }
 
     @Override
-    public void injectSpeedMenuApplication(SpeedMenuApplication arg0) {
+    public void injectSpeedMenuApplication(SpeedMenuApplication speedMenuApplication) {
     }
 
     @Override
@@ -633,11 +641,11 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
           case 0: // com.speedmenu.tablet.data.preferences.GamePreferences 
           return (T) new GamePreferences(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 1: // com.speedmenu.tablet.data.repository.RatingRepositoryImpl 
-          return (T) new RatingRepositoryImpl();
-
-          case 2: // com.speedmenu.tablet.data.repository.OrderRepositoryImpl 
+          case 1: // com.speedmenu.tablet.data.repository.OrderRepositoryImpl 
           return (T) new OrderRepositoryImpl();
+
+          case 2: // com.speedmenu.tablet.data.repository.RatingRepositoryImpl 
+          return (T) new RatingRepositoryImpl();
 
           default: throw new AssertionError(id);
         }
