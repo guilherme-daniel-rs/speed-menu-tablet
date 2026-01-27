@@ -57,5 +57,15 @@ sealed class Screen(val route: String) {
      * Tela de avaliação do local
      */
     object RatePlace : Screen("rate_place")
+    
+    /**
+     * Hub de jogos
+     */
+    object GamesHub : Screen("games_hub")
+    
+    /**
+     * Jogo Flappy
+     */
+    object GameFlappy : Screen("game_flappy")
 }
 

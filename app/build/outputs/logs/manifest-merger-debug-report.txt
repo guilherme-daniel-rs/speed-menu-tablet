@@ -74,6 +74,8 @@ MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/guilherme/.gra
 MERGED from [androidx.core:core:1.12.0] /Users/guilherme/.gradle/caches/transforms-3/95270c14f91f469af20dbac6e1309bff/transformed/core-1.12.0/AndroidManifest.xml:17:1-30:12
 MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/1b89564298fc6bd3bdeacaec36a2a02d/transformed/jetified-customview-poolingcontainer-1.0.0/AndroidManifest.xml:17:1-23:12
 MERGED from [androidx.core:core-ktx:1.12.0] /Users/guilherme/.gradle/caches/transforms-3/2f6e97f5c7f8801946781b2a89fa3e0a/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.datastore:datastore-preferences:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/ae35f7b3d53b6fcd809d97966fb1337b/transformed/jetified-datastore-preferences-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.datastore:datastore:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/44194a78738c4fc7bccc27fc078e6d3c/transformed/jetified-datastore-1.0.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.1] /Users/guilherme/.gradle/caches/transforms-3/1eb460a1d43e4b0d334ac7784ab132ab/transformed/jetified-runtime-saveable-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.runtime:runtime-android:1.6.1] /Users/guilherme/.gradle/caches/transforms-3/40ee8baaf1575ff1f4254fc38b852bb2/transformed/jetified-runtime-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.annotation:annotation-experimental:1.4.0] /Users/guilherme/.gradle/caches/transforms-3/228a4d429f18cb429f3a971bad038007/transformed/jetified-annotation-experimental-1.4.0/AndroidManifest.xml:2:1-7:12
@@ -347,6 +349,10 @@ MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/guilh
 MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/1b89564298fc6bd3bdeacaec36a2a02d/transformed/jetified-customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
 MERGED from [androidx.core:core-ktx:1.12.0] /Users/guilherme/.gradle/caches/transforms-3/2f6e97f5c7f8801946781b2a89fa3e0a/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.core:core-ktx:1.12.0] /Users/guilherme/.gradle/caches/transforms-3/2f6e97f5c7f8801946781b2a89fa3e0a/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-preferences:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/ae35f7b3d53b6fcd809d97966fb1337b/transformed/jetified-datastore-preferences-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.datastore:datastore-preferences:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/ae35f7b3d53b6fcd809d97966fb1337b/transformed/jetified-datastore-preferences-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.datastore:datastore:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/44194a78738c4fc7bccc27fc078e6d3c/transformed/jetified-datastore-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.datastore:datastore:1.0.0] /Users/guilherme/.gradle/caches/transforms-3/44194a78738c4fc7bccc27fc078e6d3c/transformed/jetified-datastore-1.0.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.1] /Users/guilherme/.gradle/caches/transforms-3/1eb460a1d43e4b0d334ac7784ab132ab/transformed/jetified-runtime-saveable-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.1] /Users/guilherme/.gradle/caches/transforms-3/1eb460a1d43e4b0d334ac7784ab132ab/transformed/jetified-runtime-saveable-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.runtime:runtime-android:1.6.1] /Users/guilherme/.gradle/caches/transforms-3/40ee8baaf1575ff1f4254fc38b852bb2/transformed/jetified-runtime-release/AndroidManifest.xml:5:5-44

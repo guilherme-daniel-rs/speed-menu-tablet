@@ -2,6 +2,7 @@ package com.speedmenu.tablet;
 
 import com.speedmenu.tablet.core.di.AppModule;
 import com.speedmenu.tablet.core.di.DataModule;
+import com.speedmenu.tablet.ui.games.flappy.FlappyViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.rateplace.RatePlaceViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel_HiltModules;
@@ -159,6 +160,7 @@ public final class SpeedMenuApplication_HiltComponents {
   @Subcomponent(
       modules = {
           CartViewModel_HiltModules.KeyModule.class,
+          FlappyViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           PlaceholderViewModel_HiltModules.KeyModule.class,
           RatePlaceViewModel_HiltModules.KeyModule.class,
@@ -202,6 +204,7 @@ public final class SpeedMenuApplication_HiltComponents {
   @Subcomponent(
       modules = {
           CartViewModel_HiltModules.BindsModule.class,
+          FlappyViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           PlaceholderViewModel_HiltModules.BindsModule.class,
           RatePlaceViewModel_HiltModules.BindsModule.class,

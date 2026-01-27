@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.speedmenu.tablet.app-mergeDebugResources-62:/values-ms/values-ms.xml",
+            "outputFile": "com.speedmenu.tablet.app-mergeDebugResources-64:/values-ms/values-ms.xml",
             "map": [
                 {
                     "source": "/Users/guilherme/.gradle/caches/transforms-3/3fc824ca071dac137d3fcb698ff0d88a/transformed/jetified-ui-release/res/values-ms/values-ms.xml",

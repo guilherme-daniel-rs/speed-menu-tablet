@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.speedmenu.tablet.app-mergeDebugResources-62:/values-nl/values-nl.xml",
+            "outputFile": "com.speedmenu.tablet.app-mergeDebugResources-64:/values-nl/values-nl.xml",
             "map": [
                 {
                     "source": "/Users/guilherme/.gradle/caches/transforms-3/0cd2c8aff6184cbc5934736cefbc4b2b/transformed/appcompat-1.1.0/res/values-nl/values-nl.xml",

@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.TableRestaurant
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -81,6 +82,7 @@ fun HomeScreen(
     onNavigateToCart: () -> Unit = {},
     onNavigateToViewOrder: () -> Unit = {},
     onNavigateToRatePlace: () -> Unit = {},
+    onNavigateToGames: () -> Unit = {},
     cartItemCount: Int = 0
 ) {
     // Estado para controlar animação de entrada
@@ -118,7 +120,8 @@ fun HomeScreen(
                     isVisible = isVisible,
                     onStartOrderClick = onNavigateToCategories,
                     onViewOrderClick = onNavigateToViewOrder,
-                    onRatePlaceClick = onNavigateToRatePlace
+                    onRatePlaceClick = onNavigateToRatePlace,
+                    onGamesClick = onNavigateToGames
                 )
                 
                 // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
@@ -183,7 +186,8 @@ internal fun Sidebar(
     isVisible: Boolean = true,
     onStartOrderClick: () -> Unit = {},
     onViewOrderClick: () -> Unit = {},
-    onRatePlaceClick: () -> Unit = {}
+    onRatePlaceClick: () -> Unit = {},
+    onGamesClick: () -> Unit = {}
 ) {
     Box(modifier = modifier) {
         // ========== CAMADA 1: Gradiente vertical base refinado (dark → um pouco mais claro) ==========
@@ -312,6 +316,28 @@ internal fun Sidebar(
                         text = "Avaliar o local",
                         icon = Icons.Default.Star,
                         onClick = onRatePlaceClick,
+                        style = SidebarMenuItemStyle.SECONDARY,
+                        modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
+                    )
+                }
+
+                // Espaçamento uniforme: mesma régua de 32dp
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Item 3: Jogos (com animação de entrada sutil)
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(
+                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
+                    ) + slideInHorizontally(
+                        initialOffsetX = { -it / 3 }, // Deslocamento sutil
+                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
+                    )
+                ) {
+                    SidebarMenuItem(
+                        text = "Jogos",
+                        icon = Icons.Default.SportsEsports,
+                        onClick = onGamesClick,
                         style = SidebarMenuItemStyle.SECONDARY,
                         modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
                     )

@@ -30,6 +30,8 @@ import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerMode
 import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerScreen
 import com.speedmenu.tablet.ui.screens.rateplace.RatePlaceScreen
 import com.speedmenu.tablet.ui.screens.splash.SplashScreen
+import com.speedmenu.tablet.ui.games.GamesHubScreen
+import com.speedmenu.tablet.ui.games.flappy.GameFlappyScreen
 
 /**
  * Configuração do grafo de navegação da aplicação.
@@ -91,6 +93,9 @@ fun NavGraph(
                 },
                 onNavigateToRatePlace = {
                     navController.navigate(Screen.RatePlace.route)
+                },
+                onNavigateToGames = {
+                    navController.navigate(Screen.GamesHub.route)
                 },
                 cartItemCount = cartState.totalItems
             )
@@ -316,6 +321,25 @@ fun NavGraph(
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = false }
                     }
+                }
+            )
+        }
+
+        composable(route = Screen.GamesHub.route) {
+            GamesHubScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToFlappy = {
+                    navController.navigate(Screen.GameFlappy.route)
+                }
+            )
+        }
+
+        composable(route = Screen.GameFlappy.route) {
+            GameFlappyScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

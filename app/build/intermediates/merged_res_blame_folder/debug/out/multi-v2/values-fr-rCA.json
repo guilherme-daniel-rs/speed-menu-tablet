@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.speedmenu.tablet.app-mergeDebugResources-62:/values-fr-rCA/values-fr-rCA.xml",
+            "outputFile": "com.speedmenu.tablet.app-mergeDebugResources-64:/values-fr-rCA/values-fr-rCA.xml",
             "map": [
                 {
                     "source": "/Users/guilherme/.gradle/caches/transforms-3/ae72968cd6813a48540a5a6f8fd13c89/transformed/jetified-material3-release/res/values-fr-rCA/values-fr-rCA.xml",

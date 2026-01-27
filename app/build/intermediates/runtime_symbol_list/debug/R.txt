@@ -682,6 +682,7 @@ int drawable common_google_signin_btn_text_light_focused 0x7f070072
 int drawable common_google_signin_btn_text_light_normal 0x7f070073
 int drawable common_google_signin_btn_text_light_normal_background 0x7f070074
 int drawable entradas 0x7f070075
+int drawable flappy 0x7f07008f
 int drawable googleg_disabled_color_18 0x7f070076
 int drawable googleg_standard_color_18 0x7f070077
 int drawable ic_call_answer 0x7f070078
