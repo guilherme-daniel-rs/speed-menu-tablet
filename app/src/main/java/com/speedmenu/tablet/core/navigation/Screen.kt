@@ -52,5 +52,10 @@ sealed class Screen(val route: String) {
     object ViewOrder : Screen("view_order/{comandaCode}") {
         fun createRoute(comandaCode: String) = "view_order/$comandaCode"
     }
+    
+    /**
+     * Tela de avaliação do local
+     */
+    object RatePlace : Screen("rate_place")
 }
 

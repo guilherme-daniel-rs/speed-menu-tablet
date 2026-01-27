@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,6 +81,7 @@ data class IngredientQuantity(
  * Tela de detalhes do prato (VerPratoScreen).
  * Layout minimalista com 2 colunas: imagem à esquerda, personalização à direita.
  */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun VerPratoScreen(
     productId: String,
@@ -120,10 +120,6 @@ fun VerPratoScreen(
             IngredientQuantity("Pimenta", false, 0) // Opcional: mínimo 0
         )
     }
-    
-    // Estado do carrinho do ViewModel
-    val cartState by cartViewModel.cartState.collectAsState()
-    val cartItemCount = cartState.totalItems
     
     // Estado para feedback de adição ao pedido
     var isAddedToCart by remember { mutableStateOf(false) }
@@ -252,223 +248,244 @@ fun VerPratoScreen(
             }
             
             // ========== COLUNA DIREITA (weight 0.55f) ==========
-            Column(
+            Box(
                 modifier = Modifier
                     .weight(0.55f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxHeight()
             ) {
-                // 1) Seção "Ingredientes" (accordion - inicia fechada)
-                val activeCount = ingredientQuantities.count { it.quantity > 0 }
-                val totalCount = ingredientQuantities.size
-                var isIngredientsExpanded by remember { mutableStateOf(false) }
-                
-                AccordionSection(
-                    title = "Ingredientes",
-                    icon = Icons.Default.Restaurant,
-                    expanded = isIngredientsExpanded,
-                    onExpandedChange = { isIngredientsExpanded = it },
-                    summary = "$activeCount de $totalCount ingredientes",
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    // Lista de ingredientes
+                    // Conteúdo superior (limitado por weight)
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(0.dp)
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        ingredientQuantities.forEachIndexed { index, ingredient ->
-                            if (index > 0) {
-                                // Divisória sutil entre itens
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(1.dp)
-                                        .background(
-                                            color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
-                                        )
-                                )
-                            }
-                            
-                            // Item com padding vertical de 10.dp
+                        // 1) Seção "Ingredientes" (accordion - inicia fechada)
+                        val activeCount = ingredientQuantities.count { it.quantity > 0 }
+                        val totalCount = ingredientQuantities.size
+                        var isIngredientsExpanded by remember { mutableStateOf(false) }
+                        
+                        AccordionSection(
+                            title = "Ingredientes",
+                            icon = Icons.Default.Restaurant,
+                            expanded = isIngredientsExpanded,
+                            onExpandedChange = { isIngredientsExpanded = it },
+                            summary = "$activeCount de $totalCount ingredientes",
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // Lista de ingredientes com altura máxima e scroll interno
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 10.dp)
+                                    .heightIn(max = 350.dp) // Altura máxima para ~4-5 ingredientes
                             ) {
-                                IngredientQuantityItem(
-                                    name = ingredient.name,
-                                    quantity = ingredient.quantity,
-                                    isBase = ingredient.isBase,
-                                    maxQuantity = 5,
-                                    onQuantityChange = { newQuantity ->
-                                        val actualIndex = ingredientQuantities.indexOf(ingredient)
-                                        if (actualIndex >= 0) {
-                                            ingredientQuantities[actualIndex] = ingredient.copy(quantity = newQuantity)
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .verticalScroll(rememberScrollState()),
+                                    verticalArrangement = Arrangement.spacedBy(0.dp)
+                                ) {
+                                    ingredientQuantities.forEachIndexed { index, ingredient ->
+                                        if (index > 0) {
+                                            // Divisória sutil entre itens
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(1.dp)
+                                                    .background(
+                                                        color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
+                                                    )
+                                            )
                                         }
-                                    },
-                                    onRemoveBaseIngredient = if (ingredient.isBase) {
-                                        {
-                                            val actualIndex = ingredientQuantities.indexOf(ingredient)
-                                            if (actualIndex >= 0) {
-                                                pendingIngredientIndex = actualIndex
-                                                showRemoveBaseIngredientDialog = true
-                                            }
+                                        
+                                        // Item com padding vertical de 10.dp
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 10.dp)
+                                        ) {
+                                            IngredientQuantityItem(
+                                                name = ingredient.name,
+                                                quantity = ingredient.quantity,
+                                                isBase = ingredient.isBase,
+                                                maxQuantity = 5,
+                                                onQuantityChange = { newQuantity ->
+                                                    val actualIndex = ingredientQuantities.indexOf(ingredient)
+                                                    if (actualIndex >= 0) {
+                                                        ingredientQuantities[actualIndex] = ingredient.copy(quantity = newQuantity)
+                                                    }
+                                                },
+                                                onRemoveBaseIngredient = if (ingredient.isBase) {
+                                                    {
+                                                        val actualIndex = ingredientQuantities.indexOf(ingredient)
+                                                        if (actualIndex >= 0) {
+                                                            pendingIngredientIndex = actualIndex
+                                                            showRemoveBaseIngredientDialog = true
+                                                        }
+                                                    }
+                                                } else null
+                                            )
                                         }
-                                    } else null
-                                )
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-                
-                // 2) Botão "Adicionar observações"
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .clickable { showObservationsModal = true }
-                        .padding(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        
+                        // 2) Botão "Adicionar observações"
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .clickable { showObservationsModal = true }
+                                .padding(12.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = null,
-                                tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.6f),
-                                modifier = Modifier.size(16.dp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = null,
+                                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = if (observationsText.isEmpty()) {
+                                            "Adicionar observações"
+                                        } else {
+                                            "Com observações"
+                                        },
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (observationsText.isEmpty()) {
+                                            SpeedMenuColors.TextSecondary
+                                        } else {
+                                            SpeedMenuColors.TextPrimary
+                                        },
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // 3) Quantidade: stepper compacto
+                        QuantityStepper(
+                            quantity = quantity,
+                            onQuantityChange = { quantity = it }
+                        )
+                    }
+                    
+                    // Área fixa inferior (preço + botão) - sempre visível
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // 4) Preço destacado (acima do botão, sempre unitário)
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 0.dp),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text(
+                                text = CurrencyFormatter.formatCurrencyBR(productPrice),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = SpeedMenuColors.PrimaryLight,
+                                fontSize = 24.sp
                             )
                             Text(
-                                text = if (observationsText.isEmpty()) {
-                                    "Adicionar observações"
-                                } else {
-                                    "Com observações"
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (observationsText.isEmpty()) {
-                                    SpeedMenuColors.TextSecondary
-                                } else {
-                                    SpeedMenuColors.TextPrimary
-                                },
-                                fontSize = 14.sp
+                                text = "valor unitário",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Normal,
+                                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 2.dp)
                             )
                         }
-                    }
-                }
-                
-                // 3) Quantidade: stepper compacto
-                QuantityStepper(
-                    quantity = quantity,
-                    onQuantityChange = { quantity = it }
-                )
-                
-                // Spacer para posicionar preço e CTA mais próximos do centro vertical
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // 4) Preço destacado (acima do botão, sempre unitário)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = CurrencyFormatter.formatCurrencyBR(productPrice),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = SpeedMenuColors.PrimaryLight,
-                        fontSize = 24.sp
-                    )
-                    Text(
-                        text = "valor unitário",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Normal,
-                        color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-                
-                // 5) CTA (com respiro inferior)
-                PrimaryCTA(
-                    modifier = Modifier.padding(bottom = 32.dp),
-                    text = if (isAddedToCart) "Adicionado ao pedido" else "Adicionar ao pedido",
-                    price = if (isAddedToCart) 0.0 else productPrice * quantity,
-                    onClick = {
-                        // Cria CartItem com as informações do produto
-                        val cartItemOptions = CartItemOptions(
-                            ingredients = ingredientQuantities
-                                .filter { it.quantity > 0 }
-                                .associate { it.name to it.quantity },
-                            observations = observationsText
-                        )
                         
-                        // Cria CartItem com as informações do produto
-                        // ID vazio será gerado pelo ViewModel se necessário
-                        val cartItem = CartItem(
-                            id = "", // Será gerado pelo ViewModel se necessário
-                            productId = productId,
-                            name = productName,
-                            price = productPrice,
-                            quantity = quantity,
-                            imageResId = productImageResId,
-                            options = cartItemOptions
-                        )
-                        
-                        // Adiciona ao carrinho via ViewModel
-                        // A adição é síncrona e atualiza o estado imediatamente
-                        val previousItemCount = cartViewModel.cartState.value.totalItems
-                        
-                        // DEBUG CHECKLIST:
-                        // ✅ O método addItem() é realmente chamado? (verificar logs)
-                        // ✅ O estado global do carrinho é mutado? (verificar newItemCount)
-                        // ✅ O componente do topo está observando o estado correto? (cartState.totalItems)
-                        // ✅ Existe mais de um carrinho instanciado? (verificar logs do ViewModel)
-                        // ✅ O store não está sendo recriado ao navegar de tela? (hiltViewModel garante instância única)
-                        
-                        cartViewModel.addItem(cartItem)
-                        
-                        // Verifica se o item foi realmente adicionado ao estado
-                        // REGRA DE OURO: Se o botão "Pedido" mostra vazio, o estado está vazio.
-                        // Nunca confiar na animação como confirmação.
-                        val newItemCount = cartViewModel.cartState.value.totalItems
-                        
-                        // Verifica se totalItems aumentou (considera tanto novo item quanto incremento)
-                        // Se o item já existia, a quantidade será incrementada, então newItemCount deve ser > previousItemCount
-                        val itemWasAdded = newItemCount > previousItemCount
-                        
-                        // REGRA DE UX: Nenhuma animação deve acontecer sem mudança real de estado.
-                        // Se algo animou, algo mudou. Se nada mudou, nada anima.
-                        // Só atualiza feedback visual se o item foi realmente adicionado
-                        // A verificação garante que totalItems aumentou (novo item ou incremento)
-                        if (itemWasAdded) {
-                            // Gera ID único para o evento
-                            val eventId = System.currentTimeMillis().toString()
-                            
-                            // Escreve no previousBackStackEntry ANTES de fazer popBackStack
-                            // Isso garante que o ProductsScreen receberá o evento
-                            navController?.previousBackStackEntry?.savedStateHandle?.apply {
-                                set("itemAddedEventId", eventId)
-                                set("addedProductName", productName)
+                        // 5) CTA (com respiro inferior)
+                        PrimaryCTA(
+                            modifier = Modifier.padding(bottom = 32.dp),
+                            text = if (isAddedToCart) "Adicionado ao pedido" else "Adicionar ao pedido",
+                            price = if (isAddedToCart) 0.0 else productPrice * quantity,
+                            onClick = {
+                                // Cria CartItem com as informações do produto
+                                val cartItemOptions = CartItemOptions(
+                                    ingredients = ingredientQuantities
+                                        .filter { it.quantity > 0 }
+                                        .associate { it.name to it.quantity },
+                                    observations = observationsText
+                                )
+                                
+                                // Cria CartItem com as informações do produto
+                                // ID vazio será gerado pelo ViewModel se necessário
+                                val cartItem = CartItem(
+                                    id = "", // Será gerado pelo ViewModel se necessário
+                                    productId = productId,
+                                    name = productName,
+                                    price = productPrice,
+                                    quantity = quantity,
+                                    imageResId = productImageResId,
+                                    options = cartItemOptions
+                                )
+                                
+                                // Adiciona ao carrinho via ViewModel
+                                // A adição é síncrona e atualiza o estado imediatamente
+                                val previousItemCount = cartViewModel.cartState.value.totalItems
+                                
+                                // DEBUG CHECKLIST:
+                                // ✅ O método addItem() é realmente chamado? (verificar logs)
+                                // ✅ O estado global do carrinho é mutado? (verificar newItemCount)
+                                // ✅ O componente do topo está observando o estado correto? (cartState.totalItems)
+                                // ✅ Existe mais de um carrinho instanciado? (verificar logs do ViewModel)
+                                // ✅ O store não está sendo recriado ao navegar de tela? (hiltViewModel garante instância única)
+                                
+                                cartViewModel.addItem(cartItem)
+                                
+                                // Verifica se o item foi realmente adicionado ao estado
+                                // REGRA DE OURO: Se o botão "Pedido" mostra vazio, o estado está vazio.
+                                // Nunca confiar na animação como confirmação.
+                                val newItemCount = cartViewModel.cartState.value.totalItems
+                                
+                                // Verifica se totalItems aumentou (considera tanto novo item quanto incremento)
+                                // Se o item já existia, a quantidade será incrementada, então newItemCount deve ser > previousItemCount
+                                val itemWasAdded = newItemCount > previousItemCount
+                                
+                                // REGRA DE UX: Nenhuma animação deve acontecer sem mudança real de estado.
+                                // Se algo animou, algo mudou. Se nada mudou, nada anima.
+                                // Só atualiza feedback visual se o item foi realmente adicionado
+                                // A verificação garante que totalItems aumentou (novo item ou incremento)
+                                if (itemWasAdded) {
+                                    // Gera ID único para o evento
+                                    val eventId = System.currentTimeMillis().toString()
+                                    
+                                    // Escreve no previousBackStackEntry ANTES de fazer popBackStack
+                                    // Isso garante que o ProductsScreen receberá o evento
+                                    navController?.previousBackStackEntry?.savedStateHandle?.apply {
+                                        set("itemAddedEventId", eventId)
+                                        set("addedProductName", productName)
+                                    }
+                                    
+                                    // Chama callback para notificar que item foi adicionado (passa o nome do produto)
+                                    onAddToCart(productName)
+                                    
+                                    // Navega de volta para a tela anterior após adicionar ao carrinho
+                                    onNavigateBack()
+                                }
                             }
-                            
-                            // Chama callback para notificar que item foi adicionado (passa o nome do produto)
-                            onAddToCart(productName)
-                            
-                            // Navega de volta para a tela anterior após adicionar ao carrinho
-                            onNavigateBack()
-                        }
+                        )
                     }
-                )
+                }
             }
         }
     }

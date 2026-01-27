@@ -6,8 +6,10 @@ import com.speedmenu.tablet.data.datasource.remote.RemoteDataSource
 import com.speedmenu.tablet.data.datasource.remote.RemoteDataSourceImpl
 import com.speedmenu.tablet.data.repository.MenuRepositoryImpl
 import com.speedmenu.tablet.data.repository.OrderRepositoryImpl
+import com.speedmenu.tablet.data.repository.RatingRepositoryImpl
 import com.speedmenu.tablet.domain.repository.MenuRepository
 import com.speedmenu.tablet.domain.repository.OrderRepository
+import com.speedmenu.tablet.domain.repository.RatingRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -45,5 +47,11 @@ abstract class DataModule {
     abstract fun bindOrderRepository(
         orderRepositoryImpl: OrderRepositoryImpl
     ): OrderRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRatingRepository(
+        ratingRepositoryImpl: RatingRepositoryImpl
+    ): RatingRepository
 }
 

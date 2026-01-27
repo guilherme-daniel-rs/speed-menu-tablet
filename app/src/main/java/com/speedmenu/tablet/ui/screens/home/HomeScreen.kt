@@ -80,6 +80,7 @@ fun HomeScreen(
     onNavigateToCategories: () -> Unit = {},
     onNavigateToCart: () -> Unit = {},
     onNavigateToViewOrder: () -> Unit = {},
+    onNavigateToRatePlace: () -> Unit = {},
     cartItemCount: Int = 0
 ) {
     // Estado para controlar animação de entrada
@@ -116,7 +117,8 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize(),
                     isVisible = isVisible,
                     onStartOrderClick = onNavigateToCategories,
-                    onViewOrderClick = onNavigateToViewOrder
+                    onViewOrderClick = onNavigateToViewOrder,
+                    onRatePlaceClick = onNavigateToRatePlace
                 )
                 
                 // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
@@ -180,7 +182,8 @@ internal fun Sidebar(
     modifier: Modifier = Modifier,
     isVisible: Boolean = true,
     onStartOrderClick: () -> Unit = {},
-    onViewOrderClick: () -> Unit = {}
+    onViewOrderClick: () -> Unit = {},
+    onRatePlaceClick: () -> Unit = {}
 ) {
     Box(modifier = modifier) {
         // ========== CAMADA 1: Gradiente vertical base refinado (dark → um pouco mais claro) ==========
@@ -308,9 +311,7 @@ internal fun Sidebar(
                     SidebarMenuItem(
                         text = "Avaliar o local",
                         icon = Icons.Default.Star,
-                        onClick = {
-                            // TODO: Implementar navegação para tela de avaliação
-                        },
+                        onClick = onRatePlaceClick,
                         style = SidebarMenuItemStyle.SECONDARY,
                         modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
                     )

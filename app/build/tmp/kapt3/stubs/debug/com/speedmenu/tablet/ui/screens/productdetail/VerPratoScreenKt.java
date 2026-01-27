@@ -23,6 +23,7 @@ public final class VerPratoScreenKt {
      * Tela de detalhes do prato (VerPratoScreen).
      * Layout minimalista com 2 colunas: imagem à esquerda, personalização à direita.
      */
+    @kotlin.Suppress(names = {"UNUSED_PARAMETER"})
     @androidx.compose.runtime.Composable()
     public static final void VerPratoScreen(@org.jetbrains.annotations.NotNull()
     java.lang.String productId, @org.jetbrains.annotations.NotNull()

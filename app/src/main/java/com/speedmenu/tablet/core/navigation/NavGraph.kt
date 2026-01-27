@@ -28,6 +28,7 @@ import com.speedmenu.tablet.ui.screens.productdetail.VerPratoScreen
 import com.speedmenu.tablet.ui.screens.products.ProductsScreen
 import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerMode
 import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerScreen
+import com.speedmenu.tablet.ui.screens.rateplace.RatePlaceScreen
 import com.speedmenu.tablet.ui.screens.splash.SplashScreen
 
 /**
@@ -87,6 +88,9 @@ fun NavGraph(
                 onNavigateToViewOrder = {
                     // Navega para a tela de scanner de QR Code para escanear a comanda (modo VIEW_ORDER)
                     navController.navigate(Screen.QrScanner.createRoute("view_order"))
+                },
+                onNavigateToRatePlace = {
+                    navController.navigate(Screen.RatePlace.route)
                 },
                 cartItemCount = cartState.totalItems
             )
@@ -296,6 +300,19 @@ fun NavGraph(
                 comandaCode = comandaCode,
                 onNavigateBack = {
                     // Volta para Home (não volta para o scanner)
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.RatePlace.route) {
+            RatePlaceScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToHome = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = false }
                     }
