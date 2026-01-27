@@ -169,18 +169,20 @@ private fun ViewOrderContentScreen(
         )
         
         // Lista de produtos (scrollável)
+        // Espaçamento aumentado para destacar os gradientes sutis de cada item
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items.forEach { item ->
+            items.forEachIndexed { index, item ->
                 CartItemRow(
                     item = item,
-                    readOnly = true // Modo read-only
+                    readOnly = true, // Modo read-only
+                    animationDelay = index * 50 // Delay escalonado: 0ms, 50ms, 100ms...
                 )
             }
         }

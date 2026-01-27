@@ -1,5 +1,7 @@
 package com.speedmenu.tablet.ui.screens.order
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,10 +14,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -100,17 +112,19 @@ fun CartSummaryScreen(
         )
         
         // Lista de produtos (scrollável)
+        // Espaçamento aumentado para destacar os gradientes sutis de cada item
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items.forEach { item ->
+            items.forEachIndexed { index, item ->
                 CartItemRow(
                     item = item,
+                    animationDelay = index * 50, // Delay escalonado: 0ms, 50ms, 100ms...
                     onRemoveItem = {
                         cartViewModel?.removeItem(item.id)
                     },
@@ -216,6 +230,8 @@ fun CartSummaryScreen(
  * Linha de item do carrinho.
  * Layout: [Imagem à esquerda] | [Informações à direita da imagem] | [Preço total no canto direito]
  * 
+ * Refinamento premium: Gradiente horizontal sutil conecta visualmente produto e preço.
+ * 
  * @param readOnly Se true, não mostra botões de quantidade/remover, apenas texto "Qtd: X"
  */
 @Composable
@@ -224,15 +240,66 @@ fun CartItemRow(
     onRemoveItem: () -> Unit = {},
     onUpdateQuantity: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    animationDelay: Int = 0 // Delay em millisegundos para efeito cascata
 ) {
-    Row(
+    // Animação de fade-in ao carregar o item com delay escalonado para efeito cascata elegante
+    var isVisible by remember { mutableStateOf(false) }
+    val alpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(durationMillis = 400, delayMillis = animationDelay),
+        label = "item_fade_in"
+    )
+    
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
+    
+    // Gradiente premium com variação horizontal e vertical bem visível
+    // Cores derivadas do design system: preto/cinza escuro com toque perceptível de dourado
+    val gradientTopLeft = SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.85f) // Topo esquerda: mais claro que o fundo
+    val gradientTopRight = SpeedMenuColors.Surface.copy(alpha = 0.55f) // Topo direita: bem visível
+    val gradientBottomLeft = SpeedMenuColors.Surface.copy(alpha = 0.40f) // Centro esquerda: perceptível
+    val gradientBottomRight = Color(
+        // Centro direita: mistura bem visível de cinza escuro com toque perceptível de dourado
+        // Onde o preço fica - zona mais "iluminada" do gradiente
+        red = (SpeedMenuColors.Surface.red * 0.65f + SpeedMenuColors.PrimaryLight.red * 0.15f).coerceIn(0f, 1f),
+        green = (SpeedMenuColors.Surface.green * 0.65f + SpeedMenuColors.PrimaryLight.green * 0.15f).coerceIn(0f, 1f),
+        blue = (SpeedMenuColors.Surface.blue * 0.65f + SpeedMenuColors.PrimaryLight.blue * 0.15f).coerceIn(0f, 1f),
+        alpha = 0.70f
+    )
+    
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
-        verticalAlignment = Alignment.Top
+            .alpha(alpha)
     ) {
+        // Gradiente de fundo diagonal sutil - cria "faixa visual" conectando produto ao preço
+        // Variação vertical: topo mais escuro que o centro (visual premium)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            gradientTopLeft,      // Topo esquerda (mais sutil)
+                            gradientBottomLeft,   // Centro esquerda (transição)
+                            gradientTopRight,     // Topo direita (intensificando)
+                            gradientBottomRight   // Centro direita (mais intenso - onde está o preço)
+                        ),
+                        start = Offset(0f, 0f),
+                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(vertical = 16.dp, horizontal = 20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalAlignment = Alignment.Top
+            ) {
         // ========== IMAGEM DO PRATO (esquerda) ==========
         if (item.imageResId != 0) {
             Image(
@@ -398,21 +465,23 @@ fun CartItemRow(
             }
         }
         
-        // ========== PREÇO TOTAL DO ITEM (canto direito) ==========
-        // Alinhamento consistente e destaque visual
-        Box(
-            modifier = Modifier
-                .width(120.dp)
-                .padding(start = 16.dp),
-            contentAlignment = Alignment.TopEnd
-        ) {
-            Text(
-                text = CurrencyFormatter.formatCurrencyBR(item.totalPrice),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = SpeedMenuColors.PrimaryLight,
-                fontSize = 20.sp
-            )
+                // ========== PREÇO TOTAL DO ITEM (canto direito) ==========
+                // Alinhamento vertical ao centro - dentro da zona mais "iluminada" do gradiente
+                Box(
+                    modifier = Modifier
+                        .width(120.dp)
+                        .padding(start = 16.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Text(
+                        text = CurrencyFormatter.formatCurrencyBR(item.totalPrice),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = SpeedMenuColors.PrimaryLight,
+                        fontSize = 20.sp
+                    )
+                }
+            }
         }
     }
 }
