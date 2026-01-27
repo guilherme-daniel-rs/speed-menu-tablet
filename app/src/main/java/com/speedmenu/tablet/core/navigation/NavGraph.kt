@@ -30,6 +30,7 @@ import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerMode
 import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerScreen
 import com.speedmenu.tablet.ui.screens.rateplace.RatePlaceScreen
 import com.speedmenu.tablet.ui.screens.splash.SplashScreen
+import com.speedmenu.tablet.ui.screens.aiassistant.AiAssistantScreen
 import com.speedmenu.tablet.ui.games.GamesHubScreen
 import com.speedmenu.tablet.ui.games.flappy.GameFlappyScreen
 
@@ -96,6 +97,9 @@ fun NavGraph(
                 },
                 onNavigateToGames = {
                     navController.navigate(Screen.GamesHub.route)
+                },
+                onNavigateToAiAssistant = {
+                    navController.navigate(Screen.AiAssistant.route)
                 },
                 cartItemCount = cartState.totalItems
             )
@@ -315,6 +319,19 @@ fun NavGraph(
 
         composable(route = Screen.RatePlace.route) {
             RatePlaceScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
+                }
+            )
+        }
+
+        composable(route = Screen.AiAssistant.route) {
+            AiAssistantScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 },

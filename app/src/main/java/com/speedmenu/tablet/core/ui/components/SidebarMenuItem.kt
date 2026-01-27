@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -62,7 +63,9 @@ enum class SidebarMenuItemStyle {
     /** Botão primário (CTA principal) - destaque visual forte */
     PRIMARY,
     /** Item secundário (navegação) - estilo editorial discreto */
-    SECONDARY
+    SECONDARY,
+    /** Botão de IA - estilo elegante com borda, sem fundo sólido */
+    AI_BORDERED
 }
 
 /**
@@ -104,6 +107,14 @@ fun SidebarMenuItem(
                 onClick = onClick,
                 modifier = modifier,
                 isActive = isActive
+            )
+        }
+        SidebarMenuItemStyle.AI_BORDERED -> {
+            AiBorderedMenuItem(
+                text = text,
+                icon = icon ?: throw IllegalArgumentException("Icon is required for AI_BORDERED style"),
+                onClick = onClick,
+                modifier = modifier
             )
         }
     }
@@ -384,6 +395,120 @@ private fun SecondaryMenuItem(
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .padding(start = 2.dp) // PaddingStart adicional para melhor alinhamento premium
+        )
+    }
+}
+
+/**
+ * Item de menu para IA.
+ * Design clean e discreto, integrado ao menu sem destaque visual extra.
+ */
+@Composable
+private fun AiBorderedMenuItem(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    // Cores seguindo o padrão dos botões secundários
+    val targetItemColor = if (isPressed) {
+        SpeedMenuColors.TextPrimary
+    } else {
+        SpeedMenuColors.TextPrimary // Texto sempre branco
+    }
+    
+    val targetIconColor = if (isPressed) {
+        SpeedMenuColors.TextPrimary
+    } else {
+        SpeedMenuColors.TextPrimary // Ícone sempre branco
+    }
+    
+    val targetBackgroundColor = if (isPressed) {
+        SpeedMenuColors.Hover.copy(alpha = 0.3f) // Mesmo hover dos secundários
+    } else {
+        Color.Transparent // Fundo transparente
+    }
+    
+    val itemColor by animateColorAsState(
+        targetValue = targetItemColor,
+        animationSpec = tween(250),
+        label = "ai_item_color"
+    )
+    
+    val iconColor by animateColorAsState(
+        targetValue = targetIconColor,
+        animationSpec = tween(250),
+        label = "ai_icon_color"
+    )
+    
+    val backgroundColor by animateColorAsState(
+        targetValue = targetBackgroundColor,
+        animationSpec = tween(250),
+        label = "ai_background_color"
+    )
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = tween(150),
+        label = "ai_scale"
+    )
+    
+    val alpha by animateFloatAsState(
+        targetValue = if (isPressed) 0.85f else 1f,
+        animationSpec = tween(150),
+        label = "ai_alpha"
+    )
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(64.dp) // Mesma altura dos botões secundários
+            .scale(scale)
+            .alpha(alpha)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .background(
+                color = backgroundColor,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        // Ícone com alinhamento vertical explícito
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier
+                .size(24.dp)
+                .align(Alignment.CenterVertically)
+        )
+        
+        // Espaçamento entre ícone e texto usando constante única
+        Spacer(modifier = Modifier.width(SidebarMenuAlignment.IconTextSpacing))
+        
+        // Texto com paddingStart adicional para melhor alinhamento
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = when {
+                isPressed -> FontWeight.Medium
+                else -> FontWeight.Normal
+            },
+            color = itemColor,
+            fontSize = 16.sp,
+            letterSpacing = 0.2.sp,
+            lineHeight = 22.sp,
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+                .padding(start = 2.dp)
         )
     }
 }

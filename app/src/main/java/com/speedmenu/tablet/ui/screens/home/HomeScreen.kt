@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.TableRestaurant
 import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -83,6 +84,7 @@ fun HomeScreen(
     onNavigateToViewOrder: () -> Unit = {},
     onNavigateToRatePlace: () -> Unit = {},
     onNavigateToGames: () -> Unit = {},
+    onNavigateToAiAssistant: () -> Unit = {},
     cartItemCount: Int = 0
 ) {
     // Estado para controlar animação de entrada
@@ -121,7 +123,8 @@ fun HomeScreen(
                     onStartOrderClick = onNavigateToCategories,
                     onViewOrderClick = onNavigateToViewOrder,
                     onRatePlaceClick = onNavigateToRatePlace,
-                    onGamesClick = onNavigateToGames
+                    onGamesClick = onNavigateToGames,
+                    onAiAssistantClick = onNavigateToAiAssistant
                 )
                 
                 // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
@@ -187,7 +190,8 @@ internal fun Sidebar(
     onStartOrderClick: () -> Unit = {},
     onViewOrderClick: () -> Unit = {},
     onRatePlaceClick: () -> Unit = {},
-    onGamesClick: () -> Unit = {}
+    onGamesClick: () -> Unit = {},
+    onAiAssistantClick: () -> Unit = {}
 ) {
     Box(modifier = modifier) {
         // ========== CAMADA 1: Gradiente vertical base refinado (dark → um pouco mais claro) ==========
@@ -255,83 +259,95 @@ internal fun Sidebar(
                 RestaurantLogo()
             }
             
-            // Espaçamento uniforme: régua única de 32dp entre todos os itens
-            Spacer(modifier = Modifier.height(32.dp))
+            // Espaçamento uniforme: régua única de 24dp entre todos os itens (reduzido para layout mais coeso)
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // ========== SEÇÃO 2: Ação Principal (CTA) ==========
+            // ========== SEÇÃO 2: Ações Principais ==========
             // Container próprio que ocupa 100% da largura da sidebar - sem padding horizontal
+            
+            // 1. Iniciar pedido
             SidebarMenuItem(
                 text = "Iniciar pedido",
                 icon = Icons.Default.ShoppingCart,
                 onClick = onStartOrderClick,
                 style = SidebarMenuItemStyle.PRIMARY,
-                modifier = Modifier.fillMaxWidth() // Ocupa 100% da largura da sidebar
+                modifier = Modifier.fillMaxWidth()
             )
             
-            // Espaçamento uniforme: mesma régua de 32dp
-            Spacer(modifier = Modifier.height(32.dp))
+            // Espaçamento reduzido: 20dp para layout mais compacto
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // ========== SEÇÃO 3: Navegação Secundária (Itens Editoriais) ==========
-            // Container com padding horizontal para os itens secundários
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 28.dp) // Padding aplicado apenas nos itens secundários
+            // 2. Ver meu pedido
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(
+                    animationSpec = tween(400, delayMillis = 200, easing = LinearEasing)
+                ) + slideInHorizontally(
+                    initialOffsetX = { -it / 3 },
+                    animationSpec = tween(400, delayMillis = 200, easing = LinearEasing)
+                )
             ) {
-                // Item 1: Ver meu pedido (com animação de entrada sutil)
-                // ATENÇÃO: Este é para VER PEDIDO JÁ CONFIRMADO, não o carrinho temporário
-                // Carrinho ≠ Ver pedido (são fluxos diferentes)
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(
-                        animationSpec = tween(400, delayMillis = 300, easing = LinearEasing)
-                    ) + slideInHorizontally(
-                        initialOffsetX = { -it / 3 }, // Deslocamento sutil
-                        animationSpec = tween(400, delayMillis = 300, easing = LinearEasing)
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 28.dp)
                 ) {
                     SidebarMenuItem(
                         text = "Ver meu pedido",
                         icon = Icons.Default.Visibility,
                         onClick = onViewOrderClick,
                         style = SidebarMenuItemStyle.SECONDARY,
-                        modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
+            
+            // Espaçamento reduzido: 20dp
+            Spacer(modifier = Modifier.height(20.dp))
 
-                // Espaçamento uniforme: mesma régua de 32dp
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Item 2: Avaliar o local (com animação de entrada sutil)
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(
-                        animationSpec = tween(400, delayMillis = 400, easing = LinearEasing)
-                    ) + slideInHorizontally(
-                        initialOffsetX = { -it / 3 }, // Deslocamento sutil
-                        animationSpec = tween(400, delayMillis = 400, easing = LinearEasing)
-                    )
+            // 3. Pergunte à IA
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(
+                    animationSpec = tween(400, delayMillis = 300, easing = LinearEasing)
+                ) + slideInHorizontally(
+                    initialOffsetX = { -it / 3 },
+                    animationSpec = tween(400, delayMillis = 300, easing = LinearEasing)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 28.dp) // Mesmo padding dos botões secundários
                 ) {
                     SidebarMenuItem(
-                        text = "Avaliar o local",
-                        icon = Icons.Default.Star,
-                        onClick = onRatePlaceClick,
-                        style = SidebarMenuItemStyle.SECONDARY,
-                        modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
+                        text = "Pergunte à IA",
+                        icon = Icons.Default.AutoAwesome,
+                        onClick = onAiAssistantClick,
+                        style = SidebarMenuItemStyle.AI_BORDERED,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
+            
+            // Espaçamento reduzido: 20dp
+            Spacer(modifier = Modifier.height(20.dp))
 
-                // Espaçamento uniforme: mesma régua de 32dp
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Item 3: Jogos (com animação de entrada sutil)
+            // ========== SEÇÃO 3: Navegação Secundária (Itens Editoriais) ==========
+            // Container com padding horizontal para os itens secundários
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 28.dp)
+            ) {
+                // 4. Jogos
                 AnimatedVisibility(
                     visible = isVisible,
                     enter = fadeIn(
-                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
+                        animationSpec = tween(400, delayMillis = 400, easing = LinearEasing)
                     ) + slideInHorizontally(
-                        initialOffsetX = { -it / 3 }, // Deslocamento sutil
-                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
+                        initialOffsetX = { -it / 3 },
+                        animationSpec = tween(400, delayMillis = 400, easing = LinearEasing)
                     )
                 ) {
                     SidebarMenuItem(
@@ -339,7 +355,29 @@ internal fun Sidebar(
                         icon = Icons.Default.SportsEsports,
                         onClick = onGamesClick,
                         style = SidebarMenuItemStyle.SECONDARY,
-                        modifier = Modifier.fillMaxWidth() // Garantir alinhamento horizontal
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Espaçamento reduzido: 20dp
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 5. Avaliar o local
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(
+                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
+                    ) + slideInHorizontally(
+                        initialOffsetX = { -it / 3 },
+                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
+                    )
+                ) {
+                    SidebarMenuItem(
+                        text = "Avaliar o local",
+                        icon = Icons.Default.Star,
+                        onClick = onRatePlaceClick,
+                        style = SidebarMenuItemStyle.SECONDARY,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

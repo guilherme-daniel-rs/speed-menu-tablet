@@ -67,5 +67,10 @@ sealed class Screen(val route: String) {
      * Jogo Flappy
      */
     object GameFlappy : Screen("game_flappy")
+    
+    /**
+     * Tela de assistente de IA
+     */
+    object AiAssistant : Screen("ai_assistant")
 }
 
