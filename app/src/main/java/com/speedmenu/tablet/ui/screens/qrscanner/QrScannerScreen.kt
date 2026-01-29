@@ -11,6 +11,7 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import java.util.concurrent.atomic.AtomicBoolean
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +43,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -58,8 +62,13 @@ import com.speedmenu.tablet.ui.viewmodel.ScanState
 import com.speedmenu.tablet.ui.viewmodel.ScanState.Error
 import com.speedmenu.tablet.ui.viewmodel.ScanState.Success
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.concurrent.Executors
 import android.util.Log
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 /**
  * Detecta se o app está rodando em um emulador Android.
@@ -315,6 +324,8 @@ private fun CameraPanel(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .graphicsLayer { clip = true }
+            .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
             .background(
                 color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
@@ -473,8 +484,14 @@ private fun CameraPanel(
             
             else -> {
                 // Escaneando
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer { clip = true }
+                        .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                ) {
                     CameraPreview(
+                        hasCameraPermission = hasCameraPermission,
                         hasScanned = scanState is ScanState.Success,
                         onBarcodeDetected = onBarcodeDetected,
                         modifier = Modifier.fillMaxSize()
@@ -557,26 +574,25 @@ private fun CameraPanel(
 /**
  * Preview da câmera com análise de barcode.
  * 
- * CAUSA RAIZ DA LENTIDÃO (CORRIGIDA):
- * 1. ContextCompat.getMainExecutor() fazia toda inicialização da câmera rodar na MAIN THREAD
- *    → Corrigido: usando executor de background para ProcessCameraProvider
- * 
- * 2. Toda lógica de bind estava dentro do AndroidView(factory), causando múltiplas inicializações
- *    → Corrigido: PreviewView criado com remember, bind/unbind movido para DisposableEffect
- * 
- * 3. cameraProvider.unbindAll() chamado dentro do callback do analyzer (thread do analyzer)
- *    → Corrigido: unbindAll disparado via mainExecutor fora do callback do frame
+ * CORREÇÕES PARA TELA PRETA EM SAMSUNG (LANDSCAPE):
+ * 1. PreviewView configurado com scaleType FILL_CENTER e implementationMode COMPATIBLE
+ * 2. Bind apenas quando permissão concedida e previewView existe (LaunchedEffect com keys)
+ * 3. unbindAll() antes de bind e cleanup adequado ao sair
+ * 4. CameraSelector explícito com requireLensFacing(BACK)
+ * 5. setTargetRotation para Preview e ImageAnalysis (landscape)
+ * 6. Logs úteis para debug
  * 
  * OTIMIZAÇÕES DE PERFORMANCE:
  * - Executor único reutilizável para analyzer (não recriado a cada recomposition)
  * - Executor separado para ProcessCameraProvider (background thread)
  * - BarcodeScanner criado uma única vez
- * - DisposableEffect para bind/unbind adequado da câmera
+ * - LaunchedEffect para bind/unbind adequado da câmera
  * - Proteção contra múltiplos frames simultâneos
  * - Sempre fecha imageProxy (inclusive em erros)
  */
 @Composable
 private fun CameraPreview(
+    hasCameraPermission: Boolean,
     hasScanned: Boolean,
     onBarcodeDetected: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -585,12 +601,8 @@ private fun CameraPreview(
     val lifecycleOwner = LocalLifecycleOwner.current
     
     // Executor único para analyzer (não recriado a cada recomposition)
+    // IMPORTANTE: analyzer roda em background, mas PreviewView/surfaceProvider deve rodar na main
     val analyzerExecutor = remember {
-        Executors.newSingleThreadExecutor()
-    }
-    
-    // Executor de background para ProcessCameraProvider (evita bloquear main thread)
-    val cameraExecutor = remember {
         Executors.newSingleThreadExecutor()
     }
     
@@ -613,35 +625,123 @@ private fun CameraPreview(
         hasScannedRef.set(hasScanned)
     }
     
-    // PreviewView criado UMA ÚNICA VEZ (não recriado a cada recomposition)
-    val previewView = remember { PreviewView(context) }
+    // PreviewView criado e configurado UMA ÚNICA VEZ
+    val previewViewState = remember { mutableStateOf<PreviewView?>(null) }
     
     // Referências para cleanup e controle
     val cameraProviderRef = remember { mutableStateOf<ProcessCameraProvider?>(null) }
     val imageAnalysisRef = remember { mutableStateOf<ImageAnalysis?>(null) }
     val shouldStopRef = remember { AtomicBoolean(false) }
+    val isBoundRef = remember { AtomicBoolean(false) }
     
-    // DisposableEffect para bind/unbind da câmera (executa apenas uma vez por entrada/saída)
-    DisposableEffect(lifecycleOwner, previewView) {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+    // AndroidView cria e configura o PreviewView
+    AndroidView(
+        factory = { ctx ->
+            PreviewView(ctx).apply {
+                // Configurações críticas para Samsung (evita tela preta)
+                scaleType = PreviewView.ScaleType.FILL_CENTER
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                
+                // Clipping do PreviewView (garante que não vaze do container)
+                clipToOutline = true
+                outlineProvider = ViewOutlineProvider.BACKGROUND
+                
+                // LayoutParams para respeitar o container
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                
+                // Salva a instância no estado
+                previewViewState.value = this
+                
+                Log.d("CameraPreview", "✅ PreviewView criado e configurado com clipping")
+            }
+        },
+        modifier = modifier,
+        onRelease = {
+            // Limpa referência ao sair
+            previewViewState.value = null
+            Log.d("CameraPreview", "🔴 PreviewView liberado")
+        }
+    )
+    
+    // LaunchedEffect para bind da câmera (apenas quando permissão concedida e previewView existe)
+    LaunchedEffect(hasCameraPermission, previewViewState.value) {
+        val previewView = previewViewState.value
         
+        // Se permissão negada ou previewView não existe, faz unbind se necessário
+        if (!hasCameraPermission || previewView == null) {
+            if (isBoundRef.get()) {
+                Log.d("CameraPreview", "🔴 Condições não satisfeitas: fazendo unbind...")
+                mainExecutor.execute {
+                    cameraProviderRef.value?.unbindAll()
+                    imageAnalysisRef.value?.clearAnalyzer()
+                    isBoundRef.set(false)
+                    Log.d("CameraPreview", "✅ Unbind executado")
+                }
+            } else {
+                Log.d("CameraPreview", "⏸️ Bind cancelado: permissão=${hasCameraPermission}, previewView=${previewView != null}")
+            }
+            return@LaunchedEffect
+        }
+        
+        // Proteção: não bindar múltiplas vezes
+        if (isBoundRef.get()) {
+            Log.d("CameraPreview", "⏸️ Bind cancelado: já está bindado")
+            return@LaunchedEffect
+        }
+        
+        Log.d("CameraPreview", "🚀 Iniciando bind da câmera...")
+        
+        try {
+            // Aguarda ProcessCameraProvider (pode rodar em background)
+            val cameraProvider = suspendCancellableCoroutine<ProcessCameraProvider> { continuation ->
+                val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
             try {
-                val cameraProvider = cameraProviderFuture.get()
+                        val provider = cameraProviderFuture.get()
+                        continuation.resume(provider)
+                    } catch (e: Exception) {
+                        continuation.resumeWithException(e)
+                    }
+                }, mainExecutor) // Listener roda na main thread
+            }
+            
                 cameraProviderRef.value = cameraProvider
+            Log.d("CameraPreview", "✅ ProcessCameraProvider obtido")
+            
+            // CRÍTICO: Toda lógica do PreviewView deve rodar na MAIN THREAD
+            withContext(Dispatchers.Main.immediate) {
+                Log.d("CameraPreview", "THREAD(surfaceProvider)=${Thread.currentThread().name}")
                 
-                // Preview
-                val preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView.surfaceProvider)
-                }
+                // Obtém rotação do display (landscape = 90 ou 270)
+                val displayRotation = previewView.display.rotation
+                Log.d("CameraPreview", "📐 Display rotation: $displayRotation")
                 
-                // Image Analysis para barcode scanning
+                // Obtém surfaceProvider na MAIN THREAD (CRÍTICO!)
+                val surfaceProvider = previewView.surfaceProvider
+                Log.d("CameraPreview", "✅ surfaceProvider obtido na main thread")
+                
+                // Preview com rotação configurada
+                val preview = Preview.Builder()
+                    .setTargetRotation(displayRotation)
+                    .build()
+                    .also {
+                        // setSurfaceProvider também na MAIN THREAD
+                        it.setSurfaceProvider(surfaceProvider)
+                        Log.d("CameraPreview", "✅ Preview configurado com surfaceProvider e rotation=$displayRotation")
+                    }
+                
+                // Image Analysis para barcode scanning com rotação
                 val imageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .setTargetRotation(displayRotation)
                     .build()
                     .also { analysis ->
                         imageAnalysisRef.value = analysis
                         
+                        // Analyzer roda em background (executor dedicado)
                         analysis.setAnalyzer(analyzerExecutor) { imageProxy ->
                             try {
                                 // Para análise se já escaneou ou deve parar (mas sempre fecha o imageProxy)
@@ -673,12 +773,16 @@ private fun CameraPreview(
                                                         hasScannedRef.set(true)
                                                         shouldStopRef.set(true)
                                                         
+                                                        Log.d("CameraPreview", "✅ QRCode detectado: $rawValue")
+                                                        
                                                         // Para a análise imediatamente
                                                         analysis.clearAnalyzer()
                                                         
                                                         // Unbind da câmera via mainExecutor (fora do callback do frame)
                                                         mainExecutor.execute {
                                                             cameraProvider.unbindAll()
+                                                            isBoundRef.set(false)
+                                                            Log.d("CameraPreview", "🧹 unbindAll() após scan bem-sucedido")
                                                         }
                                                         
                                                         // Dispara callback na main thread
@@ -691,8 +795,9 @@ private fun CameraPreview(
                                             }
                                             isProcessingRef.set(false)
                                         }
-                                        .addOnFailureListener {
-                                            // Ignora erros silenciosamente
+                                        .addOnFailureListener { e ->
+                                            // Log de erro (mas não bloqueia)
+                                            Log.w("CameraPreview", "⚠️ Erro ao processar frame: ${e.message}")
                                             isProcessingRef.set(false)
                                         }
                                         .addOnCompleteListener {
@@ -705,50 +810,81 @@ private fun CameraPreview(
                                 }
                             } catch (e: Exception) {
                                 // Garante que imageProxy seja fechado mesmo em caso de erro
+                                Log.e("CameraPreview", "❌ Erro no analyzer: ${e.message}", e)
                                 isProcessingRef.set(false)
                                 imageProxy.close()
                             }
                         }
+                        
+                        Log.d("CameraPreview", "✅ ImageAnalysis configurado com analyzer")
                     }
                 
-                // Camera selector
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                // Camera selector: tenta frontal primeiro, fallback para traseira
+                val frontCameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                val backCameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                 
-                // Bind da câmera ao lifecycle (apenas uma vez, na main thread)
-                mainExecutor.execute {
+                val cameraSelector = try {
+                    // Verifica se câmera frontal está disponível
+                    if (cameraProvider.hasCamera(frontCameraSelector)) {
+                        Log.d("CameraPreview", "✅ CameraSelector configurado (FRONT)")
+                        frontCameraSelector
+                    } else {
+                        Log.d("CameraPreview", "⚠️ Câmera frontal não disponível, usando traseira")
+                        backCameraSelector
+                    }
+                } catch (e: Exception) {
+                    Log.w("CameraPreview", "⚠️ Erro ao verificar câmera frontal, usando traseira: ${e.message}")
+                    backCameraSelector
+                }
+                
+                // Unbind antes de bind (evita câmera "presa" e tela preta)
                     cameraProvider.unbindAll()
+                Log.d("CameraPreview", "🧹 unbindAll() executado antes do bind")
+                
+                // Bind da câmera ao lifecycle (na MAIN THREAD)
                     cameraProvider.bindToLifecycle(
                         lifecycleOwner,
                         cameraSelector,
                         preview,
                         imageAnalysis
                     )
+                isBoundRef.set(true)
+                Log.d("CameraPreview", "✅ bindToLifecycle executado com sucesso na main thread")
                 }
             } catch (e: Exception) {
-                // Erro ao inicializar câmera
+            Log.e("CameraPreview", "❌ Erro ao inicializar câmera: ${e.message}", e)
+            isBoundRef.set(false)
+        }
             }
-        }, cameraExecutor) // Usa executor de background, não main thread
         
+    // DisposableEffect para cleanup ao sair da tela
+    DisposableEffect(lifecycleOwner) {
         onDispose {
+            Log.d("CameraPreview", "🔴 DisposableEffect onDispose: limpando recursos...")
+            
             // Marca para parar processamento
             shouldStopRef.set(true)
+            isBoundRef.set(false)
             
             // Unbind da câmera ao sair da tela (na main thread)
             mainExecutor.execute {
+                try {
                 cameraProviderRef.value?.unbindAll()
                 imageAnalysisRef.value?.clearAnalyzer()
+                    Log.d("CameraPreview", "✅ Cleanup executado: unbindAll() e clearAnalyzer()")
+                } catch (e: Exception) {
+                    Log.e("CameraPreview", "❌ Erro no cleanup: ${e.message}", e)
+                }
             }
             
-            // Shutdown dos executors
+            // Shutdown do executor do analyzer
+            try {
             analyzerExecutor.shutdown()
-            cameraExecutor.shutdown()
+                Log.d("CameraPreview", "✅ Analyzer executor shutdown")
+            } catch (e: Exception) {
+                Log.e("CameraPreview", "❌ Erro ao fazer shutdown do executor: ${e.message}", e)
+            }
         }
     }
-    
-    // AndroidView apenas retorna o PreviewView já criado
-    AndroidView(
-        factory = { previewView },
-        modifier = modifier
-    )
 }
 

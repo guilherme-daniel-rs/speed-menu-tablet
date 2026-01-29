@@ -68,7 +68,7 @@ fun CompactOrderPanel(
         modifier = Modifier
             .fillMaxHeight()
             .background(
-                color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                color = SpeedMenuColors.Surface.copy(alpha = 0.98f), // Opaco (98%) para evitar câmera aparecer por trás
                 shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
             )
             .padding(24.dp)
@@ -90,17 +90,16 @@ fun CompactOrderPanel(
                 fontSize = 22.sp
             )
             
-            // Subtítulo
-            Text(
-                text = when (mode) {
-                    QrScannerMode.CHECKOUT -> "Escaneie a comanda para finalizar"
-                    QrScannerMode.VIEW_ORDER -> "Escaneie a comanda para visualizar o pedido"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Normal,
-                color = SpeedMenuColors.TextSecondary,
-                fontSize = 14.sp
-            )
+            // Subtítulo: apenas no CHECKOUT (no VIEW_ORDER, a instrução fica no overlay da câmera)
+            if (mode == QrScannerMode.CHECKOUT) {
+                Text(
+                    text = "Escaneie a comanda para finalizar",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Normal,
+                    color = SpeedMenuColors.TextSecondary,
+                    fontSize = 14.sp
+                )
+            }
             
             // Badge da comanda (se houver)
             if (comandaCode != null) {
