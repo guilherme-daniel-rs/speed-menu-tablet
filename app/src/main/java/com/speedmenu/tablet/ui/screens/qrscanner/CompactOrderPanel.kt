@@ -17,14 +17,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,6 +54,9 @@ import com.speedmenu.tablet.ui.viewmodel.FinalizationState
  * @param onUpdateQuantity Callback para atualizar quantidade (apenas CHECKOUT)
  * @param onRemoveItem Callback para remover item (apenas CHECKOUT)
  * @param onRetryFinalization Callback para tentar finalizar novamente após erro (apenas CHECKOUT)
+ * @param billRequested Se true, a conta já foi solicitada (VIEW_ORDER apenas)
+ * @param isRequestingBill Se true, está solicitando a conta (VIEW_ORDER apenas)
+ * @param onRequestBill Callback para solicitar a conta (VIEW_ORDER apenas)
  */
 @Composable
 fun CompactOrderPanel(
@@ -61,7 +68,10 @@ fun CompactOrderPanel(
     finalizationState: FinalizationState? = null,
     onUpdateQuantity: ((String, Int) -> Unit)? = null,
     onRemoveItem: ((String) -> Unit)? = null,
-    onRetryFinalization: () -> Unit = {}
+    onRetryFinalization: () -> Unit = {},
+    billRequested: Boolean = false,
+    isRequestingBill: Boolean = false,
+    onRequestBill: () -> Unit = {}
 ) {
     val colorScheme = MaterialTheme.colorScheme
     
@@ -316,6 +326,108 @@ fun CompactOrderPanel(
                     color = colorScheme.primary,
                     fontSize = 20.sp
                 )
+            }
+            
+            // Botão "Pedir conta" (apenas VIEW_ORDER)
+            if (mode == QrScannerMode.VIEW_ORDER) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Botão "Pedir conta" ou "Conta solicitada"
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .then(
+                            if (billRequested || isRequestingBill) {
+                                Modifier.background(
+                                    color = colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                            } else {
+                                Modifier
+                                    .shadow(
+                                        elevation = 6.dp,
+                                        shape = RoundedCornerShape(16.dp),
+                                        spotColor = colorScheme.primary.copy(alpha = 0.25f),
+                                        ambientColor = colorScheme.primary.copy(alpha = 0.12f)
+                                    )
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                colorScheme.primary,
+                                                colorScheme.primary.copy(alpha = 0.9f)
+                                            )
+                                        ),
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
+                                    .clickable(
+                                        enabled = !isRequestingBill && !billRequested,
+                                        onClick = onRequestBill
+                                    )
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isRequestingBill) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                color = colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Solicitando...",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = colorScheme.onSurfaceVariant,
+                                fontSize = 16.sp
+                            )
+                        }
+                    } else if (billRequested) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Receipt,
+                                contentDescription = null,
+                                tint = colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Conta solicitada",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = colorScheme.onSurfaceVariant,
+                                fontSize = 16.sp
+                            )
+                        }
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Receipt,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Pedir conta",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                }
             }
             
             // Estados de finalização (apenas CHECKOUT)

@@ -55,6 +55,8 @@ import com.google.mlkit.vision.common.InputImage
 import com.speedmenu.tablet.core.ui.components.OrderPlacedDialog
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
+import com.speedmenu.tablet.core.ui.components.ConfirmBillAlertDialog
+import com.speedmenu.tablet.core.ui.components.BillRequestedDialog
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import com.speedmenu.tablet.ui.viewmodel.FinalizationState
@@ -136,6 +138,10 @@ fun QrScannerScreen(
     var tapCount by remember { mutableStateOf(0) }
     var lastTapTime by remember { mutableStateOf(0L) }
     var showOrderPlacedDialog by remember { mutableStateOf(false) }
+    
+    // Estados para pedir conta (VIEW_ORDER)
+    var showConfirmBillDialog by remember { mutableStateOf(false) }
+    var showBillRequestedDialog by remember { mutableStateOf(false) }
     
     // Detecta se está em modo MOCK (DEBUG + EMULADOR)
     val isMockMode = remember {
@@ -290,6 +296,12 @@ fun QrScannerScreen(
                         if (mode == QrScannerMode.CHECKOUT) {
                             qrScannerViewModel.retryFinalization(cartState.items)
                         }
+                    },
+                    // Estados de pedir conta (VIEW_ORDER apenas)
+                    billRequested = uiState.billRequested,
+                    isRequestingBill = uiState.isRequestingBill,
+                    onRequestBill = {
+                        showConfirmBillDialog = true
                     }
                 )
             }
@@ -317,6 +329,45 @@ fun QrScannerScreen(
             },
             onGoToHome = {
                 showOrderPlacedDialog = false
+                onNavigateToHome()
+            }
+        )
+    }
+    
+    // Dialog de confirmação para pedir conta (VIEW_ORDER apenas)
+    if (mode == QrScannerMode.VIEW_ORDER) {
+        ConfirmBillAlertDialog(
+            visible = showConfirmBillDialog,
+            onDismiss = {
+                showConfirmBillDialog = false
+            },
+            onConfirm = {
+                showConfirmBillDialog = false
+                qrScannerViewModel.requestBill()
+            }
+        )
+    }
+    
+    // Dialog de conta solicitada (VIEW_ORDER apenas)
+    // Mostra quando a conta foi solicitada com sucesso
+    LaunchedEffect(uiState.billRequested) {
+        if (mode == QrScannerMode.VIEW_ORDER && uiState.billRequested && !uiState.isRequestingBill) {
+            showBillRequestedDialog = true
+        }
+    }
+    
+    if (mode == QrScannerMode.VIEW_ORDER && showBillRequestedDialog) {
+        BillRequestedDialog(
+            visible = showBillRequestedDialog,
+            comandaCode = uiState.comandaCode,
+            onDismiss = {
+                showBillRequestedDialog = false
+                // Navega para Home após fechar o dialog
+                onNavigateToHome()
+            },
+            onGoToHome = {
+                showBillRequestedDialog = false
+                // Navega para Home e limpa a stack
                 onNavigateToHome()
             }
         )

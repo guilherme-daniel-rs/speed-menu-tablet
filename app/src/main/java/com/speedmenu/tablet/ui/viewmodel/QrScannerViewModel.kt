@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.domain.repository.OrderRepository
 import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerMode
@@ -47,7 +48,10 @@ data class QrScannerUiState(
     val isLoadingOrder: Boolean = false,
     val orderError: String? = null,
     // Estado da finalização (CHECKOUT apenas)
-    val finalizationState: FinalizationState = FinalizationState.Idle
+    val finalizationState: FinalizationState = FinalizationState.Idle,
+    // Estado de pedir conta (VIEW_ORDER apenas)
+    val isRequestingBill: Boolean = false,
+    val billRequested: Boolean = false
 ) {
     /**
      * Calcula o subtotal do pedido (VIEW_ORDER apenas).
@@ -229,8 +233,50 @@ class QrScannerViewModel @Inject constructor(
             comandaCode = null,
             orderItems = emptyList(),
             orderError = null,
-            finalizationState = FinalizationState.Idle
+            finalizationState = FinalizationState.Idle,
+            isRequestingBill = false,
+            billRequested = false
         )
+    }
+    
+    /**
+     * Solicita a conta para a comanda (VIEW_ORDER apenas).
+     */
+    fun requestBill() {
+        // Proteção: só permite solicitar conta no modo VIEW_ORDER
+        if (_uiState.value.mode != QrScannerMode.VIEW_ORDER) {
+            return
+        }
+        
+        // Proteção: não permite solicitar se já foi solicitada
+        if (_uiState.value.billRequested) {
+            return
+        }
+        
+        // Proteção: não permite solicitar se já está solicitando
+        if (_uiState.value.isRequestingBill) {
+            return
+        }
+        
+        val comandaCode = _uiState.value.comandaCode
+        if (comandaCode == null) {
+            return
+        }
+        
+        _uiState.value = _uiState.value.copy(
+            isRequestingBill = true
+        )
+        
+        viewModelScope.launch {
+            // TODO: Chamar API para solicitar conta
+            // Por enquanto, apenas simula sucesso após um delay
+            delay(500) // Simula chamada de API
+            
+            _uiState.value = _uiState.value.copy(
+                isRequestingBill = false,
+                billRequested = true
+            )
+        }
     }
     
     /**
