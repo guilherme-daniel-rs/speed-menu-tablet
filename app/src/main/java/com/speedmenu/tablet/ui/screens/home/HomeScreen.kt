@@ -824,18 +824,7 @@ private fun HomeBanner() {
         )
         
         // ========== CAMADA 1: Carrossel de imagens ==========
-        // ColorMatrix para aumentar brilho e contraste (imagens mais vivas e apetitosas)
-        // Ajuste sutil: brilho e contraste levemente aumentados
-        val brightnessContrastMatrix = remember {
-            ColorMatrix(floatArrayOf(
-                // Contraste: 1.12 (aumenta contraste sutilmente)
-                1.12f, 0f, 0f, 0f, 0.12f, // R: contraste + brilho aumentado
-                0f, 1.12f, 0f, 0f, 0.12f, // G: contraste + brilho aumentado
-                0f, 0f, 1.12f, 0f, 0.12f, // B: contraste + brilho aumentado
-                0f, 0f, 0f, 1f, 0f       // Alpha: sem alteração
-            ))
-        }
-        
+        // Imagens exibidas com brilho padrão (sem filtros de cor)
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
@@ -844,59 +833,9 @@ private fun HomeBanner() {
                 painter = painterResource(id = coverImages[page]),
                 contentDescription = "Imagem de capa ${page + 1}",
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                colorFilter = ColorFilter.colorMatrix(brightnessContrastMatrix)
+                contentScale = ContentScale.Crop
             )
         }
-
-        // ========== CAMADA 2: Padrão sutil de profundidade ==========
-        // Gradiente horizontal para adicionar dimensão (reduzido ainda mais para mais clareza)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0x06000000), // Reduzido de 0x0A para 0x06 (ainda menos escuro à esquerda)
-                            Color(0x00000000), // Transparente no centro
-                            Color(0x0F000000)  // Reduzido de 0x15 para 0x0F (ainda menos escuro à direita)
-                        )
-                    )
-                )
-        )
-
-        // ========== CAMADA 3: Vignette radial ==========
-        // Escurecer bordas para foco central (reduzido ainda mais para mais clareza)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0x00000000), // Transparente no centro
-                            Color(0x18000000), // Reduzido de 0x25 para 0x18 (ainda menos escuro nas bordas)
-                            Color(0x40000000)  // Reduzido de 0x50 para 0x40 (ainda menos escuro nas bordas externas)
-                        ),
-                        radius = 1200f
-                    )
-                )
-        )
-
-        // ========== CAMADA 4: Overlay de contraste ==========
-        // Overlay escuro para melhorar contraste do texto (reduzido ainda mais para mais clareza, mantendo legibilidade)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            SpeedMenuColors.OverlayLight.copy(alpha = 0.28f), // Reduzido de 0.35f para 0.28f (topo)
-                            SpeedMenuColors.Overlay.copy(alpha = 0.48f), // Reduzido de 0.55f para 0.48f (meio)
-                            SpeedMenuColors.Overlay.copy(alpha = 0.62f)  // Reduzido de 0.70f para 0.62f (base)
-                        )
-                    )
-                )
-        )
         
         // ========== CAMADA 4.5: Indicadores do carrossel ==========
         // Indicadores discretos no canto inferior direito
