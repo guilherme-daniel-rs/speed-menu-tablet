@@ -4,71 +4,79 @@
         "source": "com.speedmenu.tablet.app-main-70:/drawable/logo_2.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_entradas.jpeg.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/entradas.jpeg"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/mipmap-mdpi_ic_launcher.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/mipmap-mdpi/ic_launcher.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_pratos_principais.jpeg.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/pratos_principais.jpeg"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_capa_3.jpg.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/capa_3.jpg"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_capa.jpg.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/capa.jpg"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_capa.jpg.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/capa.jpg"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_bebidas.jpg.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/bebidas.jpg"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_sobremesas.png.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/sobremesas.png"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_qr_instagram.png.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/qr_instagram.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_logo_1.png.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/logo_1.png"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_capa_2.png.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/capa_2.png"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/mipmap-mdpi_ic_launcher.xml.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/mipmap-mdpi/ic_launcher.xml"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/xml_data_extraction_rules.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/xml/data_extraction_rules.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_logo_1.png.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/logo_1.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/mipmap-mdpi_ic_launcher_foreground.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/mipmap-mdpi/ic_launcher_foreground.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_capa_3.jpg.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/capa_3.jpg"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_logo.png.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/logo.png"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_qr_website.png.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/qr_website.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_pratos_principais.jpeg.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/pratos_principais.jpeg"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_flappy.png.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/flappy.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/xml_backup_rules.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/xml/backup_rules.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/mipmap-mdpi_ic_launcher_foreground.xml.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/mipmap-mdpi/ic_launcher_foreground.xml"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_flappy.png.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/flappy.png"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/mipmap-mdpi_ic_launcher_round.xml.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/mipmap-mdpi/ic_launcher_round.xml"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/mipmap-mdpi_ic_launcher_round.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/mipmap-mdpi/ic_launcher_round.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_logo.png.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/logo.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_entradas.jpeg.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/entradas.jpeg"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_sobremesas.png.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/sobremesas.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-68:/drawable_bebidas.jpg.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-70:/drawable/bebidas.jpg"
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/drawable_capa_2.png.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/drawable/capa_2.png"
+    },
+    {
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/xml_data_extraction_rules.xml.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.speedmenu.tablet.app-merged_res-68:/xml_backup_rules.xml.flat",
+        "source": "com.speedmenu.tablet.app-main-70:/xml/backup_rules.xml"
     }
 ]

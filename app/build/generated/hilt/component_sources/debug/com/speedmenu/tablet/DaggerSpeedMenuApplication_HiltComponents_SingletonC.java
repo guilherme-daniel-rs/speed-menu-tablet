@@ -3,14 +3,18 @@ package com.speedmenu.tablet;
 import android.app.Activity;
 import android.app.Service;
 import android.view.View;
+import androidx.datastore.core.DataStore;
+import androidx.datastore.preferences.core.Preferences;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
 import com.speedmenu.tablet.core.di.AppModule;
 import com.speedmenu.tablet.core.di.ConfigModule;
 import com.speedmenu.tablet.core.di.ConfigModule_ProvideAppConfigDataStoreFactory;
+import com.speedmenu.tablet.core.di.ConfigModule_ProvideAppConfigDataStoreWrapperFactory;
 import com.speedmenu.tablet.core.di.ConfigModule_ProvideAppConfigRepositoryFactory;
 import com.speedmenu.tablet.core.di.ConfigModule_ProvideAppConfigSourceFactory;
+import com.speedmenu.tablet.core.di.ConfigModule_ProvideRestaurantSessionDataStoreFactory;
 import com.speedmenu.tablet.core.di.ConfigModule_ProvideRestaurantSessionFactory;
 import com.speedmenu.tablet.data.local.AppConfigDataStore;
 import com.speedmenu.tablet.data.local.RestaurantSession;
@@ -622,11 +626,15 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     private final SingletonCImpl singletonCImpl = this;
 
+    private Provider<DataStore<Preferences>> provideAppConfigDataStoreProvider;
+
+    private Provider<AppConfigDataStore> provideAppConfigDataStoreWrapperProvider;
+
     private Provider<AppConfigSource> provideAppConfigSourceProvider;
 
     private Provider<AppConfigRepository> provideAppConfigRepositoryProvider;
 
-    private Provider<AppConfigDataStore> provideAppConfigDataStoreProvider;
+    private Provider<DataStore<Preferences>> provideRestaurantSessionDataStoreProvider;
 
     private Provider<RestaurantSession> provideRestaurantSessionProvider;
 
@@ -648,14 +656,16 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
 
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
-      this.provideAppConfigSourceProvider = DoubleCheck.provider(new SwitchingProvider<AppConfigSource>(singletonCImpl, 1));
+      this.provideAppConfigDataStoreProvider = DoubleCheck.provider(new SwitchingProvider<DataStore<Preferences>>(singletonCImpl, 2));
+      this.provideAppConfigDataStoreWrapperProvider = DoubleCheck.provider(new SwitchingProvider<AppConfigDataStore>(singletonCImpl, 1));
+      this.provideAppConfigSourceProvider = DoubleCheck.provider(new SwitchingProvider<AppConfigSource>(singletonCImpl, 3));
       this.provideAppConfigRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AppConfigRepository>(singletonCImpl, 0));
-      this.provideAppConfigDataStoreProvider = DoubleCheck.provider(new SwitchingProvider<AppConfigDataStore>(singletonCImpl, 3));
-      this.provideRestaurantSessionProvider = DoubleCheck.provider(new SwitchingProvider<RestaurantSession>(singletonCImpl, 2));
-      this.gamePreferencesProvider = DoubleCheck.provider(new SwitchingProvider<GamePreferences>(singletonCImpl, 4));
-      this.orderRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 5);
+      this.provideRestaurantSessionDataStoreProvider = DoubleCheck.provider(new SwitchingProvider<DataStore<Preferences>>(singletonCImpl, 5));
+      this.provideRestaurantSessionProvider = DoubleCheck.provider(new SwitchingProvider<RestaurantSession>(singletonCImpl, 4));
+      this.gamePreferencesProvider = DoubleCheck.provider(new SwitchingProvider<GamePreferences>(singletonCImpl, 6));
+      this.orderRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 7);
       this.bindOrderRepositoryProvider = DoubleCheck.provider((Provider) orderRepositoryImplProvider);
-      this.ratingRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 6);
+      this.ratingRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 8);
       this.bindRatingRepositoryProvider = DoubleCheck.provider((Provider) ratingRepositoryImplProvider);
     }
 
@@ -693,24 +703,30 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
       public T get() {
         switch (id) {
           case 0: // com.speedmenu.tablet.domain.repository.AppConfigRepository 
-          return (T) ConfigModule_ProvideAppConfigRepositoryFactory.provideAppConfigRepository(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideAppConfigSourceProvider.get());
+          return (T) ConfigModule_ProvideAppConfigRepositoryFactory.provideAppConfigRepository(singletonCImpl.provideAppConfigDataStoreWrapperProvider.get(), singletonCImpl.provideAppConfigSourceProvider.get());
 
-          case 1: // com.speedmenu.tablet.domain.repository.AppConfigSource 
-          return (T) ConfigModule_ProvideAppConfigSourceFactory.provideAppConfigSource();
+          case 1: // com.speedmenu.tablet.data.local.AppConfigDataStore 
+          return (T) ConfigModule_ProvideAppConfigDataStoreWrapperFactory.provideAppConfigDataStoreWrapper(singletonCImpl.provideAppConfigDataStoreProvider.get());
 
-          case 2: // com.speedmenu.tablet.data.local.RestaurantSession 
-          return (T) ConfigModule_ProvideRestaurantSessionFactory.provideRestaurantSession(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideAppConfigDataStoreProvider.get());
-
-          case 3: // com.speedmenu.tablet.data.local.AppConfigDataStore 
+          case 2: // @com.speedmenu.tablet.core.di.AppConfigDS androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> 
           return (T) ConfigModule_ProvideAppConfigDataStoreFactory.provideAppConfigDataStore(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 4: // com.speedmenu.tablet.data.preferences.GamePreferences 
+          case 3: // com.speedmenu.tablet.domain.repository.AppConfigSource 
+          return (T) ConfigModule_ProvideAppConfigSourceFactory.provideAppConfigSource();
+
+          case 4: // com.speedmenu.tablet.data.local.RestaurantSession 
+          return (T) ConfigModule_ProvideRestaurantSessionFactory.provideRestaurantSession(singletonCImpl.provideRestaurantSessionDataStoreProvider.get(), singletonCImpl.provideAppConfigDataStoreWrapperProvider.get());
+
+          case 5: // @com.speedmenu.tablet.core.di.RestaurantSessionDS androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> 
+          return (T) ConfigModule_ProvideRestaurantSessionDataStoreFactory.provideRestaurantSessionDataStore(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 6: // com.speedmenu.tablet.data.preferences.GamePreferences 
           return (T) new GamePreferences(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 5: // com.speedmenu.tablet.data.repository.OrderRepositoryImpl 
+          case 7: // com.speedmenu.tablet.data.repository.OrderRepositoryImpl 
           return (T) new OrderRepositoryImpl();
 
-          case 6: // com.speedmenu.tablet.data.repository.RatingRepositoryImpl 
+          case 8: // com.speedmenu.tablet.data.repository.RatingRepositoryImpl 
           return (T) new RatingRepositoryImpl();
 
           default: throw new AssertionError(id);

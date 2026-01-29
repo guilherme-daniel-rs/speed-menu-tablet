@@ -72,5 +72,10 @@ sealed class Screen(val route: String) {
      * Tela de assistente de IA
      */
     object AiAssistant : Screen("ai_assistant")
+    
+    /**
+     * Tela institucional sobre o SpeedMenu
+     */
+    object AboutSpeedMenu : Screen("about_speedmenu")
 }
 

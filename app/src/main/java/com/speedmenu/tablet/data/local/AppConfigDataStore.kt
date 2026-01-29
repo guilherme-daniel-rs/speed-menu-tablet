@@ -1,12 +1,10 @@
 package com.speedmenu.tablet.data.local
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.speedmenu.tablet.domain.model.AppConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -20,9 +18,12 @@ import timber.log.Timber
 /**
  * DataStore para cache de AppConfig.
  * Armazena a configuração como JSON string junto com version e updatedAt.
+ * 
+ * IMPORTANTE: Recebe o DataStore por injeção (singleton) para evitar múltiplas instâncias.
  */
-class AppConfigDataStore(private val context: Context) {
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "app_config")
+class AppConfigDataStore(
+    private val dataStore: DataStore<Preferences>
+) {
     
     // Chaves dinâmicas por restaurantId
     private fun configKey(restaurantId: String) = stringPreferencesKey("app_config_json_$restaurantId")
@@ -44,7 +45,7 @@ class AppConfigDataStore(private val context: Context) {
      */
     suspend fun saveConfig(restaurantId: String, config: AppConfig) {
         try {
-            context.dataStore.edit { preferences ->
+            dataStore.edit { preferences ->
                 preferences[configKey(restaurantId)] = json.encodeToString(AppConfigDto.fromDomain(config))
                 preferences[versionKey(restaurantId)] = config.version
                 preferences[lastRestaurantIdKey] = restaurantId
@@ -63,7 +64,7 @@ class AppConfigDataStore(private val context: Context) {
      */
     suspend fun loadConfig(restaurantId: String): AppConfig? {
         return try {
-            val preferences = context.dataStore.data.first()
+            val preferences = dataStore.data.first()
             val cachedJson = preferences[configKey(restaurantId)]
             val cachedVersion = preferences[versionKey(restaurantId)]
             
@@ -96,7 +97,7 @@ class AppConfigDataStore(private val context: Context) {
      */
     suspend fun getLastRestaurantId(): String? {
         return try {
-            val preferences = context.dataStore.data.first()
+            val preferences = dataStore.data.first()
             preferences[lastRestaurantIdKey]
         } catch (e: Exception) {
             Timber.e(e, "AppConfigDataStore: failed to get last restaurant id")
@@ -109,7 +110,7 @@ class AppConfigDataStore(private val context: Context) {
      */
     suspend fun clearCache(restaurantId: String) {
         try {
-            context.dataStore.edit { preferences ->
+            dataStore.edit { preferences ->
                 preferences.remove(configKey(restaurantId))
                 preferences.remove(versionKey(restaurantId))
             }

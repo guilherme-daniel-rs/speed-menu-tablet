@@ -1,6 +1,5 @@
 package com.speedmenu.tablet.data.repository
 
-import android.content.Context
 import com.speedmenu.tablet.data.config.DefaultAppConfig
 import com.speedmenu.tablet.data.local.AppConfigDataStore
 import com.speedmenu.tablet.domain.model.AppConfig
@@ -20,13 +19,13 @@ import timber.log.Timber
  * 4. Emite config atualizada
  * 
  * Se qualquer etapa falhar, mantém o config atual.
+ * 
+ * IMPORTANTE: Recebe AppConfigDataStore por injeção (singleton) para evitar múltiplas instâncias.
  */
 class AppConfigRepositoryImpl(
-    private val context: Context,
+    private val dataStore: AppConfigDataStore,
     private val appConfigSource: AppConfigSource
 ) : AppConfigRepository {
-    
-    private val dataStore = AppConfigDataStore(context)
     
     override fun observeConfig(restaurantId: String): Flow<AppConfig> = flow {
         // 1. Emite DefaultAppConfig primeiro (evita "piscar")

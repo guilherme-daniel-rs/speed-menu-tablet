@@ -11,6 +11,8 @@ drawable logo
 drawable logo_1
 drawable logo_2
 drawable pratos_principais
+drawable qr_instagram
+drawable qr_website
 drawable sobremesas
 mipmap ic_launcher
 mipmap ic_launcher_foreground

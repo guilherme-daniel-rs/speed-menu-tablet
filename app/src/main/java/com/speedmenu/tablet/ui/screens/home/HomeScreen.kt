@@ -259,7 +259,8 @@ fun HomeScreen(
                         Sidebar(
                             modifier = Modifier.fillMaxSize(),
                             isVisible = isVisible,
-                            menuItems = menuItems
+                            menuItems = menuItems,
+                            navController = navController
                         )
                         
                         // Borda sutil à direita
@@ -314,7 +315,8 @@ fun HomeScreen(
                         coroutineScope.launch {
                             drawerState.close()
                         }
-                    }
+                    },
+                    navController = navController
                 )
             }
         ) {
@@ -336,7 +338,7 @@ fun HomeScreen(
                         },
                 onRestaurantLongClick = {
                     showDebugMenu = true
-                }
+                        }
                     )
                 }
             ) { innerPadding ->
@@ -450,7 +452,8 @@ private fun calculateResponsiveSizes(maxHeight: androidx.compose.ui.unit.Dp): Re
 internal fun Sidebar(
     modifier: Modifier = Modifier,
     isVisible: Boolean = true,
-    menuItems: List<HomeMenuItem>
+    menuItems: List<HomeMenuItem>,
+    navController: androidx.navigation.NavHostController? = null
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxHeight()) {
         // Calcular tamanhos responsivos baseados na altura disponível
@@ -574,7 +577,9 @@ internal fun Sidebar(
                 Box(
                     modifier = Modifier
                         .padding(bottom = 0.dp) // Sem padding, encostado no final
-                        .clickable(onClick = { /* TODO: Adicionar redirect */ })
+                        .clickable(onClick = {
+                            navController?.navigate(com.speedmenu.tablet.core.navigation.Screen.AboutSpeedMenu.route)
+                        })
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.logo_2),
@@ -599,7 +604,8 @@ internal fun Sidebar(
 private fun DrawerContent(
     menuItems: List<HomeMenuItem>,
     isVisible: Boolean = true,
-    onCloseDrawer: () -> Unit = {}
+    onCloseDrawer: () -> Unit = {},
+    navController: androidx.navigation.NavHostController? = null
 ) {
     BoxWithConstraints(
         modifier = Modifier
@@ -680,7 +686,9 @@ private fun DrawerContent(
             Box(
                 modifier = Modifier
                     .padding(bottom = 0.dp) // Sem padding, encostado no final
-                    .clickable(onClick = { /* TODO: Adicionar redirect */ })
+                    .clickable(onClick = {
+                        navController?.navigate(com.speedmenu.tablet.core.navigation.Screen.AboutSpeedMenu.route)
+                    })
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logo_2),
@@ -780,12 +788,12 @@ private fun SidebarHeader(
                     // Logo remoto usando Coil
                     AsyncImage(
                         model = logoUrl,
-                        contentDescription = "Logo do restaurante",
-                        modifier = Modifier
-                            .fillMaxWidth(0.75f) // Logo maior e mais dominante (75% da largura)
-                            .heightIn(max = logoHeight) // Altura responsiva
-                            .align(Alignment.Center),
-                        contentScale = ContentScale.Fit, // Mantém proporção sem distorção
+                    contentDescription = "Logo do restaurante",
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f) // Logo maior e mais dominante (75% da largura)
+                        .heightIn(max = logoHeight) // Altura responsiva
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Fit, // Mantém proporção sem distorção
                         placeholder = painterResource(id = R.drawable.logo_1),
                         error = painterResource(id = R.drawable.logo_1)
                     )
@@ -869,10 +877,10 @@ private fun HomeBanner(
     // Auto-play do carrossel (muda de página a cada 5 segundos)
     LaunchedEffect(itemCount) {
         if (itemCount > 0) {
-            while (true) {
-                delay(5000)
+        while (true) {
+            delay(5000)
                 val nextPage = (pagerState.currentPage + 1) % itemCount
-                pagerState.animateScrollToPage(nextPage)
+            pagerState.animateScrollToPage(nextPage)
             }
         }
     }
@@ -963,14 +971,14 @@ private fun HomeBanner(
             }
         } else {
             // Fallback: carrossel local
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                Image(
-                    painter = painterResource(id = coverImages[page]),
-                    contentDescription = "Imagem de capa ${page + 1}",
-                    modifier = Modifier.fillMaxSize(),
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            Image(
+                painter = painterResource(id = coverImages[page]),
+                contentDescription = "Imagem de capa ${page + 1}",
+                modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
             }

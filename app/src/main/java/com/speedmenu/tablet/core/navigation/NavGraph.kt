@@ -31,6 +31,7 @@ import com.speedmenu.tablet.ui.screens.qrscanner.QrScannerScreen
 import com.speedmenu.tablet.ui.screens.rateplace.RatePlaceScreen
 import com.speedmenu.tablet.ui.screens.splash.SplashScreen
 import com.speedmenu.tablet.ui.screens.aiassistant.AiAssistantScreen
+import com.speedmenu.tablet.ui.screens.about.AboutSpeedMenuScreen
 import com.speedmenu.tablet.ui.games.GamesHubScreen
 import com.speedmenu.tablet.ui.games.flappy.GameFlappyScreen
 
@@ -357,6 +358,14 @@ fun NavGraph(
 
         composable(route = Screen.GameFlappy.route) {
             GameFlappyScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(route = Screen.AboutSpeedMenu.route) {
+            AboutSpeedMenuScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

@@ -1,6 +1,9 @@
 package com.speedmenu.tablet.core.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.speedmenu.tablet.data.local.AppConfigDataStore
 import com.speedmenu.tablet.data.local.RestaurantSession
 import com.speedmenu.tablet.data.mock.MockAppConfigSource
@@ -21,12 +24,34 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ConfigModule {
     
+    // Singleton do DataStore - criado uma única vez usando ApplicationContext
+    private val Context.appConfigDataStore: DataStore<Preferences> by preferencesDataStore(name = "app_config")
+    private val Context.restaurantSessionDataStore: DataStore<Preferences> by preferencesDataStore(name = "restaurant_session")
+    
     @Provides
     @Singleton
+    @AppConfigDS
     fun provideAppConfigDataStore(
         @ApplicationContext context: Context
+    ): DataStore<Preferences> {
+        return context.appConfigDataStore
+    }
+    
+    @Provides
+    @Singleton
+    @RestaurantSessionDS
+    fun provideRestaurantSessionDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<Preferences> {
+        return context.restaurantSessionDataStore
+    }
+    
+    @Provides
+    @Singleton
+    fun provideAppConfigDataStoreWrapper(
+        @AppConfigDS dataStore: DataStore<Preferences>
     ): AppConfigDataStore {
-        return AppConfigDataStore(context)
+        return AppConfigDataStore(dataStore)
     }
     
     @Provides
@@ -38,19 +63,19 @@ object ConfigModule {
     @Provides
     @Singleton
     fun provideRestaurantSession(
-        @ApplicationContext context: Context,
+        @RestaurantSessionDS restaurantSessionDataStore: DataStore<Preferences>,
         appConfigDataStore: AppConfigDataStore
     ): RestaurantSession {
-        return RestaurantSession(context, appConfigDataStore)
+        return RestaurantSession(restaurantSessionDataStore, appConfigDataStore)
     }
     
     @Provides
     @Singleton
     fun provideAppConfigRepository(
-        @ApplicationContext context: Context,
+        appConfigDataStore: AppConfigDataStore,
         appConfigSource: AppConfigSource
     ): AppConfigRepository {
-        return AppConfigRepositoryImpl(context, appConfigSource)
+        return AppConfigRepositoryImpl(appConfigDataStore, appConfigSource)
     }
 }
 

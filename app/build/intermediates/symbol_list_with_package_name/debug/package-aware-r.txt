@@ -711,6 +711,8 @@ drawable notification_template_icon_low_bg
 drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
 drawable pratos_principais
+drawable qr_instagram
+drawable qr_website
 drawable sobremesas
 drawable test_level_drawable
 drawable tooltip_frame_dark
