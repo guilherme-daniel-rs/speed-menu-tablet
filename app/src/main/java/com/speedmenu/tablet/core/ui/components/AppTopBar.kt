@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.zIndex
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,6 +42,7 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
  * @param isConnected Status da conexão
  * @param tableNumber Número da mesa
  * @param onCallWaiterClick Callback quando o botão garçom é clicado
+ * @param onMenuClick Callback quando o botão menu (hamburger) é clicado (para abrir drawer no celular)
  * @param enabled Se o botão de garçom está habilitado
  * @param modifier Modifier para customização adicional
  */
@@ -51,6 +53,7 @@ fun AppTopBar(
     isConnected: Boolean = true,
     tableNumber: String = "17",
     onCallWaiterClick: () -> Unit = {},
+    onMenuClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -73,47 +76,61 @@ fun AppTopBar(
             RestaurantLogo()
         }
 
-        // ========== ZONA ESQUERDA: Botão voltar ou placeholder invisível ==========
+        // ========== ZONA ESQUERDA: Botão voltar, menu ou placeholder invisível ==========
         Box(
             modifier = Modifier
                 .align(Alignment.CenterStart)
         ) {
-            if (showBackButton) {
-                // Botão voltar visível
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.clickable(onClick = onBackClick)
-                ) {
+            when {
+                onMenuClick != null -> {
+                    // Botão menu (hamburger) para abrir drawer no celular
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Voltar",
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Menu",
                         tint = SpeedMenuColors.TextSecondary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Voltar",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.TextSecondary,
-                        fontSize = 16.sp
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable(onClick = onMenuClick)
                     )
                 }
-            } else {
-                // Placeholder invisível com largura similar ao botão voltar
-                // Isso garante que a logo continue centralizada mesmo sem o botão
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(modifier = Modifier.size(20.dp)) // Espaço do ícone
-                    Text(
-                        text = "Voltar",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.TextSecondary.copy(alpha = 0f), // Invisível
-                        fontSize = 16.sp
-                    )
+                showBackButton -> {
+                    // Botão voltar visível
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.clickable(onClick = onBackClick)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Voltar",
+                            tint = SpeedMenuColors.TextSecondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Voltar",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = SpeedMenuColors.TextSecondary,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+                else -> {
+                    // Placeholder invisível com largura similar ao botão voltar
+                    // Isso garante que a logo continue centralizada mesmo sem o botão
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(modifier = Modifier.size(20.dp)) // Espaço do ícone
+                        Text(
+                            text = "Voltar",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = SpeedMenuColors.TextSecondary.copy(alpha = 0f), // Invisível
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }

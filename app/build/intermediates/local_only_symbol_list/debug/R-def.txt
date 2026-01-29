@@ -7,6 +7,7 @@ drawable capa_2
 drawable capa_3
 drawable entradas
 drawable flappy
+drawable logo
 drawable pratos_principais
 drawable sobremesas
 mipmap ic_launcher

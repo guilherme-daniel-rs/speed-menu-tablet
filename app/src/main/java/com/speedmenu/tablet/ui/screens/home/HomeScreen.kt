@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +22,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -56,13 +58,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.util.Log
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Scaffold
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItem
@@ -72,9 +88,73 @@ import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
+ * FONTE ÚNICA DE VERDADE: Lista de itens do menu da Home.
+ * Esta lista é compartilhada entre todos os layouts (sidebar fixa, drawer, etc.)
+ * para garantir consistência e evitar duplicação.
+ */
+@Composable
+private fun rememberHomeMenuItems(
+    onStartOrderClick: () -> Unit,
+    onViewOrderClick: () -> Unit,
+    onRatePlaceClick: () -> Unit,
+    onGamesClick: () -> Unit,
+    onAiAssistantClick: () -> Unit
+): List<HomeMenuItem> {
+    return remember(
+        onStartOrderClick,
+        onViewOrderClick,
+        onRatePlaceClick,
+        onGamesClick,
+        onAiAssistantClick
+    ) {
+        listOf(
+            HomeMenuItem(
+                text = "Iniciar pedido",
+                icon = Icons.Default.ShoppingCart,
+                style = SidebarMenuItemStyle.PRIMARY,
+                onClick = onStartOrderClick,
+                animationDelay = 0,
+                needsPadding = false
+            ),
+            HomeMenuItem(
+                text = "Ver meu pedido",
+                icon = Icons.Default.Visibility,
+                style = SidebarMenuItemStyle.SECONDARY,
+                onClick = onViewOrderClick,
+                animationDelay = 200,
+                needsPadding = true
+            ),
+            HomeMenuItem(
+                text = "Pergunte à IA",
+                icon = Icons.Default.AutoAwesome,
+                style = SidebarMenuItemStyle.AI_BORDERED,
+                onClick = onAiAssistantClick,
+                animationDelay = 300,
+                needsPadding = true
+            ),
+            HomeMenuItem(
+                text = "Jogos",
+                icon = Icons.Default.SportsEsports,
+                style = SidebarMenuItemStyle.SECONDARY,
+                onClick = onGamesClick,
+                animationDelay = 400,
+                needsPadding = true
+            ),
+            HomeMenuItem(
+                text = "Avaliar o local",
+                icon = Icons.Default.Star,
+                style = SidebarMenuItemStyle.SECONDARY,
+                onClick = onRatePlaceClick,
+                animationDelay = 500,
+                needsPadding = true
+            )
+        )
+    }
+}
+
+/**
  * Tela Home do SpeedMenuTablet.
- * Layout dividido em sidebar fixa à esquerda e conteúdo principal à direita.
- * Design pensado para tablets em modo quiosque.
+ * Layout responsivo: sidebar fixa para tablets (Expanded) e drawer para celulares (Compact/Medium).
  */
 @Composable
 fun HomeScreen(
@@ -86,361 +166,597 @@ fun HomeScreen(
     onNavigateToAiAssistant: () -> Unit = {},
     cartItemCount: Int = 0
 ) {
+    // Detectar tamanho de tela usando LocalConfiguration
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val isExpanded = screenWidthDp >= 840 // Tablet (Expanded)
+    val isCompact = screenWidthDp < 600 // Celular (Compact)
+    
     // Estado para controlar animação de entrada
     var isVisible by remember { mutableStateOf(false) }
     
     // Estado para controlar visibilidade do dialog de garçom
     var showWaiterDialog by remember { mutableStateOf(false) }
     
+    // Estado do drawer (apenas para celular)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+    
+    // Lista única de itens do menu (fonte única de verdade)
+    val menuItems = rememberHomeMenuItems(
+        onStartOrderClick = onNavigateToCategories,
+        onViewOrderClick = onNavigateToViewOrder,
+        onRatePlaceClick = onNavigateToRatePlace,
+        onGamesClick = onNavigateToGames,
+        onAiAssistantClick = onNavigateToAiAssistant
+    )
+    
+    // Log de debug para validar que todos os itens estão sendo incluídos
+    LaunchedEffect(menuItems.size) {
+        Log.d("HomeScreen", "📋 Menu montado com ${menuItems.size} itens (screenWidthDp: $screenWidthDp, isExpanded: $isExpanded)")
+        menuItems.forEachIndexed { index, item ->
+            Log.d("HomeScreen", "  ${index + 1}. ${item.text}")
+        }
+    }
+    
     LaunchedEffect(Unit) {
         isVisible = true
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
-    ) {
-        // ========== TOP ACTION BAR PADRONIZADA ==========
-        AppTopBar(
-            showBackButton = false, // Home não tem botão voltar
-            isConnected = true,
-            tableNumber = "17",
-            onCallWaiterClick = {
-                showWaiterDialog = true
-            }
-        )
-        
-        // ========== CONTEÚDO PRINCIPAL ==========
-        Row(
+    // Layout responsivo: drawer para celular, sidebar fixa para tablet
+    if (isExpanded) {
+        // ========== LAYOUT TABLET: Sidebar fixa + conteúdo principal ==========
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(SpeedMenuColors.BackgroundPrimary)
         ) {
-            // Sidebar fixa à esquerda com animação de entrada
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(
-                    animationSpec = tween(600, easing = LinearEasing)
-                ) + slideInHorizontally(
-                    initialOffsetX = { -it },
-                    animationSpec = tween(600, easing = LinearEasing)
-                )
+            // Top bar
+            AppTopBar(
+                showBackButton = false,
+                isConnected = true,
+                tableNumber = "17",
+                onCallWaiterClick = {
+                    showWaiterDialog = true
+                }
+            )
+            
+            // Conteúdo principal com sidebar fixa
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(SpeedMenuColors.BackgroundPrimary)
             ) {
-                Box(
-                    modifier = Modifier
-                        .width(280.dp)
-                        .fillMaxHeight()
-                ) {
-                    Sidebar(
-                        modifier = Modifier.fillMaxSize(),
-                        isVisible = isVisible,
-                        onStartOrderClick = onNavigateToCategories,
-                        onViewOrderClick = onNavigateToViewOrder,
-                        onRatePlaceClick = onNavigateToRatePlace,
-                        onGamesClick = onNavigateToGames,
-                        onAiAssistantClick = onNavigateToAiAssistant
+                // Sidebar fixa à esquerda
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(
+                        animationSpec = tween(600, easing = LinearEasing)
+                    ) + slideInHorizontally(
+                        initialOffsetX = { -it },
+                        animationSpec = tween(600, easing = LinearEasing)
                     )
-                    
-                    // Borda extremamente sutil à direita (quase imperceptível para continuidade máxima)
-                    // Apenas uma sugestão visual mínima, não um divisor - integração total com o ambiente
+                ) {
                     Box(
                         modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .width(0.5.dp) // Ainda mais fino
+                            .width(280.dp)
                             .fillMaxHeight()
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f), // Quase imperceptível
-                                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f), // Apenas sugestão mínima
-                                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                        Color.Transparent
+                    ) {
+                        Sidebar(
+                            modifier = Modifier.fillMaxSize(),
+                            isVisible = isVisible,
+                            menuItems = menuItems
+                        )
+                        
+                        // Borda sutil à direita
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .width(0.5.dp)
+                                .fillMaxHeight()
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                            SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
+                                            SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                            Color.Transparent
+                                        )
                                     )
                                 )
-                            )
+                        )
+                    }
+                }
+
+                // Conteúdo principal à direita
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(
+                        animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
+                    ) + slideInHorizontally(
+                        initialOffsetX = { it },
+                        animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
+                    )
+                ) {
+                    HomeContent(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        onShowWaiterDialog = { showWaiterDialog = it }
                     )
                 }
             }
-
-            // Conteúdo principal à direita com animação de entrada
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(
-                    animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
-                ) + slideInHorizontally(
-                    initialOffsetX = { it },
-                    animationSpec = tween(800, delayMillis = 200, easing = LinearEasing)
+        }
+    } else {
+        // ========== LAYOUT CELULAR: ModalNavigationDrawer ==========
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                DrawerContent(
+                    menuItems = menuItems,
+                    isVisible = isVisible,
+                    onCloseDrawer = {
+                        coroutineScope.launch {
+                            drawerState.close()
+                        }
+                    }
                 )
-            ) {
+            }
+        ) {
+            Scaffold(
+                topBar = {
+                    // Top bar com botão hamburger para abrir drawer
+                    AppTopBar(
+                        showBackButton = false,
+                        isConnected = true,
+                        tableNumber = "17",
+                        onCallWaiterClick = {
+                            showWaiterDialog = true
+                        },
+                        onMenuClick = {
+                            coroutineScope.launch {
+                                drawerState.open()
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                // Conteúdo principal (hero image)
                 HomeContent(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     onShowWaiterDialog = { showWaiterDialog = it }
                 )
             }
         }
-        
-        // Dialog de garçom chamado (fora do AnimatedVisibility para garantir renderização)
-        WaiterCalledDialog(
-            visible = showWaiterDialog,
-            onDismiss = { showWaiterDialog = false },
-            onConfirm = {
-                showWaiterDialog = false
-                // TODO: Implementar lógica de chamar garçom
-            }
-        )
+    }
+    
+    // Dialog de garçom chamado
+    WaiterCalledDialog(
+        visible = showWaiterDialog,
+        onDismiss = { showWaiterDialog = false },
+        onConfirm = {
+            showWaiterDialog = false
+            // TODO: Implementar lógica de chamar garçom
+        }
+    )
+}
+
+/**
+ * Data class que representa um item do menu lateral.
+ * Fonte única de verdade para garantir que todos os itens sejam sempre incluídos.
+ */
+internal data class HomeMenuItem(
+    val text: String,
+    val icon: ImageVector,
+    val style: SidebarMenuItemStyle,
+    val onClick: () -> Unit,
+    val animationDelay: Int = 0,
+    val needsPadding: Boolean = false // Se precisa de padding horizontal (itens secundários)
+)
+
+/**
+ * Tamanhos responsivos para a sidebar baseados na altura disponível.
+ */
+private data class ResponsiveSizes(
+    val logoHeight: androidx.compose.ui.unit.Dp,
+    val headerHeight: androidx.compose.ui.unit.Dp,
+    val itemHeight: androidx.compose.ui.unit.Dp,
+    val itemSpacing: androidx.compose.ui.unit.Dp,
+    val sectionSpacing: androidx.compose.ui.unit.Dp,
+    val iconSize: androidx.compose.ui.unit.Dp,
+    val fontSize: androidx.compose.ui.unit.TextUnit,
+    val bottomPadding: androidx.compose.ui.unit.Dp
+)
+
+/**
+ * Calcula tamanhos responsivos baseados na altura disponível.
+ */
+private fun calculateResponsiveSizes(maxHeight: androidx.compose.ui.unit.Dp): ResponsiveSizes {
+    return when {
+        maxHeight < 520.dp -> {
+            // Altura pequena (celular landscape / telas baixas)
+            ResponsiveSizes(
+                logoHeight = 44.dp,
+                headerHeight = 80.dp,
+                itemHeight = 44.dp,
+                itemSpacing = 8.dp,
+                sectionSpacing = 12.dp,
+                iconSize = 18.dp,
+                fontSize = 13.sp,
+                bottomPadding = 24.dp
+            )
+        }
+        maxHeight in 520.dp..650.dp -> {
+            // Altura média
+            ResponsiveSizes(
+                logoHeight = 56.dp,
+                headerHeight = 100.dp,
+                itemHeight = 52.dp,
+                itemSpacing = 10.dp,
+                sectionSpacing = 14.dp,
+                iconSize = 20.dp,
+                fontSize = 14.sp,
+                bottomPadding = 28.dp
+            )
+        }
+        else -> {
+            // Altura grande (tablet)
+            ResponsiveSizes(
+                logoHeight = 72.dp,
+                headerHeight = 140.dp,
+                itemHeight = 60.dp,
+                itemSpacing = 12.dp,
+                sectionSpacing = 16.dp,
+                iconSize = 24.dp,
+                fontSize = 16.sp,
+                bottomPadding = 32.dp
+            )
+        }
     }
 }
 
 /**
  * Sidebar fixa com logo, CTA principal e itens de menu.
  * Elemento forte de identidade visual com gradiente vertical sutil e continuidade com o ambiente.
+ * Recebe a lista de itens como parâmetro (fonte única de verdade).
+ * Layout responsivo SEM scroll - sempre mostra os 5 itens adaptando-se à altura disponível.
  */
 @Composable
 internal fun Sidebar(
     modifier: Modifier = Modifier,
     isVisible: Boolean = true,
-    onStartOrderClick: () -> Unit = {},
-    onViewOrderClick: () -> Unit = {},
-    onRatePlaceClick: () -> Unit = {},
-    onGamesClick: () -> Unit = {},
-    onAiAssistantClick: () -> Unit = {}
+    menuItems: List<HomeMenuItem>
 ) {
-    Box(modifier = modifier) {
-        // ========== CAMADA 1: Gradiente vertical base refinado (dark → um pouco mais claro) ==========
-        // Cria sensação de profundidade orgânica e continuidade visual perfeita
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            SpeedMenuColors.BackgroundPrimary, // Topo: exatamente o mesmo tom do background principal (continuidade total)
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.105f, green = 0.125f, blue = 0.105f), // 25%: levemente mais claro
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.11f, green = 0.13f, blue = 0.11f), // 50%: um pouco mais claro
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.12f, green = 0.14f, blue = 0.12f), // 75%: mais claro
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.13f, green = 0.15f, blue = 0.13f)  // Base: mais claro (profundidade sutil)
-                        )
-                    )
-                )
-        )
+    BoxWithConstraints(modifier = modifier.fillMaxHeight()) {
+        // Calcular tamanhos responsivos baseados na altura disponível
+        val sizes = calculateResponsiveSizes(maxHeight = maxHeight)
         
-        // ========== CAMADA 2: Overlay radial sutil para profundidade ==========
-        // Cria leve elevação visual no centro, reduz sensação de painel plano
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0x10000000), // Leve escurecimento no centro
-                            Color(0x00000000)  // Transparente nas bordas
-                        ),
-                        radius = 400f
-                    )
-                )
-        )
-        
-        // ========== CAMADA 3: Overlay horizontal ultra-sutil para transição ==========
-        // Reduz sensação de painel sólido, cria continuidade perfeita com conteúdo principal
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0x00000000), // Totalmente transparente à esquerda (continuidade absoluta)
-                            Color(0x05000000), // Overlay quase imperceptível no centro
-                            Color(0x0A000000)  // Leve overlay à direita (transição suave)
-                        )
-                    )
-                )
-        )
-        
-        // ========== CAMADA 4: Conteúdo da sidebar ==========
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 40.dp), // Apenas padding vertical - horizontal removido para permitir faixa completa
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // ========== SEÇÃO 1: Identidade (Logo) ==========
+        Box(modifier = Modifier.fillMaxSize()) {
+            // ========== CAMADA 1: Gradiente vertical base refinado (dark → um pouco mais claro) ==========
             Box(
-                modifier = Modifier.padding(horizontal = 28.dp) // Padding aplicado apenas no logo
-            ) {
-                RestaurantLogo()
-            }
-            
-            // Espaçamento uniforme: régua única de 24dp entre todos os itens (reduzido para layout mais coeso)
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ========== SEÇÃO 2: Ações Principais ==========
-            // Container próprio que ocupa 100% da largura da sidebar - sem padding horizontal
-            
-            // 1. Iniciar pedido
-            SidebarMenuItem(
-                text = "Iniciar pedido",
-                icon = Icons.Default.ShoppingCart,
-                onClick = onStartOrderClick,
-                style = SidebarMenuItemStyle.PRIMARY,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                SpeedMenuColors.BackgroundPrimary,
+                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.105f, green = 0.125f, blue = 0.105f),
+                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.11f, green = 0.13f, blue = 0.11f),
+                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.12f, green = 0.14f, blue = 0.12f),
+                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.13f, green = 0.15f, blue = 0.13f)
+                            )
+                        )
+                    )
             )
             
-            // Espaçamento reduzido: 20dp para layout mais compacto
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 2. Ver meu pedido
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(
-                    animationSpec = tween(400, delayMillis = 200, easing = LinearEasing)
-                ) + slideInHorizontally(
-                    initialOffsetX = { -it / 3 },
-                    animationSpec = tween(400, delayMillis = 200, easing = LinearEasing)
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 28.dp)
-                ) {
-                    SidebarMenuItem(
-                        text = "Ver meu pedido",
-                        icon = Icons.Default.Visibility,
-                        onClick = onViewOrderClick,
-                        style = SidebarMenuItemStyle.SECONDARY,
-                        modifier = Modifier.fillMaxWidth()
+            // ========== CAMADA 2: Overlay radial sutil para profundidade ==========
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0x10000000),
+                                Color(0x00000000)
+                            ),
+                            radius = 400f
+                        )
                     )
-                }
-            }
+            )
             
-            // Espaçamento reduzido: 20dp
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 3. Pergunte à IA
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(
-                    animationSpec = tween(400, delayMillis = 300, easing = LinearEasing)
-                ) + slideInHorizontally(
-                    initialOffsetX = { -it / 3 },
-                    animationSpec = tween(400, delayMillis = 300, easing = LinearEasing)
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 28.dp) // Mesmo padding dos botões secundários
-                ) {
-                    SidebarMenuItem(
-                        text = "Pergunte à IA",
-                        icon = Icons.Default.AutoAwesome,
-                        onClick = onAiAssistantClick,
-                        style = SidebarMenuItemStyle.AI_BORDERED,
-                        modifier = Modifier.fillMaxWidth()
+            // ========== CAMADA 3: Overlay horizontal ultra-sutil para transição ==========
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0x00000000),
+                                Color(0x05000000),
+                                Color(0x0A000000)
+                            )
+                        )
                     )
-                }
-            }
+            )
             
-            // Espaçamento reduzido: 20dp
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ========== SEÇÃO 3: Navegação Secundária (Itens Editoriais) ==========
-            // Container com padding horizontal para os itens secundários
+            // ========== CAMADA 4: Conteúdo da sidebar (SEM SCROLL) ==========
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 28.dp)
+                    .fillMaxSize()
+                    .padding(top = 20.dp, bottom = sizes.bottomPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
             ) {
-                // 4. Jogos
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(
-                        animationSpec = tween(400, delayMillis = 400, easing = LinearEasing)
-                    ) + slideInHorizontally(
-                        initialOffsetX = { -it / 3 },
-                        animationSpec = tween(400, delayMillis = 400, easing = LinearEasing)
-                    )
-                ) {
-                    SidebarMenuItem(
-                        text = "Jogos",
-                        icon = Icons.Default.SportsEsports,
-                        onClick = onGamesClick,
-                        style = SidebarMenuItemStyle.SECONDARY,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                // ========== SEÇÃO 1: Header de marca premium (tamanho responsivo) ==========
+                SidebarHeader(
+                    logoHeight = sizes.logoHeight,
+                    headerHeight = sizes.headerHeight
+                )
+                
+                // Espaçamento após header
+                Spacer(modifier = Modifier.height(sizes.sectionSpacing))
+                
+                // ========== SEÇÃO 2: Itens do Menu (Fonte Única de Verdade) ==========
+                // Lista dos 5 itens SEM scroll - sempre visíveis
+                menuItems.forEachIndexed { index, menuItem ->
+                    // Espaçamento entre itens (exceto antes do primeiro)
+                    if (index > 0) {
+                        Spacer(modifier = Modifier.height(sizes.itemSpacing))
+                    }
+                    
+                    // Renderiza o item com animação e altura responsiva
+                    AnimatedVisibility(
+                        visible = isVisible,
+                        enter = fadeIn(
+                            animationSpec = tween(400, delayMillis = menuItem.animationDelay, easing = LinearEasing)
+                        ) + slideInHorizontally(
+                            initialOffsetX = { -it / 3 },
+                            animationSpec = tween(400, delayMillis = menuItem.animationDelay, easing = LinearEasing)
+                        )
+                    ) {
+                        // Container com padding condicional baseado no item
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .then(
+                                    if (menuItem.needsPadding) {
+                                        Modifier.padding(horizontal = 28.dp)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                        ) {
+                            // Item com altura responsiva
+                            ResponsiveSidebarMenuItem(
+                                text = menuItem.text,
+                                icon = menuItem.icon,
+                                onClick = menuItem.onClick,
+                                style = menuItem.style,
+                                itemHeight = sizes.itemHeight,
+                                iconSize = sizes.iconSize,
+                                fontSize = sizes.fontSize,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
-
-                // Espaçamento reduzido: 20dp
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 5. Avaliar o local
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(
-                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
-                    ) + slideInHorizontally(
-                        initialOffsetX = { -it / 3 },
-                        animationSpec = tween(400, delayMillis = 500, easing = LinearEasing)
-                    )
-                ) {
-                    SidebarMenuItem(
-                        text = "Avaliar o local",
-                        icon = Icons.Default.Star,
-                        onClick = onRatePlaceClick,
-                        style = SidebarMenuItemStyle.SECONDARY,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                
+                // Spacer com weight para empurrar conteúdo quando sobrar espaço
+                // Isso garante que o padding inferior sempre seja respeitado
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
 }
 
 /**
- * Logo do restaurante como assinatura de marca.
- * Identidade visual refinada, sem aparência de botão ou ação.
+ * Conteúdo do drawer para layout mobile (celular).
+ * Reutiliza a mesma lista de itens do menu (fonte única de verdade).
+ * Layout responsivo SEM scroll - sempre mostra os 5 itens adaptando-se à altura disponível.
  */
 @Composable
-private fun RestaurantLogo() {
-    Column(
+private fun DrawerContent(
+    menuItems: List<HomeMenuItem>,
+    isVisible: Boolean = true,
+    onCloseDrawer: () -> Unit = {}
+) {
+    BoxWithConstraints(
         modifier = Modifier
-            .padding(vertical = 24.dp), // Espaço negativo generoso ao redor
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .fillMaxSize()
+            .background(SpeedMenuColors.BackgroundPrimary)
     ) {
-        // Texto da marca com tipografia refinada
-        Text(
-            text = "SPEED\nMENU",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold, // Menos peso que Bold
-            color = SpeedMenuColors.TextPrimary, // Branco direto, sem background
-            textAlign = TextAlign.Center,
-            letterSpacing = 0.5.sp, // Espaçamento de letras refinado
-            lineHeight = 32.sp // Altura de linha confortável
-        )
+        // Calcular tamanhos responsivos baseados na altura disponível
+        val sizes = calculateResponsiveSizes(maxHeight = maxHeight)
         
-        // Linha decorativa sutil abaixo do texto (assinatura visual)
-        Spacer(modifier = Modifier.height(12.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 20.dp, bottom = sizes.bottomPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            // Header do drawer (mesmo estilo da sidebar, tamanho responsivo)
+            SidebarHeader(
+                logoHeight = sizes.logoHeight,
+                headerHeight = sizes.headerHeight
+            )
+            
+            // Espaçamento após header
+            Spacer(modifier = Modifier.height(sizes.sectionSpacing))
+            
+            // Itens do menu (mesma lista compartilhada) - SEM SCROLL
+            menuItems.forEachIndexed { index, menuItem ->
+                // Espaçamento entre itens (exceto antes do primeiro)
+                if (index > 0) {
+                    Spacer(modifier = Modifier.height(sizes.itemSpacing))
+                }
+                
+                // Renderiza o item com animação e altura responsiva
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(
+                        animationSpec = tween(400, delayMillis = menuItem.animationDelay, easing = LinearEasing)
+                    ) + slideInHorizontally(
+                        initialOffsetX = { -it / 3 },
+                        animationSpec = tween(400, delayMillis = menuItem.animationDelay, easing = LinearEasing)
+                    )
+                ) {
+                    // Container com padding condicional baseado no item
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (menuItem.needsPadding) {
+                                    Modifier.padding(horizontal = 28.dp)
+                                } else {
+                                    Modifier
+                                }
+                            )
+                    ) {
+                        // Item com altura responsiva
+                        ResponsiveSidebarMenuItem(
+                            text = menuItem.text,
+                            icon = menuItem.icon,
+                            onClick = {
+                                menuItem.onClick()
+                                onCloseDrawer() // Fecha o drawer ao clicar em um item
+                            },
+                            style = menuItem.style,
+                            itemHeight = sizes.itemHeight,
+                            iconSize = sizes.iconSize,
+                            fontSize = sizes.fontSize,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+            
+            // Spacer com weight para empurrar conteúdo quando sobrar espaço
+            // Isso garante que o padding inferior sempre seja respeitado
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+/**
+ * Item do menu lateral com tamanhos responsivos.
+ * Wrapper que aplica altura e tamanhos responsivos ao SidebarMenuItem.
+ * Usa clipToBounds para garantir que o conteúdo não ultrapasse a altura desejada.
+ */
+@Composable
+private fun ResponsiveSidebarMenuItem(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    style: SidebarMenuItemStyle,
+    itemHeight: androidx.compose.ui.unit.Dp,
+    iconSize: androidx.compose.ui.unit.Dp,
+    fontSize: androidx.compose.ui.unit.TextUnit,
+    modifier: Modifier = Modifier
+) {
+    // Para PRIMARY, usar altura maior proporcionalmente
+    // Para SECONDARY/AI_BORDERED, usar altura direta
+    val finalHeight = when (style) {
+        SidebarMenuItemStyle.PRIMARY -> {
+            // PRIMARY normalmente é 96dp, mas ajustamos proporcionalmente
+            // Se itemHeight é 44dp (compacto), PRIMARY fica ~66dp
+            // Se itemHeight é 60dp (tablet), PRIMARY fica ~90dp
+            (itemHeight.value * 1.5f).dp.coerceAtLeast(60.dp)
+        }
+        else -> itemHeight
+    }
+    
+    Box(
+        modifier = modifier
+            .height(finalHeight)
+            .clip(RoundedCornerShape(0.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        SidebarMenuItem(
+            text = text,
+            icon = icon,
+            onClick = onClick,
+            style = style,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+/**
+ * Header premium da sidebar com logo de marca.
+ * Container dedicado que dá presença e hierarquia visual forte à identidade.
+ * Tamanhos responsivos baseados na altura disponível.
+ */
+@Composable
+private fun SidebarHeader(
+    logoHeight: androidx.compose.ui.unit.Dp = 72.dp,
+    headerHeight: androidx.compose.ui.unit.Dp = 140.dp
+) {
+    // ColorMatrix para aumentar leve contraste e brilho (destacar no fundo escuro)
+    val logoEnhancementMatrix = remember {
+        ColorMatrix(floatArrayOf(
+            // Contraste: 1.15 (aumenta contraste sutilmente)
+            1.15f, 0f, 0f, 0f, 0.08f, // R: contraste + leve brilho
+            0f, 1.15f, 0f, 0f, 0.08f, // G: contraste + leve brilho
+            0f, 0f, 1.15f, 0f, 0.08f, // B: contraste + leve brilho
+            0f, 0f, 0f, 1f, 0f       // Alpha: sem alteração
+        ))
+    }
+    
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Container do header com altura responsiva
         Box(
             modifier = Modifier
-                .width(60.dp)
-                .height(2.dp)
+                .fillMaxWidth()
+                .height(headerHeight)
+        ) {
+            // Overlay escuro sutil para destaque (6% de opacidade)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = Color.Black.copy(alpha = 0.06f) // Overlay escuro discreto
+                    )
+            )
+            
+            // Logo centralizada (vertical e horizontalmente)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp), // Respiro lateral
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Logo do restaurante",
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f) // Logo maior e mais dominante (75% da largura)
+                        .heightIn(max = logoHeight) // Altura responsiva
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Fit, // Mantém proporção sem distorção
+                    colorFilter = ColorFilter.colorMatrix(logoEnhancementMatrix) // Leve aumento de contraste/brilho
+                )
+            }
+        }
+        
+        // Divisor discreto abaixo do header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .padding(horizontal = 28.dp) // Respiro lateral no divisor
                 .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            SpeedMenuColors.Primary.copy(alpha = 0.4f), // Muito sutil
-                            Color.Transparent
-                        )
-                    ),
-                    shape = RoundedCornerShape(1.dp)
+                    color = Color.White.copy(alpha = 0.10f) // Linha branca com 10% de opacidade
                 )
         )
+        
+        // Espaçamento generoso entre header e primeiro item (respiro claro)
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 

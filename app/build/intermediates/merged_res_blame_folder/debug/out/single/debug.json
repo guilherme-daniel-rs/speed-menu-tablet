@@ -12,12 +12,16 @@
         "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-68:/mipmap-mdpi/ic_launcher.xml"
     },
     {
+        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-66:/mipmap-mdpi_ic_launcher_round.xml.flat",
+        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-68:/mipmap-mdpi/ic_launcher_round.xml"
+    },
+    {
         "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-66:/drawable_capa_2.png.flat",
         "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-68:/drawable/capa_2.png"
     },
     {
-        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-66:/mipmap-mdpi_ic_launcher_round.xml.flat",
-        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-68:/mipmap-mdpi/ic_launcher_round.xml"
+        "merged": "com.speedmenu.tablet.app-merged_res-66:/drawable_logo.png.flat",
+        "source": "com.speedmenu.tablet.app-main-68:/drawable/logo.png"
     },
     {
         "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-66:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
@@ -40,8 +44,8 @@
         "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-68:/xml/backup_rules.xml"
     },
     {
-        "merged": "com.speedmenu.tablet.app-merged_res-66:/drawable_flappy.png.flat",
-        "source": "com.speedmenu.tablet.app-main-68:/drawable/flappy.png"
+        "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-66:/drawable_flappy.png.flat",
+        "source": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-main-68:/drawable/flappy.png"
     },
     {
         "merged": "/Users/guilherme/.gradle/daemon/8.2/com.speedmenu.tablet.app-merged_res-66:/drawable_capa_3.jpg.flat",
