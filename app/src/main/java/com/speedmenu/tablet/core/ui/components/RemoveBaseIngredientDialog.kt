@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Dialog de confirmação para remover ingrediente base (de 1 para 0).
@@ -45,6 +44,8 @@ fun RemoveBaseIngredientDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     if (!visible) return
 
     Dialog(
@@ -74,7 +75,7 @@ fun RemoveBaseIngredientDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.95f),
+                            color = colorScheme.surfaceVariant.copy(alpha = 0.95f),
                             shape = RoundedCornerShape(24.dp)
                         )
                         .drawBehind {
@@ -106,7 +107,7 @@ fun RemoveBaseIngredientDialog(
                         text = "Remover ingrediente?",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = SpeedMenuColors.TextPrimary,
+                        color = colorScheme.onSurface,
                         fontSize = 22.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
@@ -116,7 +117,7 @@ fun RemoveBaseIngredientDialog(
                         text = "Tem certeza que deseja remover '$ingredientName' do prato? É um dos ingredientes principais",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Normal,
-                        color = SpeedMenuColors.TextSecondary.copy(alpha = 0.75f),
+                        color = colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                         fontSize = 15.sp,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         maxLines = 2,
@@ -136,7 +137,7 @@ fun RemoveBaseIngredientDialog(
                                 .weight(1f)
                                 .height(52.dp)
                                 .background(
-                                    color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                                    color = colorScheme.surface.copy(alpha = 0.3f),
                                     shape = RoundedCornerShape(999.dp)
                                 )
                                 .clickable(onClick = onDismiss),
@@ -146,7 +147,7 @@ fun RemoveBaseIngredientDialog(
                                 text = "Cancelar",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = SpeedMenuColors.TextSecondary,
+                                color = colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
                         }
@@ -159,8 +160,8 @@ fun RemoveBaseIngredientDialog(
                                 .background(
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
-                                            SpeedMenuColors.Primary,
-                                            SpeedMenuColors.PrimaryDark
+                                            colorScheme.primary,
+                                            colorScheme.primary.copy(alpha = 0.9f)
                                         )
                                     ),
                                     shape = RoundedCornerShape(999.dp)
@@ -172,7 +173,7 @@ fun RemoveBaseIngredientDialog(
                                 text = "Remover",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = SpeedMenuColors.TextOnPrimary,
+                                color = colorScheme.onPrimary,
                                 fontSize = 16.sp
                             )
                         }
