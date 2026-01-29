@@ -622,7 +622,7 @@ public final class DaggerSpeedMenuApplication_HiltComponents_SingletonC {
     }
 
     @Override
-    public void injectSpeedMenuApplication(SpeedMenuApplication speedMenuApplication) {
+    public void injectSpeedMenuApplication(SpeedMenuApplication arg0) {
     }
 
     @Override

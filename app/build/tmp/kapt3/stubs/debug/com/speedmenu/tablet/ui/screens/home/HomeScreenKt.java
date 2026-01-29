@@ -2,8 +2,6 @@ package com.speedmenu.tablet.ui.screens.home;
 
 import androidx.compose.foundation.layout.Arrangement;
 import androidx.compose.foundation.ExperimentalFoundationApi;
-import androidx.compose.ui.graphics.ColorFilter;
-import androidx.compose.ui.graphics.ColorMatrix;
 import androidx.compose.ui.layout.ContentScale;
 import androidx.compose.material.icons.Icons;
 import androidx.compose.runtime.Composable;

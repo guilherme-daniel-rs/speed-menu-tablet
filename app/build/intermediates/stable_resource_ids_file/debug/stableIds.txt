@@ -1,3 +1,4 @@
+com.speedmenu.tablet:drawable/logo_1 = 0x7f070091
 com.speedmenu.tablet:style/Base.V7.ThemeOverlay.AppCompat.Dialog = 0x7f0e0063
 com.speedmenu.tablet:dimen/disabled_alpha_material_light = 0x7f060056
 com.speedmenu.tablet:style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse = 0x7f0e00e0

@@ -24,8 +24,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.Icons
@@ -548,6 +546,22 @@ internal fun Sidebar(
                 // Spacer com weight para empurrar conteúdo quando sobrar espaço
                 // Isso garante que o padding inferior sempre seja respeitado
                 Spacer(modifier = Modifier.weight(1f))
+                
+                // ========== SEÇÃO 3: Logo pequeno no final (clicável) ==========
+                Box(
+                    modifier = Modifier
+                        .padding(bottom = 4.dp) // Padding mínimo, quase encostado no final
+                        .clickable(onClick = { /* TODO: Adicionar redirect */ })
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_1),
+                        contentDescription = "Logo do aplicativo",
+                        modifier = Modifier
+                            .size(48.dp) // Logo bem menor
+                            .align(Alignment.Center),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
         }
     }
@@ -638,6 +652,22 @@ private fun DrawerContent(
             // Spacer com weight para empurrar conteúdo quando sobrar espaço
             // Isso garante que o padding inferior sempre seja respeitado
             Spacer(modifier = Modifier.weight(1f))
+            
+            // ========== SEÇÃO 3: Logo pequeno no final (clicável) ==========
+            Box(
+                modifier = Modifier
+                    .padding(bottom = 4.dp) // Padding mínimo, quase encostado no final
+                    .clickable(onClick = { /* TODO: Adicionar redirect */ })
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo_1),
+                    contentDescription = "Logo do aplicativo",
+                    modifier = Modifier
+                        .size(48.dp) // Logo bem menor
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Fit
+                )
+            }
         }
     }
 }
@@ -696,17 +726,6 @@ private fun SidebarHeader(
     logoHeight: androidx.compose.ui.unit.Dp = 72.dp,
     headerHeight: androidx.compose.ui.unit.Dp = 140.dp
 ) {
-    // ColorMatrix para aumentar leve contraste e brilho (destacar no fundo escuro)
-    val logoEnhancementMatrix = remember {
-        ColorMatrix(floatArrayOf(
-            // Contraste: 1.15 (aumenta contraste sutilmente)
-            1.15f, 0f, 0f, 0f, 0.08f, // R: contraste + leve brilho
-            0f, 1.15f, 0f, 0f, 0.08f, // G: contraste + leve brilho
-            0f, 0f, 1.15f, 0f, 0.08f, // B: contraste + leve brilho
-            0f, 0f, 0f, 1f, 0f       // Alpha: sem alteração
-        ))
-    }
-    
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -716,16 +735,7 @@ private fun SidebarHeader(
                 .fillMaxWidth()
                 .height(headerHeight)
         ) {
-            // Overlay escuro sutil para destaque (6% de opacidade)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        color = Color.Black.copy(alpha = 0.06f) // Overlay escuro discreto
-                    )
-            )
-            
-            // Logo centralizada (vertical e horizontalmente)
+            // Logo centralizada (vertical e horizontalmente) - sem overlays ou filtros
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -733,14 +743,13 @@ private fun SidebarHeader(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo),
+                    painter = painterResource(id = R.drawable.logo_1),
                     contentDescription = "Logo do restaurante",
                     modifier = Modifier
                         .fillMaxWidth(0.75f) // Logo maior e mais dominante (75% da largura)
                         .heightIn(max = logoHeight) // Altura responsiva
                         .align(Alignment.Center),
-                    contentScale = ContentScale.Fit, // Mantém proporção sem distorção
-                    colorFilter = ColorFilter.colorMatrix(logoEnhancementMatrix) // Leve aumento de contraste/brilho
+                    contentScale = ContentScale.Fit // Mantém proporção sem distorção
                 )
             }
         }
