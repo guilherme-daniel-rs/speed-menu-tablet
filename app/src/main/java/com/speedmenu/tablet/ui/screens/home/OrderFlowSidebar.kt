@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Dados de tópico e categoria para o menu lateral do fluxo de pedido.
@@ -122,12 +121,14 @@ fun OrderFlowSidebar(
         }
     }
     
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
             .padding(vertical = 28.dp, horizontal = 24.dp) // Mais espaçamento para tablets
-        ) {
+    ) {
             // LazyColumn com scroll suave e sem scrollbar visível
             LazyColumn(
                 state = scrollState,
@@ -185,6 +186,8 @@ private fun CategoryItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Interaction source para detectar estado pressed
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -193,8 +196,8 @@ private fun CategoryItem(
     // Mudança instantânea quando pressionado para feedback imediato
     val backgroundColor by animateColorAsState(
         targetValue = when {
-            isSelected -> SpeedMenuColors.Primary.copy(alpha = 0.08f) // Fundo levemente destacado
-            isPressed -> SpeedMenuColors.Surface.copy(alpha = 0.15f) // Feedback imediato ao pressionar
+            isSelected -> colorScheme.primary.copy(alpha = 0.08f) // Fundo levemente destacado
+            isPressed -> colorScheme.surface.copy(alpha = 0.15f) // Feedback imediato ao pressionar
             else -> Color.Transparent
         },
         animationSpec = tween(durationMillis = if (isPressed) 0 else 180), // Mudança instantânea quando pressionado
@@ -203,9 +206,9 @@ private fun CategoryItem(
     
     val textColor by animateColorAsState(
         targetValue = if (isSelected) {
-            SpeedMenuColors.TextPrimary.copy(alpha = 0.98f) // Texto mais claro quando selecionado
+            colorScheme.onSurface.copy(alpha = 0.98f) // Texto mais claro quando selecionado
         } else {
-            SpeedMenuColors.TextSecondary.copy(alpha = 0.9f) // Texto secundário
+            colorScheme.onSurfaceVariant.copy(alpha = 0.9f) // Texto secundário
         },
         animationSpec = tween(durationMillis = 180),
         label = "category_text_color"
@@ -234,7 +237,7 @@ private fun CategoryItem(
             .clickable(
                 interactionSource = interactionSource,
                 indication = rememberRipple(
-                    color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f), // Ripple discreto
+                    color = colorScheme.primary.copy(alpha = 0.2f), // Ripple discreto
                     bounded = true
                 ),
                 onClick = onClick
@@ -252,7 +255,7 @@ private fun CategoryItem(
                         .width(indicatorWidth.dp)
                         .fillMaxHeight()
                         .background(
-                            color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.65f * indicatorAlpha),
+                            color = colorScheme.primary.copy(alpha = 0.65f * indicatorAlpha),
                             shape = RoundedCornerShape(1.5.dp)
                         )
                 )
@@ -283,6 +286,8 @@ private fun CategoryItem(
 private fun TopicDividerLine(
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = modifier
             .height(18.dp)
@@ -292,7 +297,7 @@ private fun TopicDividerLine(
                     val y = this.size.height / 2f
                     val strokeWidth = 2.dp.toPx() // Pode reduzir para 1.5.dp se ficar pesado
                     val baseAlpha = 0.14f // Ajuste fino: entre 0.11 (sutil) e 0.16 (mais visível)
-                    val lineColor = SpeedMenuColors.OnSurface.copy(alpha = baseAlpha)
+                    val lineColor = colorScheme.onSurface.copy(alpha = baseAlpha)
                     
                     val width = this.size.width
                     val segment1End = width * 0.12f // 12% inicial
@@ -307,7 +312,7 @@ private fun TopicDividerLine(
                             val x2 = (segment1End / 10f) * (i + 1)
                             val alpha = (baseAlpha * i / 10f).coerceIn(0f, baseAlpha)
                             this.drawLine(
-                                color = SpeedMenuColors.OnSurface.copy(alpha = alpha),
+                                color = colorScheme.onSurface.copy(alpha = alpha),
                                 start = Offset(x1, y),
                                 end = Offset(x2, y),
                                 strokeWidth = strokeWidth
@@ -332,7 +337,7 @@ private fun TopicDividerLine(
                             val x2 = segment3Start + ((width - segment3Start) / 10f) * (i + 1)
                             val alpha = (baseAlpha * (10f - i) / 10f).coerceIn(0f, baseAlpha)
                             this.drawLine(
-                                color = SpeedMenuColors.OnSurface.copy(alpha = alpha),
+                                color = colorScheme.onSurface.copy(alpha = alpha),
                                 start = Offset(x1, y),
                                 end = Offset(x2, y),
                                 strokeWidth = strokeWidth
@@ -352,6 +357,8 @@ private fun TopicTitle(
     text: String,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Row(
         modifier = modifier
             .heightIn(min = 32.dp),
@@ -368,7 +375,7 @@ private fun TopicTitle(
             text = text,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.85f), // Laranja suave mais visível
+            color = colorScheme.primary.copy(alpha = 0.85f), // Cor primária suave mais visível
             fontSize = 15.sp,
             letterSpacing = 0.8.sp,
             modifier = Modifier.padding(horizontal = 12.dp) // Espaçamento entre linhas e texto
@@ -386,6 +393,8 @@ private fun TopicTitle(
  */
 @Composable
 private fun TopicDivider() {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -395,8 +404,8 @@ private fun TopicDivider() {
                 brush = Brush.horizontalGradient(
                     colors = listOf(
                         Color.Transparent,
-                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.1f), // Sutil e discreto
-                        SpeedMenuColors.BorderSubtle.copy(alpha = 0.1f),
+                        colorScheme.outlineVariant.copy(alpha = 0.1f), // Sutil e discreto
+                        colorScheme.outlineVariant.copy(alpha = 0.1f),
                         Color.Transparent
                     )
                 )

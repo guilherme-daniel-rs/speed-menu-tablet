@@ -3,6 +3,10 @@ package com.speedmenu.tablet.core.ui.components
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,13 +23,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.speedmenu.tablet.data.config.DefaultAppConfig
+import com.speedmenu.tablet.ui.viewmodel.AppConfigViewModel
 
 /**
  * Barra superior padronizada para todas as telas do app.
@@ -61,19 +70,27 @@ fun AppTopBar(
     screenName: String = "Unknown",
     onMenuClick: (() -> Unit)? = null,
     enabled: Boolean = true,
+    appConfigViewModel: AppConfigViewModel = hiltViewModel(),
+    onRestaurantLongClick: (() -> Unit)? = null, // Callback para abrir debug menu
     modifier: Modifier = Modifier
 ) {
+    // Observa AppConfig para obter o nome do restaurante
+    val appConfig by appConfigViewModel.appConfig.collectAsState()
+    val restaurantName = appConfig?.branding?.restaurantName ?: DefaultAppConfig.get().branding.restaurantName
+    
     // Handler interno que adiciona logging antes de chamar o callback
     val waiterClickHandler: () -> Unit = {
         Log.d("TopBar", "🛎️ Garçom click - screen=$screenName")
         onCallWaiterClick()
     }
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(72.dp)
             .zIndex(10f) // Garante que está acima de outros elementos
-            .background(SpeedMenuColors.Surface)
+            .background(colorScheme.surface)
             .padding(horizontal = 24.dp)
     ) {
         // ========== LOGO CENTRALIZADA (CENTRO ABSOLUTO) ==========
@@ -84,7 +101,10 @@ fun AppTopBar(
                 .align(Alignment.Center),
             contentAlignment = Alignment.Center
         ) {
-            RestaurantLogo()
+            RestaurantLogo(
+                restaurantName = restaurantName,
+                onLongClick = onRestaurantLongClick
+            )
         }
 
         // ========== ZONA ESQUERDA: Botão voltar, menu ou placeholder invisível ==========
@@ -98,7 +118,7 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menu",
-                        tint = SpeedMenuColors.TextSecondary,
+                        tint = colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(24.dp)
                             .clickable(onClick = onMenuClick)
@@ -114,14 +134,14 @@ fun AppTopBar(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Voltar",
-                            tint = SpeedMenuColors.TextSecondary,
+                            tint = colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = "Voltar",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.TextSecondary,
+                            color = colorScheme.onSurfaceVariant,
                             fontSize = 16.sp
                         )
                     }
@@ -138,7 +158,7 @@ fun AppTopBar(
                             text = "Voltar",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.TextSecondary.copy(alpha = 0f), // Invisível
+                            color = colorScheme.onSurfaceVariant.copy(alpha = 0f), // Invisível
                             fontSize = 16.sp
                         )
                     }
@@ -164,17 +184,36 @@ fun AppTopBar(
 /**
  * Logo do restaurante para o Top Bar.
  * Versão compacta e monocromática para uso no menu superior.
+ * Agora usa o nome do restaurante do AppConfig.
+ * Clique longo abre o menu de debug para alternar restaurantes.
  */
 @Composable
-private fun RestaurantLogo() {
+private fun RestaurantLogo(
+    restaurantName: String,
+    onLongClick: (() -> Unit)? = null
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Text(
-        text = "SPEED MENU",
+        text = restaurantName,
         style = MaterialTheme.typography.headlineSmall,
         fontWeight = FontWeight.SemiBold,
-        color = SpeedMenuColors.TextPrimary,
+        color = colorScheme.onSurface,
         textAlign = TextAlign.Center,
         letterSpacing = 1.sp,
-        lineHeight = 24.sp
+        lineHeight = 24.sp,
+        modifier = Modifier
+            .then(
+                if (onLongClick != null) {
+                    Modifier.pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = { onLongClick() }
+                        )
+                    }
+                } else {
+                    Modifier
+                }
+            )
     )
 }
 

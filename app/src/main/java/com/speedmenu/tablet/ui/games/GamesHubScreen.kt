@@ -38,7 +38,6 @@ import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
@@ -59,11 +58,13 @@ fun GamesHubScreen(
     // Estados mockados (mesmo padrão da ProductsScreen)
     val isConnected = remember { true }
     val tableNumber = remember { "17" }
+    
+    val colorScheme = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // AppTopBar padronizado no topo
         AppTopBar(
@@ -89,7 +90,7 @@ fun GamesHubScreen(
                 text = "Jogos",
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Bold,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onBackground,
                 fontSize = 48.sp,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -98,7 +99,7 @@ fun GamesHubScreen(
             Text(
                 text = "Jogue enquanto espera seu pedido",
                 style = MaterialTheme.typography.bodyLarge,
-                color = SpeedMenuColors.TextSecondary,
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 18.sp,
                 modifier = Modifier.padding(bottom = 48.dp)
             )
@@ -160,6 +161,7 @@ private fun GameCard(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
@@ -185,9 +187,9 @@ private fun GameCard(
                 .fillMaxSize()
                 .background(
                     color = if (enabled) {
-                        SpeedMenuColors.SurfaceElevated
+                        colorScheme.surfaceVariant
                     } else {
-                        SpeedMenuColors.SurfaceElevated.copy(alpha = 0.5f)
+                        colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     },
                     shape = RoundedCornerShape(24.dp)
                 )
@@ -205,7 +207,7 @@ private fun GameCard(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
-                            color = SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.6f),
+                            color = colorScheme.background.copy(alpha = 0.6f),
                             shape = RoundedCornerShape(24.dp)
                         )
                 )
@@ -233,9 +235,9 @@ private fun GameCard(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = if (enabled) {
-                        SpeedMenuColors.TextPrimary
+                        colorScheme.onSurface
                     } else {
-                        SpeedMenuColors.TextTertiary
+                        colorScheme.onSurfaceVariant
                     },
                     fontSize = 28.sp,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -248,7 +250,7 @@ private fun GameCard(
                             .fillMaxWidth()
                             .height(48.dp)
                             .background(
-                                color = SpeedMenuColors.Primary,
+                                color = colorScheme.primary,
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(horizontal = 16.dp),
@@ -258,7 +260,7 @@ private fun GameCard(
                             text = "Jogar",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onPrimary,
                             fontSize = 16.sp
                         )
                     }
@@ -268,7 +270,7 @@ private fun GameCard(
                             .fillMaxWidth()
                             .height(48.dp)
                             .background(
-                                color = SpeedMenuColors.Surface,
+                                color = colorScheme.surface,
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(horizontal = 16.dp),
@@ -278,7 +280,7 @@ private fun GameCard(
                             text = "Em breve",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.TextTertiary,
+                            color = colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }

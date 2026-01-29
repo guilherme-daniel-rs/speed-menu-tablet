@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Dialog premium para confirmar pedido realizado.
@@ -58,6 +57,8 @@ fun OrderPlacedDialog(
     onDismiss: () -> Unit,
     onGoToHome: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     if (!visible) return
 
     // Animações de entrada
@@ -154,7 +155,7 @@ fun OrderPlacedDialog(
                                 .background(
                                     brush = Brush.radialGradient(
                                         colors = listOf(
-                                            SpeedMenuColors.Success.copy(alpha = 0.3f),
+                                            colorScheme.tertiary.copy(alpha = 0.3f),
                                             Color.Transparent
                                         )
                                     ),
@@ -162,19 +163,19 @@ fun OrderPlacedDialog(
                                 )
                         )
                         
-                        // Círculo verde principal
+                        // Círculo principal
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
                                 .background(
-                                    color = SpeedMenuColors.Success,
+                                    color = colorScheme.tertiary,
                                     shape = CircleShape
                                 )
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = SpeedMenuColors.TextPrimary,
+                                tint = colorScheme.onTertiary,
                                 modifier = Modifier
                                     .align(Alignment.Center)
                                     .size(32.dp)
@@ -195,7 +196,7 @@ fun OrderPlacedDialog(
                             text = "Pedido realizado!",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onSurface,
                             fontSize = 30.sp,
                             lineHeight = 36.sp,
                             textAlign = TextAlign.Center
@@ -209,7 +210,7 @@ fun OrderPlacedDialog(
                             text = "Comanda: $comandaCode",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Normal,
-                            color = SpeedMenuColors.TextSecondary.copy(alpha = 0.75f),
+                            color = colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                             fontSize = 14.sp,
                             lineHeight = 20.sp,
                             textAlign = TextAlign.Center
@@ -233,8 +234,8 @@ fun OrderPlacedDialog(
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        SpeedMenuColors.Primary,
-                                        Color(0xFFC76A05)
+                                        colorScheme.primary,
+                                        colorScheme.primary.copy(alpha = 0.9f)
                                     )
                                 ),
                                 shape = RoundedCornerShape(999.dp)
@@ -246,7 +247,7 @@ fun OrderPlacedDialog(
                             text = "Voltar para Home",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
+                            color = colorScheme.onPrimary,
                             fontSize = 16.sp
                         )
                     }

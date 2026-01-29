@@ -1,12 +1,14 @@
 package com.speedmenu.tablet;
 
 import com.speedmenu.tablet.core.di.AppModule;
+import com.speedmenu.tablet.core.di.ConfigModule;
 import com.speedmenu.tablet.core.di.DataModule;
 import com.speedmenu.tablet.ui.games.flappy.FlappyViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.aiassistant.AiAssistantViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.placeholder.PlaceholderViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.rateplace.RatePlaceViewModel_HiltModules;
 import com.speedmenu.tablet.ui.screens.splash.SplashViewModel_HiltModules;
+import com.speedmenu.tablet.ui.viewmodel.AppConfigViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel_HiltModules;
@@ -136,6 +138,7 @@ public final class SpeedMenuApplication_HiltComponents {
       modules = {
           AppModule.class,
           ApplicationContextModule.class,
+          ConfigModule.class,
           DataModule.class,
           HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class,
           ActivityRetainedCBuilderModule.class,
@@ -163,6 +166,7 @@ public final class SpeedMenuApplication_HiltComponents {
   @Subcomponent(
       modules = {
           AiAssistantViewModel_HiltModules.KeyModule.class,
+          AppConfigViewModel_HiltModules.KeyModule.class,
           CartViewModel_HiltModules.KeyModule.class,
           FlappyViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
@@ -210,6 +214,7 @@ public final class SpeedMenuApplication_HiltComponents {
   @Subcomponent(
       modules = {
           AiAssistantViewModel_HiltModules.BindsModule.class,
+          AppConfigViewModel_HiltModules.BindsModule.class,
           CartViewModel_HiltModules.BindsModule.class,
           FlappyViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,

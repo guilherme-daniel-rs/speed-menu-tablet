@@ -29,7 +29,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import com.speedmenu.tablet.core.ui.components.SpeedMenuPrimaryButton
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
 /**
@@ -41,6 +40,8 @@ fun ProductDetailsBottomSheet(
     onDismiss: () -> Unit,
     onAddToCart: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -53,7 +54,7 @@ fun ProductDetailsBottomSheet(
                 .fillMaxWidth()
                 .height(600.dp)
                 .background(
-                    color = SpeedMenuColors.BackgroundPrimary,
+                    color = colorScheme.background,
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                 )
         ) {
@@ -81,7 +82,7 @@ fun ProductDetailsBottomSheet(
                     text = product.name,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onSurface,
                     fontSize = 28.sp,
                     lineHeight = 34.sp
                 )
@@ -91,7 +92,7 @@ fun ProductDetailsBottomSheet(
                     text = CurrencyFormatter.formatCurrencyBR(product.price),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = SpeedMenuColors.PrimaryLight,
+                    color = colorScheme.primary,
                     fontSize = 24.sp
                 )
                 
@@ -100,7 +101,7 @@ fun ProductDetailsBottomSheet(
                     text = product.shortDescription,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 16.sp,
                     lineHeight = 24.sp
                 )

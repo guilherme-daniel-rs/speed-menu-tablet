@@ -82,7 +82,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.SpeedMenuPrimaryButton
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
@@ -118,6 +117,8 @@ fun RatePlaceScreen(
     // Estados mockados (mesmo padrão das outras telas)
     val isConnected = true
     val tableNumber = "17"
+    
+    val colorScheme = MaterialTheme.colorScheme
 
     // Mostra modal de sucesso após envio bem-sucedido
     LaunchedEffect(uiState.success) {
@@ -139,7 +140,7 @@ fun RatePlaceScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
             // Detectar toques fora dos componentes interativos para fechar teclado
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -186,7 +187,7 @@ fun RatePlaceScreen(
                             text = "Avaliar o local",
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onBackground,
                             fontSize = 32.sp,
                             textAlign = TextAlign.Left
                         )
@@ -194,7 +195,7 @@ fun RatePlaceScreen(
                             text = "Sua opinião ajuda a melhorar a experiência da mesa.",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Normal,
-                            color = SpeedMenuColors.TextSecondary,
+                            color = colorScheme.onSurfaceVariant,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Left
                         )
@@ -276,8 +277,8 @@ fun RatePlaceScreen(
             Snackbar(
                 snackbarData = snackbarData,
                 shape = RoundedCornerShape(12.dp),
-                containerColor = SpeedMenuColors.SurfaceElevated,
-                contentColor = SpeedMenuColors.TextPrimary
+                containerColor = colorScheme.surfaceVariant,
+                contentColor = colorScheme.onSurface
             )
         }
 
@@ -318,6 +319,8 @@ private fun StarRatingRow(
     onRatingSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Texto emocional premium baseado na nota
     val feedbackText = when (rating) {
         0 -> "Toque para avaliar"
@@ -346,9 +349,9 @@ private fun StarRatingRow(
                 // Animação de cor
                 val starColor by animateColorAsState(
                     targetValue = if (isSelected) {
-                        SpeedMenuColors.Primary
+                        colorScheme.primary
                     } else {
-                        SpeedMenuColors.TextTertiary.copy(alpha = 0.3f)
+                        colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                     },
                     animationSpec = tween(200),
                     label = "star_color_$starIndex"
@@ -390,7 +393,7 @@ private fun StarRatingRow(
                                 .background(
                                     brush = Brush.radialGradient(
                                         colors = listOf(
-                                            SpeedMenuColors.PrimaryLight.copy(alpha = 0.15f),
+                                            colorScheme.primary.copy(alpha = 0.15f),
                                             Color.Transparent
                                         ),
                                         radius = 36f
@@ -421,7 +424,7 @@ private fun StarRatingRow(
                     text = feedbackText,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
-                    color = SpeedMenuColors.PrimaryLight,
+                    color = colorScheme.primary,
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center
                 )
@@ -429,7 +432,7 @@ private fun StarRatingRow(
                     text = "Sua nota: $rating/5",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }
@@ -445,7 +448,7 @@ private fun StarRatingRow(
                 text = feedbackText,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = SpeedMenuColors.TextTertiary,
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
@@ -463,6 +466,7 @@ private fun FeedbackChipsRow(
     onTagToggle: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val availableTags = listOf(
         "Atendimento",
         "Comida",
@@ -480,7 +484,7 @@ private fun FeedbackChipsRow(
             text = "O que mais chamou atenção? (opcional)",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = SpeedMenuColors.TextSecondary,
+            color = colorScheme.onSurfaceVariant,
             fontSize = 14.sp
         )
 
@@ -530,7 +534,7 @@ private fun FeedbackChipsRow(
             Text(
                 text = "Máximo de 3 selecionados",
                 style = MaterialTheme.typography.bodySmall,
-                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 fontSize = 12.sp
             )
         }
@@ -547,12 +551,14 @@ private fun FeedbackChip(
     isDisabled: Boolean,
     onToggle: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Animação de cor
     val chipColor by animateColorAsState(
         targetValue = if (isSelected) {
-            SpeedMenuColors.SurfaceElevated.copy(alpha = 0.8f) // Fundo levemente mais claro quando selecionado
+            colorScheme.surfaceVariant.copy(alpha = 0.8f) // Fundo levemente mais claro quando selecionado
         } else {
-            SpeedMenuColors.Surface.copy(alpha = 0.3f) // Reduzido contraste dos não selecionados
+            colorScheme.surface.copy(alpha = 0.3f) // Reduzido contraste dos não selecionados
         },
         animationSpec = tween(200),
         label = "chip_color_$tag"
@@ -560,9 +566,9 @@ private fun FeedbackChip(
 
     val borderColor by animateColorAsState(
         targetValue = if (isSelected) {
-            SpeedMenuColors.Primary.copy(alpha = 0.7f) // Borda laranja quando selecionado
+            colorScheme.primary.copy(alpha = 0.7f) // Borda primária quando selecionado
         } else {
-            SpeedMenuColors.BorderSubtle.copy(alpha = 0.3f) // Borda mais discreta quando não selecionado
+            colorScheme.outlineVariant.copy(alpha = 0.3f) // Borda mais discreta quando não selecionado
         },
         animationSpec = tween(200),
         label = "chip_border_$tag"
@@ -570,11 +576,11 @@ private fun FeedbackChip(
 
     val textColor by animateColorAsState(
         targetValue = if (isSelected) {
-            SpeedMenuColors.PrimaryLight // Texto laranja quando selecionado
+            colorScheme.primary // Texto primário quando selecionado
         } else if (isDisabled) {
-            SpeedMenuColors.TextTertiary.copy(alpha = 0.3f)
+            colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
         } else {
-            SpeedMenuColors.TextSecondary.copy(alpha = 0.7f) // Texto mais discreto quando não selecionado
+            colorScheme.onSurfaceVariant.copy(alpha = 0.7f) // Texto mais discreto quando não selecionado
         },
         animationSpec = tween(200),
         label = "chip_text_$tag"
@@ -618,6 +624,7 @@ private fun CommentTextField(
     onDismissKeyboard: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     val focusRequester = remember { FocusRequester() }
@@ -627,9 +634,9 @@ private fun CommentTextField(
     // Animação da borda e elevação ao focar
     val borderColor by animateColorAsState(
         targetValue = if (isFocused) {
-            SpeedMenuColors.Primary.copy(alpha = 0.6f) // Borda laranja discreta
+            colorScheme.primary.copy(alpha = 0.6f) // Borda primária discreta
         } else {
-            SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f)
+            colorScheme.outlineVariant.copy(alpha = 0.4f)
         },
         animationSpec = tween(200),
         label = "border_color"
@@ -649,7 +656,7 @@ private fun CommentTextField(
             text = "Observação (opcional)",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = SpeedMenuColors.TextSecondary,
+            color = colorScheme.onSurfaceVariant,
             fontSize = 14.sp
         )
 
@@ -662,15 +669,15 @@ private fun CommentTextField(
                     .shadow(
                         elevation = elevation.dp,
                         shape = RoundedCornerShape(12.dp),
-                        spotColor = SpeedMenuColors.Overlay.copy(alpha = 0.15f), // Shadow mais suave
-                        ambientColor = SpeedMenuColors.Overlay.copy(alpha = 0.08f)
+                        spotColor = colorScheme.scrim.copy(alpha = 0.15f), // Shadow mais suave
+                        ambientColor = colorScheme.scrim.copy(alpha = 0.08f)
                     )
                     .background(
-                        color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                        color = colorScheme.surface.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = if (isFocused) 1.5.dp else 1.dp, // Borda laranja discreta quando focado
+                        width = if (isFocused) 1.5.dp else 1.dp, // Borda primária discreta quando focado
                         color = borderColor,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -683,7 +690,7 @@ private fun CommentTextField(
                         .focusRequester(focusRequester)
                         .focusable(),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = SpeedMenuColors.TextPrimary,
+                        color = colorScheme.onSurface,
                         fontSize = 16.sp,
                         lineHeight = 24.sp
                     ),
@@ -708,7 +715,7 @@ private fun CommentTextField(
                                 Text(
                                     text = "Conte como foi sua experiência (opcional)",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = SpeedMenuColors.TextTertiary,
+                                    color = colorScheme.onSurfaceVariant,
                                     fontSize = 16.sp
                                 )
                             }
@@ -722,7 +729,7 @@ private fun CommentTextField(
             Text(
                 text = "${value.length}/250",
                 style = MaterialTheme.typography.bodySmall,
-                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.5f), // Mais discreto
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.5f), // Mais discreto
                 fontSize = 11.sp, // Menor
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -743,6 +750,7 @@ private fun FlatPremiumButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
@@ -763,8 +771,8 @@ private fun FlatPremiumButton(
             .shadow(
                 elevation = if (enabled) 8.dp else 0.dp, // Shadow mais suave
                 shape = buttonShape,
-                spotColor = SpeedMenuColors.Overlay.copy(alpha = 0.2f),
-                ambientColor = SpeedMenuColors.Overlay.copy(alpha = 0.1f)
+                spotColor = colorScheme.scrim.copy(alpha = 0.2f),
+                ambientColor = colorScheme.scrim.copy(alpha = 0.1f)
             )
             .clickable(
                 enabled = enabled,
@@ -774,9 +782,9 @@ private fun FlatPremiumButton(
             )
             .background(
                 color = if (enabled) {
-                    SpeedMenuColors.Primary
+                    colorScheme.primary
                 } else {
-                    SpeedMenuColors.Disabled.copy(alpha = 0.6f) // Opacidade reduzida quando desabilitado
+                    colorScheme.surfaceVariant.copy(alpha = 0.6f) // Opacidade reduzida quando desabilitado
                 },
                 shape = buttonShape
             )
@@ -787,7 +795,7 @@ private fun FlatPremiumButton(
             text = text,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = SpeedMenuColors.TextOnPrimary,
+            color = colorScheme.onPrimary,
             fontSize = 18.sp
         )
     }
@@ -803,6 +811,7 @@ private fun RatePlaceSuccessDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     
@@ -910,7 +919,7 @@ private fun RatePlaceSuccessDialog(
                                 .background(
                                     brush = Brush.radialGradient(
                                         colors = listOf(
-                                            SpeedMenuColors.Primary.copy(alpha = 0.3f),
+                                            colorScheme.primary.copy(alpha = 0.3f),
                                             Color.Transparent
                                         )
                                     ),
@@ -918,19 +927,19 @@ private fun RatePlaceSuccessDialog(
                                 )
                         )
                         
-                        // Círculo laranja principal
+                        // Círculo primário principal
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
                                 .background(
-                                    color = SpeedMenuColors.Primary,
+                                    color = colorScheme.primary,
                                     shape = CircleShape
                                 )
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = null,
-                                tint = SpeedMenuColors.TextPrimary,
+                                tint = colorScheme.onPrimary,
                                 modifier = Modifier
                                     .align(Alignment.Center)
                                     .size(32.dp)
@@ -951,7 +960,7 @@ private fun RatePlaceSuccessDialog(
                             text = "Avaliação enviada",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onSurface,
                             fontSize = 30.sp,
                             lineHeight = 36.sp,
                             textAlign = TextAlign.Center
@@ -964,7 +973,7 @@ private fun RatePlaceSuccessDialog(
                             text = "Obrigado por compartilhar sua experiência com a gente.",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Normal,
-                            color = SpeedMenuColors.TextSecondary.copy(alpha = 0.75f),
+                            color = colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                             fontSize = 14.sp,
                             lineHeight = 20.sp,
                             textAlign = TextAlign.Center,
@@ -974,11 +983,11 @@ private fun RatePlaceSuccessDialog(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Badge de sucesso verde
+                        // Badge de sucesso
                         Row(
                             modifier = Modifier
                                 .background(
-                                    color = SpeedMenuColors.Success.copy(alpha = 0.15f),
+                                    color = colorScheme.tertiaryContainer.copy(alpha = 0.15f),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .padding(horizontal = 14.dp, vertical = 8.dp),
@@ -988,14 +997,14 @@ private fun RatePlaceSuccessDialog(
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = SpeedMenuColors.Success,
+                                tint = colorScheme.tertiary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Text(
                                 text = "Feedback registrado",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = SpeedMenuColors.Success,
+                                color = colorScheme.tertiary,
                                 fontSize = 14.sp
                             )
                         }
@@ -1021,8 +1030,8 @@ private fun RatePlaceSuccessDialog(
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        SpeedMenuColors.Primary,
-                                        Color(0xFFC76A05)
+                                        colorScheme.primary,
+                                        colorScheme.primary.copy(alpha = 0.9f)
                                     )
                                 ),
                                 shape = RoundedCornerShape(999.dp)

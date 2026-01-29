@@ -29,13 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
 import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.ProductListItem
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.ItemAddedDialog
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.ui.screens.products.ProductDetailsBottomSheet
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
@@ -174,10 +174,12 @@ fun ProductsScreen(
         }
     }
 
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // ========== TOP ACTION BAR PADRONIZADA ==========
         // REGRA: Botão "Voltar" na tela de categoria navega para HOME
@@ -196,7 +198,7 @@ fun ProductsScreen(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(SpeedMenuColors.BackgroundPrimary)
+                .background(colorScheme.background)
         ) {
             // Sidebar fixa à esquerda (novo menu hierárquico)
             Box(
@@ -228,9 +230,9 @@ fun ProductsScreen(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
                                     Color.Transparent,
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                    colorScheme.outlineVariant.copy(alpha = 0.08f),
+                                    colorScheme.outlineVariant.copy(alpha = 0.15f),
+                                    colorScheme.outlineVariant.copy(alpha = 0.08f),
                                     Color.Transparent
                                 )
                             )
@@ -246,9 +248,9 @@ fun ProductsScreen(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                SpeedMenuColors.BackgroundPrimary,
-                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.08f, green = 0.10f, blue = 0.08f),
-                                SpeedMenuColors.BackgroundSecondary
+                                colorScheme.background,
+                                colorScheme.background.copy(red = 0.08f, green = 0.10f, blue = 0.08f),
+                                colorScheme.surface
                             )
                         )
                     )

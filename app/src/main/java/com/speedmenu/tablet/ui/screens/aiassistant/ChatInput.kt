@@ -42,7 +42,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Campo de input do chat fixo no rodapé.
@@ -55,15 +54,16 @@ fun ChatInput(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     val focusRequester = remember { FocusRequester() }
 
     val borderColor by animateColorAsState(
         targetValue = if (isFocused) {
-            SpeedMenuColors.Primary.copy(alpha = 0.6f)
+            colorScheme.primary.copy(alpha = 0.6f)
         } else {
-            SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f)
+            colorScheme.outlineVariant.copy(alpha = 0.4f)
         },
         animationSpec = tween(200),
         label = "input_border"
@@ -80,7 +80,7 @@ fun ChatInput(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Row(
@@ -96,12 +96,12 @@ fun ChatInput(
                     .shadow(
                         elevation = if (isFocused) 8.dp else 4.dp,
                         shape = RoundedCornerShape(28.dp),
-                        spotColor = SpeedMenuColors.Primary.copy(alpha = glowIntensity),
-                        ambientColor = SpeedMenuColors.Primary.copy(alpha = glowIntensity * 0.5f)
+                        spotColor = colorScheme.primary.copy(alpha = glowIntensity),
+                        ambientColor = colorScheme.primary.copy(alpha = glowIntensity * 0.5f)
                     )
                     .clip(RoundedCornerShape(28.dp))
                     .background(
-                        color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.8f),
+                        color = colorScheme.surfaceVariant.copy(alpha = 0.8f),
                         shape = RoundedCornerShape(28.dp)
                     )
                     .border(
@@ -119,7 +119,7 @@ fun ChatInput(
                         .focusRequester(focusRequester)
                         .focusable(),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = SpeedMenuColors.TextPrimary,
+                        color = colorScheme.onSurface,
                         fontSize = 16.sp
                     ),
                     keyboardOptions = KeyboardOptions(
@@ -144,7 +144,7 @@ fun ChatInput(
                                 Text(
                                     text = "Pergunte sobre pratos, bebidas, combinações...",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = SpeedMenuColors.TextTertiary,
+                                    color = colorScheme.onSurfaceVariant,
                                     fontSize = 16.sp
                                 )
                             }
@@ -163,15 +163,15 @@ fun ChatInput(
                         brush = if (hasText && enabled) {
                             Brush.verticalGradient(
                                 colors = listOf(
-                                    SpeedMenuColors.PrimaryLight,
-                                    SpeedMenuColors.Primary
+                                    colorScheme.primaryContainer,
+                                    colorScheme.primary
                                 )
                             )
                         } else {
                             Brush.verticalGradient(
                                 colors = listOf(
-                                    SpeedMenuColors.Disabled,
-                                    SpeedMenuColors.Disabled.copy(alpha = 0.8f)
+                                    colorScheme.surfaceVariant,
+                                    colorScheme.surfaceVariant.copy(alpha = 0.8f)
                                 )
                             )
                         },
@@ -184,8 +184,8 @@ fun ChatInput(
                     .shadow(
                         elevation = if (hasText && enabled) 6.dp else 0.dp,
                         shape = CircleShape,
-                        spotColor = SpeedMenuColors.Primary.copy(alpha = 0.3f),
-                        ambientColor = SpeedMenuColors.Primary.copy(alpha = 0.15f)
+                        spotColor = colorScheme.primary.copy(alpha = 0.3f),
+                        ambientColor = colorScheme.primary.copy(alpha = 0.15f)
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -193,9 +193,9 @@ fun ChatInput(
                     imageVector = Icons.Default.Send,
                     contentDescription = "Enviar",
                     tint = if (hasText && enabled) {
-                        SpeedMenuColors.TextOnPrimary
+                        colorScheme.onPrimary
                     } else {
-                        SpeedMenuColors.TextTertiary.copy(alpha = 0.5f)
+                        colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     },
                     modifier = Modifier.size(24.dp)
                 )

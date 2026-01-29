@@ -55,7 +55,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.speedmenu.tablet.core.ui.components.OrderPlacedDialog
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import com.speedmenu.tablet.ui.viewmodel.FinalizationState
@@ -160,6 +159,8 @@ fun QrScannerScreen(
     val isConnected = true
     val tableNumber = "17"
     
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Função para simular scan (usada no modo MOCK)
     val simulateScan = {
         if (uiState.scanState !is ScanState.Success) {
@@ -203,7 +204,7 @@ fun QrScannerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // Top Action Bar
         AppTopBar(
@@ -338,13 +339,15 @@ private fun CameraPanel(
     lastTapTime: Long,
     onTapCountChanged: (Int, Long) -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { clip = true }
             .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
             .background(
-                color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                color = colorScheme.surface.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
             )
     ) {
@@ -362,7 +365,7 @@ private fun CameraPanel(
                         text = "Permissão de câmera necessária",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = SpeedMenuColors.TextPrimary,
+                        color = colorScheme.onSurface,
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
@@ -370,7 +373,7 @@ private fun CameraPanel(
                     Text(
                         text = "Para escanear o QRCode da comanda, é necessário permitir o acesso à câmera.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = SpeedMenuColors.TextSecondary,
+                        color = colorScheme.onSurfaceVariant,
                         fontSize = 13.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 16.dp)
@@ -380,7 +383,7 @@ private fun CameraPanel(
                         modifier = Modifier
                             .padding(top = 24.dp)
                             .background(
-                                color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                                color = colorScheme.primary.copy(alpha = 0.2f),
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable(onClick = onRequestPermission)
@@ -390,7 +393,7 @@ private fun CameraPanel(
                             text = "Permitir câmera",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.PrimaryLight,
+                            color = colorScheme.primary,
                             fontSize = 14.sp
                         )
                     }
@@ -409,7 +412,7 @@ private fun CameraPanel(
                     Box(
                         modifier = Modifier
                             .background(
-                                color = SpeedMenuColors.Success.copy(alpha = 0.2f),
+                                color = colorScheme.tertiaryContainer.copy(alpha = 0.2f),
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -418,7 +421,7 @@ private fun CameraPanel(
                             text = "✓ Comanda detectada",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.Success,
+                            color = colorScheme.tertiary,
                             fontSize = 16.sp
                         )
                     }
@@ -426,7 +429,7 @@ private fun CameraPanel(
                     Text(
                         text = "Comanda: ${scanState.comandaCode}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = SpeedMenuColors.TextSecondary,
+                        color = colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(top = 16.dp)
                     )
@@ -435,7 +438,7 @@ private fun CameraPanel(
                         modifier = Modifier
                             .padding(top = 24.dp)
                             .background(
-                                color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                                color = colorScheme.primary.copy(alpha = 0.2f),
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable(onClick = onResetScan)
@@ -445,7 +448,7 @@ private fun CameraPanel(
                             text = "Escanear novamente",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.PrimaryLight,
+                            color = colorScheme.primary,
                             fontSize = 14.sp
                         )
                     }
@@ -464,7 +467,7 @@ private fun CameraPanel(
                     Box(
                         modifier = Modifier
                             .background(
-                                color = SpeedMenuColors.Error.copy(alpha = 0.2f),
+                                color = colorScheme.errorContainer.copy(alpha = 0.2f),
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -473,7 +476,7 @@ private fun CameraPanel(
                             text = "QRCode inválido",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.Error,
+                            color = colorScheme.error,
                             fontSize = 16.sp
                         )
                     }
@@ -482,7 +485,7 @@ private fun CameraPanel(
                         modifier = Modifier
                             .padding(top = 24.dp)
                             .background(
-                                color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                                color = colorScheme.primary.copy(alpha = 0.2f),
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable(onClick = onResetScan)
@@ -492,7 +495,7 @@ private fun CameraPanel(
                             text = "Tentar novamente",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = SpeedMenuColors.PrimaryLight,
+                            color = colorScheme.primary,
                             fontSize = 14.sp
                         )
                     }
@@ -531,7 +534,7 @@ private fun CameraPanel(
                                     .size(200.dp)
                                     .border(
                                         width = 2.dp,
-                                        color = SpeedMenuColors.PrimaryLight,
+                                        color = colorScheme.primary,
                                         shape = RoundedCornerShape(12.dp)
                                     )
                                     .then(
@@ -570,12 +573,12 @@ private fun CameraPanel(
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = SpeedMenuColors.TextPrimary,
+                                color = colorScheme.onSurface,
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .background(
-                                        color = SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.8f),
+                                        color = colorScheme.background.copy(alpha = 0.8f),
                                         shape = RoundedCornerShape(8.dp)
                                     )
                                     .padding(horizontal = 16.dp, vertical = 10.dp)

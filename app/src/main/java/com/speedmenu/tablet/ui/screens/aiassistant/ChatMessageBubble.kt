@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Componente de balão de mensagem do chat.
@@ -66,6 +65,8 @@ private fun UserMessageBubble(
     text: String,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End
@@ -75,7 +76,7 @@ private fun UserMessageBubble(
                 .widthIn(max = 600.dp)
                 .clip(RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp))
                 .background(
-                    color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.8f),
+                    color = colorScheme.surfaceVariant.copy(alpha = 0.8f),
                     shape = RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp)
                 )
                 .padding(horizontal = 20.dp, vertical = 14.dp)
@@ -84,7 +85,7 @@ private fun UserMessageBubble(
                 text = text,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Normal,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 16.sp,
                 lineHeight = 24.sp
             )
@@ -100,6 +101,8 @@ private fun AiMessageBubble(
     text: String,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start
@@ -112,8 +115,8 @@ private fun AiMessageBubble(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            SpeedMenuColors.PrimaryLight,
-                            SpeedMenuColors.Primary
+                            colorScheme.primaryContainer,
+                            colorScheme.primary
                         )
                     ),
                     shape = RoundedCornerShape(16.dp)
@@ -124,7 +127,7 @@ private fun AiMessageBubble(
             Icon(
                 imageVector = Icons.Default.AutoAwesome,
                 contentDescription = "IA",
-                tint = SpeedMenuColors.TextOnPrimary,
+                tint = colorScheme.onPrimary,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -139,8 +142,8 @@ private fun AiMessageBubble(
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            SpeedMenuColors.Primary.copy(alpha = 0.85f),
-                            SpeedMenuColors.PrimaryDark.copy(alpha = 0.9f)
+                            colorScheme.primary.copy(alpha = 0.85f),
+                            colorScheme.primary.copy(alpha = 0.9f)
                         )
                     ),
                     shape = RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
@@ -151,7 +154,7 @@ private fun AiMessageBubble(
                 text = text,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Normal,
-                color = SpeedMenuColors.TextOnPrimary,
+                color = colorScheme.onPrimary,
                 fontSize = 16.sp,
                 lineHeight = 24.sp
             )
@@ -166,6 +169,8 @@ private fun AiMessageBubble(
 fun TypingIndicator(
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Start,
@@ -179,8 +184,8 @@ fun TypingIndicator(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            SpeedMenuColors.PrimaryLight,
-                            SpeedMenuColors.Primary
+                            colorScheme.primaryContainer,
+                            colorScheme.primary
                         )
                     ),
                     shape = RoundedCornerShape(16.dp)
@@ -191,7 +196,7 @@ fun TypingIndicator(
             Icon(
                 imageVector = Icons.Default.AutoAwesome,
                 contentDescription = "IA",
-                tint = SpeedMenuColors.TextOnPrimary,
+                tint = colorScheme.onPrimary,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -205,8 +210,8 @@ fun TypingIndicator(
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            SpeedMenuColors.Primary.copy(alpha = 0.85f),
-                            SpeedMenuColors.PrimaryDark.copy(alpha = 0.9f)
+                            colorScheme.primary.copy(alpha = 0.85f),
+                            colorScheme.primary.copy(alpha = 0.9f)
                         )
                     ),
                     shape = RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
@@ -235,6 +240,8 @@ private fun TypingDots() {
 
 @Composable
 private fun TypingDot(delayMillis: Int) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     val alpha by androidx.compose.animation.core.animateFloatAsState(
         targetValue = 1f,
         animationSpec = androidx.compose.animation.core.infiniteRepeatable(
@@ -252,7 +259,7 @@ private fun TypingDot(delayMillis: Int) {
         modifier = Modifier
             .size(8.dp)
             .background(
-                color = SpeedMenuColors.TextOnPrimary.copy(alpha = 0.3f + alpha * 0.7f),
+                color = colorScheme.onPrimary.copy(alpha = 0.3f + alpha * 0.7f),
                 shape = androidx.compose.foundation.shape.CircleShape
             )
     )

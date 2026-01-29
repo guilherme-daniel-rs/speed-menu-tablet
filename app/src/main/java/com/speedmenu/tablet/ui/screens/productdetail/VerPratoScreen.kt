@@ -68,7 +68,6 @@ import com.speedmenu.tablet.ui.viewmodel.CartViewModel
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
 /**
@@ -136,10 +135,12 @@ fun VerPratoScreen(
     val isConnected = remember { true } // Mock: sempre conectado
     val tableNumber = remember { "17" } // Mock: mesa 17
     
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // ========== TOP ACTION BAR FIXA ==========
         // REGRA: Botão "Voltar" na tela de prato retorna para a categoria anterior (popBackStack)
@@ -300,7 +301,7 @@ fun VerPratoScreen(
                                                     .fillMaxWidth()
                                                     .height(1.dp)
                                                     .background(
-                                                        color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
+                                                        color = colorScheme.outlineVariant.copy(alpha = 0.06f)
                                                     )
                                             )
                                         }
@@ -343,7 +344,7 @@ fun VerPratoScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                    color = colorScheme.surface.copy(alpha = 0.15f),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { showObservationsModal = true }
@@ -361,7 +362,7 @@ fun VerPratoScreen(
                                     Icon(
                                         imageVector = Icons.Default.Edit,
                                         contentDescription = null,
-                                        tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.6f),
+                                        tint = colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
@@ -373,9 +374,9 @@ fun VerPratoScreen(
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
                                         color = if (observationsText.isEmpty()) {
-                                            SpeedMenuColors.TextSecondary
+                                            colorScheme.onSurfaceVariant
                                         } else {
-                                            SpeedMenuColors.TextPrimary
+                                            colorScheme.onSurface
                                         },
                                         fontSize = 14.sp
                                     )
@@ -406,14 +407,14 @@ fun VerPratoScreen(
                                 text = CurrencyFormatter.formatCurrencyBR(productPrice),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.SemiBold,
-                                color = SpeedMenuColors.PrimaryLight,
+                                color = colorScheme.primary,
                                 fontSize = 24.sp
                             )
                             Text(
                                 text = "valor unitário",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Normal,
-                                color = SpeedMenuColors.TextTertiary.copy(alpha = 0.6f),
+                                color = colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(top = 2.dp)
                             )
@@ -594,6 +595,8 @@ private fun IngredientsModal(
     onQuantityChange: (Int, Int) -> Unit,
     onRemoveBaseIngredient: (Int) -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -618,7 +621,7 @@ private fun IngredientsModal(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.95f),
+                            color = colorScheme.surfaceVariant.copy(alpha = 0.95f),
                             shape = RoundedCornerShape(24.dp)
                         )
                         .shadow(
@@ -644,13 +647,13 @@ private fun IngredientsModal(
                             text = "Ingredientes",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onSurface,
                             fontSize = 24.sp
                         )
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Fechar",
-                            tint = SpeedMenuColors.TextSecondary,
+                            tint = colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .size(24.dp)
                                 .clickable(onClick = onDismiss)
@@ -674,7 +677,7 @@ private fun IngredientsModal(
                                         .fillMaxWidth()
                                         .height(1.dp)
                                         .background(
-                                            color = SpeedMenuColors.BorderSubtle.copy(alpha = 0.06f)
+                                            color = colorScheme.outlineVariant.copy(alpha = 0.06f)
                                         )
                                 )
                             }
@@ -715,6 +718,7 @@ private fun ObservationsModal(
     onDismiss: () -> Unit,
     onSave: (String) -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     var text by remember { mutableStateOf(observations) }
     
     Dialog(
@@ -741,7 +745,7 @@ private fun ObservationsModal(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.95f),
+                            color = colorScheme.surfaceVariant.copy(alpha = 0.95f),
                             shape = RoundedCornerShape(24.dp)
                         )
                         .shadow(
@@ -768,13 +772,13 @@ private fun ObservationsModal(
                             text = "Observações",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onSurface,
                             fontSize = 24.sp
                         )
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Fechar",
-                            tint = SpeedMenuColors.TextSecondary,
+                            tint = colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .size(24.dp)
                                 .clickable(onClick = onDismiss)
@@ -787,7 +791,7 @@ private fun ObservationsModal(
                             .fillMaxWidth()
                             .heightIn(min = 120.dp, max = 200.dp)
                             .background(
-                                color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                color = colorScheme.surface.copy(alpha = 0.15f),
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(16.dp)
@@ -797,7 +801,7 @@ private fun ObservationsModal(
                             onValueChange = { text = it },
                             modifier = Modifier.fillMaxSize(),
                             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                color = SpeedMenuColors.TextPrimary,
+                                color = colorScheme.onSurface,
                                 fontSize = 16.sp,
                                 lineHeight = 24.sp
                             ),
@@ -807,7 +811,7 @@ private fun ObservationsModal(
                                     Text(
                                         text = "Ex: sem cebola, bem passado, sem sal...",
                                         style = MaterialTheme.typography.bodyLarge,
-                                        color = SpeedMenuColors.TextTertiary,
+                                        color = colorScheme.onSurfaceVariant,
                                         fontSize = 16.sp
                                     )
                                 }
@@ -829,7 +833,7 @@ private fun ObservationsModal(
                                 .weight(1f)
                                 .height(56.dp)
                                 .background(
-                                    color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                                    color = colorScheme.surface.copy(alpha = 0.3f),
                                     shape = RoundedCornerShape(999.dp)
                                 )
                                 .clickable(onClick = onDismiss),
@@ -839,7 +843,7 @@ private fun ObservationsModal(
                                 text = "Cancelar",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = SpeedMenuColors.TextSecondary,
+                                color = colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
                         }
@@ -852,8 +856,8 @@ private fun ObservationsModal(
                                 .background(
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
-                                            SpeedMenuColors.Primary,
-                                            SpeedMenuColors.PrimaryDark
+                                            colorScheme.primary,
+                                            colorScheme.primary.copy(alpha = 0.9f)
                                         )
                                     ),
                                     shape = RoundedCornerShape(999.dp)
@@ -865,7 +869,7 @@ private fun ObservationsModal(
                                 text = "Salvar",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = SpeedMenuColors.TextOnPrimary,
+                                color = colorScheme.onPrimary,
                                 fontSize = 16.sp
                             )
                         }

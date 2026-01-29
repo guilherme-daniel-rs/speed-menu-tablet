@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable;
 import androidx.compose.ui.Modifier;
 import androidx.compose.ui.graphics.Brush;
 import androidx.compose.ui.text.font.FontWeight;
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors;
 
 /**
  * Dados de tópico e categoria para o menu lateral do fluxo de pedido.

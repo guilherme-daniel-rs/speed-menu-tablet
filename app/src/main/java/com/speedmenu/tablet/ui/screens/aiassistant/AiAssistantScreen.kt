@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.OrderTopStatusPill
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 
 /**
@@ -93,10 +92,12 @@ fun AiAssistantScreen(
         }
     }
 
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -149,7 +150,7 @@ fun AiAssistantScreen(
                                     text = "Sugestões rápidas:",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Medium,
-                                    color = SpeedMenuColors.TextSecondary,
+                                    color = colorScheme.onSurfaceVariant,
                                     fontSize = 14.sp,
                                     modifier = Modifier.padding(horizontal = 4.dp)
                                 )
@@ -191,8 +192,8 @@ fun AiAssistantScreen(
             Snackbar(
                 snackbarData = snackbarData,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                containerColor = SpeedMenuColors.SurfaceElevated,
-                contentColor = SpeedMenuColors.TextPrimary
+                containerColor = colorScheme.surfaceVariant,
+                contentColor = colorScheme.onSurface
             )
         }
         
@@ -217,12 +218,14 @@ private fun AiAssistantTopBar(
     onCallWaiterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(72.dp) // Altura padrão consistente com outras TopBars
             .background(
-                color = SpeedMenuColors.Surface.copy(alpha = 0.95f)
+                color = colorScheme.surface.copy(alpha = 0.95f)
             )
             .padding(horizontal = 24.dp),
         contentAlignment = Alignment.Center
@@ -246,14 +249,14 @@ private fun AiAssistantTopBar(
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Voltar",
-                        tint = SpeedMenuColors.TextSecondary,
+                        tint = colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
                         text = "Voltar",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.TextSecondary,
+                        color = colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -266,14 +269,14 @@ private fun AiAssistantTopBar(
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
-                        tint = SpeedMenuColors.PrimaryLight,
+                        tint = colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
                         text = "Pergunte à IA",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
-                        color = SpeedMenuColors.TextPrimary,
+                        color = colorScheme.onSurface,
                         fontSize = 20.sp,
                         lineHeight = 24.sp
                     )

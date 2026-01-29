@@ -2,6 +2,7 @@ package com.speedmenu.tablet.ui.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import coil.compose.AsyncImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -84,6 +85,7 @@ import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
 import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.components.RestaurantDebugMenu
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
@@ -160,25 +162,32 @@ private fun rememberHomeMenuItems(
 @Composable
 fun HomeScreen(
     onNavigateToCategories: () -> Unit = {},
-    onNavigateToCart: () -> Unit = {},
+    @Suppress("UNUSED_PARAMETER") onNavigateToCart: () -> Unit = {}, // Reservado para uso futuro
     onNavigateToViewOrder: () -> Unit = {},
     onNavigateToRatePlace: () -> Unit = {},
     onNavigateToGames: () -> Unit = {},
     onNavigateToAiAssistant: () -> Unit = {},
-    cartItemCount: Int = 0
+    @Suppress("UNUSED_PARAMETER") cartItemCount: Int = 0, // Reservado para uso futuro
+    navController: androidx.navigation.NavHostController? = null
 ) {
     // Detectar tamanho de tela usando LocalConfiguration
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp
     val isExpanded = screenWidthDp >= 840 // Tablet (Expanded)
-    val isCompact = screenWidthDp < 600 // Celular (Compact)
+    // isCompact reservado para uso futuro (atualmente não usado)
     
     // Estado para controlar animação de entrada
     var isVisible by remember { mutableStateOf(false) }
     
+    // Estado para controlar menu de debug de restaurantes
+    var showDebugMenu by remember { mutableStateOf(false) }
+    
     // WaiterViewModel centralizado para gerenciar chamadas de garçom
     val waiterViewModel: WaiterViewModel = hiltViewModel()
     val waiterUiState by waiterViewModel.uiState.collectAsState()
+    
+    // AppConfigViewModel para gerenciar configuração
+    val appConfigViewModel: com.speedmenu.tablet.ui.viewmodel.AppConfigViewModel = hiltViewModel()
     
     // Estado do drawer (apenas para celular)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -211,7 +220,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(SpeedMenuColors.BackgroundPrimary)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // Top bar
             AppTopBar(
@@ -221,14 +230,17 @@ fun HomeScreen(
                 onCallWaiterClick = {
                     waiterViewModel.requestWaiter("HomeScreen")
                 },
-                screenName = "HomeScreen"
+                screenName = "HomeScreen",
+                onRestaurantLongClick = {
+                    showDebugMenu = true
+                }
             )
             
             // Conteúdo principal com sidebar fixa
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(SpeedMenuColors.BackgroundPrimary)
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 // Sidebar fixa à esquerda
                 AnimatedVisibility(
@@ -261,9 +273,9 @@ fun HomeScreen(
                                     brush = Brush.verticalGradient(
                                         colors = listOf(
                                             Color.Transparent,
-                                            SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                            SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
-                                            SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.08f),
+                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f),
+                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.08f),
                                             Color.Transparent
                                         )
                                     )
@@ -285,7 +297,8 @@ fun HomeScreen(
                     HomeContent(
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight()
+                            .fillMaxHeight(),
+                        navController = navController
                     )
                 }
             }
@@ -321,7 +334,10 @@ fun HomeScreen(
                             coroutineScope.launch {
                                 drawerState.open()
                             }
-                        }
+                        },
+                onRestaurantLongClick = {
+                    showDebugMenu = true
+                }
                     )
                 }
             ) { innerPadding ->
@@ -329,7 +345,8 @@ fun HomeScreen(
                 HomeContent(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
+                        .padding(innerPadding),
+                    navController = navController
                 )
             }
         }
@@ -340,6 +357,13 @@ fun HomeScreen(
         visible = waiterUiState.showDialog,
         onDismiss = { waiterViewModel.dismissDialog() },
         onConfirm = { waiterViewModel.confirmWaiterCall() }
+    )
+    
+    // Menu de debug para alternar restaurantes
+    RestaurantDebugMenu(
+        visible = showDebugMenu,
+        onDismiss = { showDebugMenu = false },
+        appConfigViewModel = appConfigViewModel
     )
 }
 
@@ -441,11 +465,11 @@ internal fun Sidebar(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                SpeedMenuColors.BackgroundPrimary,
-                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.105f, green = 0.125f, blue = 0.105f),
-                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.11f, green = 0.13f, blue = 0.11f),
-                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.12f, green = 0.14f, blue = 0.12f),
-                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.13f, green = 0.15f, blue = 0.13f)
+                                MaterialTheme.colorScheme.background,
+                                MaterialTheme.colorScheme.background.copy(red = 0.105f, green = 0.125f, blue = 0.105f),
+                                MaterialTheme.colorScheme.background.copy(red = 0.11f, green = 0.13f, blue = 0.11f),
+                                MaterialTheme.colorScheme.background.copy(red = 0.12f, green = 0.14f, blue = 0.12f),
+                                MaterialTheme.colorScheme.background.copy(red = 0.13f, green = 0.15f, blue = 0.13f)
                             )
                         )
                     )
@@ -485,7 +509,7 @@ internal fun Sidebar(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 20.dp, bottom = sizes.bottomPadding),
+                    .padding(top = 20.dp), // Removido bottomPadding para permitir logo descer mais
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -550,14 +574,14 @@ internal fun Sidebar(
                 // ========== SEÇÃO 3: Logo pequeno no final (clicável) ==========
                 Box(
                     modifier = Modifier
-                        .padding(bottom = 4.dp) // Padding mínimo, quase encostado no final
+                        .padding(bottom = 0.dp) // Sem padding, encostado no final
                         .clickable(onClick = { /* TODO: Adicionar redirect */ })
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.logo_1),
+                        painter = painterResource(id = R.drawable.logo_2),
                         contentDescription = "Logo do aplicativo",
                         modifier = Modifier
-                            .size(48.dp) // Logo bem menor
+                            .size(120.dp) // Logo aumentado
                             .align(Alignment.Center),
                         contentScale = ContentScale.Fit
                     )
@@ -581,7 +605,7 @@ private fun DrawerContent(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Calcular tamanhos responsivos baseados na altura disponível
         val sizes = calculateResponsiveSizes(maxHeight = maxHeight)
@@ -589,7 +613,7 @@ private fun DrawerContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 20.dp, bottom = sizes.bottomPadding),
+                .padding(top = 20.dp), // Removido bottomPadding para permitir logo descer mais
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -656,14 +680,14 @@ private fun DrawerContent(
             // ========== SEÇÃO 3: Logo pequeno no final (clicável) ==========
             Box(
                 modifier = Modifier
-                    .padding(bottom = 4.dp) // Padding mínimo, quase encostado no final
+                    .padding(bottom = 0.dp) // Sem padding, encostado no final
                     .clickable(onClick = { /* TODO: Adicionar redirect */ })
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.logo_1),
+                    painter = painterResource(id = R.drawable.logo_2),
                     contentDescription = "Logo do aplicativo",
                     modifier = Modifier
-                        .size(48.dp) // Logo bem menor
+                        .size(120.dp) // Logo aumentado
                         .align(Alignment.Center),
                     contentScale = ContentScale.Fit
                 )
@@ -684,8 +708,8 @@ private fun ResponsiveSidebarMenuItem(
     onClick: () -> Unit,
     style: SidebarMenuItemStyle,
     itemHeight: androidx.compose.ui.unit.Dp,
-    iconSize: androidx.compose.ui.unit.Dp,
-    fontSize: androidx.compose.ui.unit.TextUnit,
+    @Suppress("UNUSED_PARAMETER") iconSize: androidx.compose.ui.unit.Dp, // Reservado para uso futuro (customização de tamanho)
+    @Suppress("UNUSED_PARAMETER") fontSize: androidx.compose.ui.unit.TextUnit, // Reservado para uso futuro (customização de tamanho)
     modifier: Modifier = Modifier
 ) {
     // Para PRIMARY, usar altura maior proporcionalmente
@@ -720,12 +744,23 @@ private fun ResponsiveSidebarMenuItem(
  * Header premium da sidebar com logo de marca.
  * Container dedicado que dá presença e hierarquia visual forte à identidade.
  * Tamanhos responsivos baseados na altura disponível.
+ * Agora usa logo do AppConfig (remoto) com Coil, com fallback para placeholder.
  */
 @Composable
 private fun SidebarHeader(
     logoHeight: androidx.compose.ui.unit.Dp = 72.dp,
-    headerHeight: androidx.compose.ui.unit.Dp = 140.dp
+    headerHeight: androidx.compose.ui.unit.Dp = 140.dp,
+    appConfigViewModel: com.speedmenu.tablet.ui.viewmodel.AppConfigViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
+    // Observa AppConfig para obter logo
+    val appConfig by appConfigViewModel.appConfig.collectAsState()
+    val isDarkMode = androidx.compose.foundation.isSystemInDarkTheme()
+    val logoUrl = if (isDarkMode) {
+        appConfig?.branding?.logoUrlDark ?: appConfig?.branding?.logoUrl
+    } else {
+        appConfig?.branding?.logoUrl
+    }
+    
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -742,15 +777,31 @@ private fun SidebarHeader(
                     .padding(horizontal = 24.dp), // Respiro lateral
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_1),
-                    contentDescription = "Logo do restaurante",
-                    modifier = Modifier
-                        .fillMaxWidth(0.75f) // Logo maior e mais dominante (75% da largura)
-                        .heightIn(max = logoHeight) // Altura responsiva
-                        .align(Alignment.Center),
-                    contentScale = ContentScale.Fit // Mantém proporção sem distorção
-                )
+                if (!logoUrl.isNullOrBlank()) {
+                    // Logo remoto usando Coil
+                    AsyncImage(
+                        model = logoUrl,
+                        contentDescription = "Logo do restaurante",
+                        modifier = Modifier
+                            .fillMaxWidth(0.75f) // Logo maior e mais dominante (75% da largura)
+                            .heightIn(max = logoHeight) // Altura responsiva
+                            .align(Alignment.Center),
+                        contentScale = ContentScale.Fit, // Mantém proporção sem distorção
+                        placeholder = painterResource(id = R.drawable.logo_1),
+                        error = painterResource(id = R.drawable.logo_1)
+                    )
+                } else {
+                    // Placeholder (logo local)
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_1),
+                        contentDescription = "Logo do restaurante",
+                        modifier = Modifier
+                            .fillMaxWidth(0.75f) // Logo maior e mais dominante (75% da largura)
+                            .heightIn(max = logoHeight) // Altura responsiva
+                            .align(Alignment.Center),
+                        contentScale = ContentScale.Fit // Mantém proporção sem distorção
+                    )
+                }
             }
         }
         
@@ -776,22 +827,31 @@ private fun SidebarHeader(
  */
 @Composable
 private fun HomeContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: androidx.navigation.NavHostController? = null
 ) {
     Box(modifier = modifier) {
         // Banner principal com imagem de fundo
-        HomeBanner()
+        HomeBanner(navController = navController)
     }
 }
 
 /**
  * Banner principal com carrossel de imagens e texto de destaque.
  * Fundo sofisticado com múltiplas camadas visuais para profundidade.
+ * Agora usa carrossel do AppConfig (remoto) com ações ao clicar.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun HomeBanner() {
-    // Lista de imagens do carrossel
+private fun HomeBanner(
+    appConfigViewModel: com.speedmenu.tablet.ui.viewmodel.AppConfigViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
+    navController: androidx.navigation.NavHostController? = null
+) {
+    // Observa AppConfig para obter carrossel
+    val appConfig by appConfigViewModel.appConfig.collectAsState()
+    val carouselItems = appConfig?.home?.carousel ?: emptyList()
+    
+    // Fallback para imagens locais se carrossel estiver vazio
     val coverImages = remember {
         listOf(
             R.drawable.capa,      // capa.jpeg
@@ -800,15 +860,61 @@ private fun HomeBanner() {
         )
     }
     
+    // Usa carrossel do config se disponível, senão usa fallback local
+    val hasCarousel = carouselItems.isNotEmpty()
+    val itemCount = if (hasCarousel) carouselItems.size else coverImages.size
+    
     // Estado do pager
-    val pagerState = rememberPagerState(pageCount = { coverImages.size }, initialPage = 0)
+    val pagerState = rememberPagerState(pageCount = { itemCount }, initialPage = 0)
     
     // Auto-play do carrossel (muda de página a cada 5 segundos)
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(5000)
-            val nextPage = (pagerState.currentPage + 1) % coverImages.size
-            pagerState.animateScrollToPage(nextPage)
+    LaunchedEffect(itemCount) {
+        if (itemCount > 0) {
+            while (true) {
+                delay(5000)
+                val nextPage = (pagerState.currentPage + 1) % itemCount
+                pagerState.animateScrollToPage(nextPage)
+            }
+        }
+    }
+    
+    // Context para abrir URLs
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    // Handler de clique no carrossel
+    val onCarouselItemClick: (com.speedmenu.tablet.domain.model.CarouselAction?) -> Unit = { action ->
+        if (action != null && navController != null) {
+            when (action) {
+                is com.speedmenu.tablet.domain.model.CarouselAction.Category -> {
+                    // Navegar para categoria (se rota existir)
+                    try {
+                        navController.navigate(com.speedmenu.tablet.core.navigation.Screen.Products.createRoute(action.categoryId)) {
+                            launchSingleTop = true
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("HomeBanner", "Failed to navigate to category: ${action.categoryId}", e)
+                    }
+                }
+                is com.speedmenu.tablet.domain.model.CarouselAction.Product -> {
+                    // Navegar para produto (se rota existir)
+                    try {
+                        // Assumindo que existe uma rota de produto (ajustar conforme necessário)
+                        android.util.Log.d("HomeBanner", "Navigate to product: ${action.productId}")
+                        // navController.navigate(Screen.Product.createRoute(action.productId))
+                    } catch (e: Exception) {
+                        android.util.Log.e("HomeBanner", "Failed to navigate to product: ${action.productId}", e)
+                    }
+                }
+                is com.speedmenu.tablet.domain.model.CarouselAction.Url -> {
+                    // Abrir URL no navegador
+                    try {
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(action.url))
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        android.util.Log.e("HomeBanner", "Failed to open URL: ${action.url}", e)
+                    }
+                }
+            }
         }
     }
     
@@ -823,10 +929,10 @@ private fun HomeBanner() {
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.12f, green = 0.15f, blue = 0.10f), // Tom escuro com leve verde
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.08f, green = 0.10f, blue = 0.08f), // Mais escuro
-                            SpeedMenuColors.BackgroundPrimary.copy(red = 0.05f, green = 0.07f, blue = 0.05f), // Muito escuro
-                            SpeedMenuColors.BackgroundSecondary  // Quase preto
+                            MaterialTheme.colorScheme.background.copy(red = 0.12f, green = 0.15f, blue = 0.10f), // Tom escuro com leve verde
+                            MaterialTheme.colorScheme.background.copy(red = 0.08f, green = 0.10f, blue = 0.08f), // Mais escuro
+                            MaterialTheme.colorScheme.background.copy(red = 0.05f, green = 0.07f, blue = 0.05f), // Muito escuro
+                            MaterialTheme.colorScheme.surface  // Quase preto
                         )
                     )
                 )
@@ -834,16 +940,41 @@ private fun HomeBanner() {
         
         // ========== CAMADA 1: Carrossel de imagens ==========
         // Imagens exibidas com brilho padrão (sem filtros de cor)
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            Image(
-                painter = painterResource(id = coverImages[page]),
-                contentDescription = "Imagem de capa ${page + 1}",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+        if (hasCarousel) {
+            // Carrossel remoto do AppConfig
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val item = carouselItems[page]
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { onCarouselItemClick(item.action) }
+                ) {
+                    AsyncImage(
+                        model = item.imageUrl,
+                        contentDescription = "Imagem de capa ${page + 1}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(id = R.drawable.capa),
+                        error = painterResource(id = R.drawable.capa)
+                    )
+                }
+            }
+        } else {
+            // Fallback: carrossel local
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                Image(
+                    painter = painterResource(id = coverImages[page]),
+                    contentDescription = "Imagem de capa ${page + 1}",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
         
         // ========== CAMADA 4.5: Indicadores do carrossel ==========
@@ -854,17 +985,18 @@ private fun HomeBanner() {
                 .padding(horizontal = 40.dp, vertical = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            repeat(coverImages.size) { index ->
+            repeat(itemCount) { index ->
                 val isSelected = pagerState.currentPage == index
+                val colorScheme = MaterialTheme.colorScheme
                 Box(
                     modifier = Modifier
                         .size(if (isSelected) 10.dp else 8.dp)
                         .clip(CircleShape)
                         .background(
                             color = if (isSelected) {
-                                SpeedMenuColors.PrimaryLight
+                                colorScheme.secondary
                             } else {
-                                SpeedMenuColors.PrimaryLight.copy(alpha = 0.4f)
+                                colorScheme.secondary.copy(alpha = 0.4f)
                             }
                         )
                 )
@@ -888,7 +1020,7 @@ internal fun TopRightInfo(
     Box(
         modifier = modifier
             .background(
-                color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.75f),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.75f),
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(horizontal = 20.dp, vertical = 14.dp)
@@ -903,6 +1035,7 @@ internal fun TopRightInfo(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Ícone de WiFi com cor de sucesso sutil
+                val colorScheme = MaterialTheme.colorScheme
                 Box(
                     modifier = Modifier.size(20.dp),
                     contentAlignment = Alignment.Center
@@ -910,7 +1043,7 @@ internal fun TopRightInfo(
                     Icon(
                         imageVector = Icons.Default.Wifi,
                         contentDescription = "Conectado",
-                        tint = SpeedMenuColors.Success.copy(alpha = 0.85f),
+                        tint = colorScheme.secondary.copy(alpha = 0.85f),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -918,18 +1051,19 @@ internal fun TopRightInfo(
                 Text(
                     text = "Conectado",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SpeedMenuColors.TextTertiary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
 
             // Divisor sutil
+            val colorScheme = MaterialTheme.colorScheme
             Box(
                 modifier = Modifier
                     .width(1.dp)
                     .height(24.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.4f))
             )
 
             // Informação da mesa
@@ -941,13 +1075,13 @@ internal fun TopRightInfo(
                 Icon(
                     imageVector = Icons.Default.TableRestaurant,
                     contentDescription = "Mesa",
-                    tint = SpeedMenuColors.TextTertiary.copy(alpha = 0.7f),
+                    tint = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = "Mesa 17",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -958,7 +1092,7 @@ internal fun TopRightInfo(
                 modifier = Modifier
                     .width(1.dp)
                     .height(24.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.4f))
             )
 
             // Ação rápida: Chamar garçom (com micro-interação)
@@ -967,9 +1101,9 @@ internal fun TopRightInfo(
             
             val waiterIconColor by animateColorAsState(
                 targetValue = if (isWaiterPressed) {
-                    SpeedMenuColors.PrimaryLight
+                    colorScheme.secondary
                 } else {
-                    SpeedMenuColors.PrimaryLight.copy(alpha = 0.8f)
+                    colorScheme.secondary.copy(alpha = 0.8f)
                 },
                 animationSpec = tween(150),
                 label = "waiter_icon_color"
@@ -977,9 +1111,9 @@ internal fun TopRightInfo(
             
             val waiterTextColor by animateColorAsState(
                 targetValue = if (isWaiterPressed) {
-                    SpeedMenuColors.TextPrimary
+                    colorScheme.onSurface
                 } else {
-                    SpeedMenuColors.TextSecondary
+                    colorScheme.onSurfaceVariant
                 },
                 animationSpec = tween(150),
                 label = "waiter_text_color"

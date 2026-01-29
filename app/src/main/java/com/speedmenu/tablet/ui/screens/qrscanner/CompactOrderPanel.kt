@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.ui.screens.order.CartItemRow
@@ -64,11 +63,13 @@ fun CompactOrderPanel(
     onRemoveItem: ((String) -> Unit)? = null,
     onRetryFinalization: () -> Unit = {}
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .background(
-                color = SpeedMenuColors.Surface.copy(alpha = 0.98f), // Opaco (98%) para evitar câmera aparecer por trás
+                color = colorScheme.surface.copy(alpha = 0.98f), // Opaco (98%) para evitar câmera aparecer por trás
                 shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
             )
             .padding(24.dp)
@@ -86,7 +87,7 @@ fun CompactOrderPanel(
                 },
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 22.sp
             )
             
@@ -96,7 +97,7 @@ fun CompactOrderPanel(
                     text = "Escaneie a comanda para finalizar",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }
@@ -107,7 +108,7 @@ fun CompactOrderPanel(
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .background(
-                            color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                            color = colorScheme.primary.copy(alpha = 0.2f),
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -116,7 +117,7 @@ fun CompactOrderPanel(
                         text = "Comanda: $comandaCode",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.PrimaryLight,
+                        color = colorScheme.primary,
                         fontSize = 12.sp
                     )
                 }
@@ -129,7 +130,7 @@ fun CompactOrderPanel(
                 .fillMaxWidth()
                 .height(1.dp)
                 .padding(vertical = 16.dp)
-                .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.3f))
+                .background(colorScheme.outlineVariant.copy(alpha = 0.3f))
         )
         
         // Conteúdo: Lista de itens ou estados
@@ -149,7 +150,7 @@ fun CompactOrderPanel(
                             Text(
                                 text = "Carrinho vazio",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = SpeedMenuColors.TextTertiary,
+                                color = colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp
                             )
                         }
@@ -192,12 +193,12 @@ fun CompactOrderPanel(
                                     verticalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
                                     CircularProgressIndicator(
-                                        color = SpeedMenuColors.PrimaryLight
+                                        color = colorScheme.primary
                                     )
                                     Text(
                                         text = "Carregando pedido...",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = SpeedMenuColors.TextSecondary,
+                                        color = colorScheme.onSurfaceVariant,
                                         fontSize = 14.sp
                                     )
                                 }
@@ -218,13 +219,13 @@ fun CompactOrderPanel(
                                         text = "Erro",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = SpeedMenuColors.Error,
+                                        color = colorScheme.error,
                                         fontSize = 16.sp
                                     )
                                     Text(
                                         text = error,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = SpeedMenuColors.TextSecondary,
+                                        color = colorScheme.onSurfaceVariant,
                                         fontSize = 14.sp
                                     )
                                 }
@@ -237,17 +238,17 @@ fun CompactOrderPanel(
                                 modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = if (comandaCode == null) {
-                                        "Escaneie a comanda para carregar o pedido"
-                                    } else {
-                                        "Nenhum pedido encontrado"
-                                    },
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = SpeedMenuColors.TextTertiary,
-                                    fontSize = 14.sp,
-                                    textAlign = TextAlign.Center
-                                )
+                                    Text(
+                                        text = if (comandaCode == null) {
+                                            "Escaneie a comanda para carregar o pedido"
+                                        } else {
+                                            "Nenhum pedido encontrado"
+                                        },
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = colorScheme.onSurfaceVariant,
+                                        fontSize = 14.sp,
+                                        textAlign = TextAlign.Center
+                                    )
                             }
                         }
                         
@@ -290,7 +291,7 @@ fun CompactOrderPanel(
                     .fillMaxWidth()
                     .height(1.dp)
                     .padding(vertical = 16.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.3f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.3f))
             )
             
             // Total (sempre calcula, mesmo se vazio)
@@ -305,14 +306,14 @@ fun CompactOrderPanel(
                     text = "Total",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onSurface,
                     fontSize = 20.sp
                 )
                 Text(
                     text = CurrencyFormatter.formatCurrencyBR(total),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.PrimaryLight,
+                    color = colorScheme.primary,
                     fontSize = 20.sp
                 )
             }
@@ -332,7 +333,7 @@ fun CompactOrderPanel(
                             Text(
                                 text = "Escaneie a comanda para finalizar",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = SpeedMenuColors.TextSecondary,
+                                color = colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
@@ -347,14 +348,14 @@ fun CompactOrderPanel(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CircularProgressIndicator(
-                                    color = SpeedMenuColors.PrimaryLight,
+                                    color = colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
                                     text = "Finalizando pedido...",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = SpeedMenuColors.TextSecondary,
+                                    color = colorScheme.onSurfaceVariant,
                                     fontSize = 14.sp
                                 )
                             }
@@ -366,7 +367,7 @@ fun CompactOrderPanel(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(
-                                        color = SpeedMenuColors.Success.copy(alpha = 0.2f),
+                                        color = colorScheme.tertiaryContainer.copy(alpha = 0.2f),
                                         shape = RoundedCornerShape(8.dp)
                                     )
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -375,7 +376,7 @@ fun CompactOrderPanel(
                                     text = "✓ Pedido finalizado!",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = SpeedMenuColors.Success,
+                                    color = colorScheme.tertiary,
                                     fontSize = 14.sp,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.fillMaxWidth()
@@ -393,7 +394,7 @@ fun CompactOrderPanel(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(
-                                            color = SpeedMenuColors.Error.copy(alpha = 0.2f),
+                                            color = colorScheme.errorContainer.copy(alpha = 0.2f),
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -401,7 +402,7 @@ fun CompactOrderPanel(
                                     Text(
                                         text = errorState.message,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = SpeedMenuColors.Error,
+                                        color = colorScheme.error,
                                         fontSize = 14.sp,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.fillMaxWidth()
@@ -413,7 +414,7 @@ fun CompactOrderPanel(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(
-                                            color = SpeedMenuColors.PrimaryLight.copy(alpha = 0.2f),
+                                            color = colorScheme.primary.copy(alpha = 0.2f),
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .clickable(onClick = onRetryFinalization)
@@ -427,7 +428,7 @@ fun CompactOrderPanel(
                                         Icon(
                                             imageVector = Icons.Default.Refresh,
                                             contentDescription = null,
-                                            tint = SpeedMenuColors.PrimaryLight,
+                                            tint = colorScheme.primary,
                                             modifier = Modifier.size(18.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -435,7 +436,7 @@ fun CompactOrderPanel(
                                             text = "Tentar novamente",
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Medium,
-                                            color = SpeedMenuColors.PrimaryLight,
+                                            color = colorScheme.primary,
                                             fontSize = 14.sp
                                         )
                                     }

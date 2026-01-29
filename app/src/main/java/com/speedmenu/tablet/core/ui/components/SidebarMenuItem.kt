@@ -132,6 +132,7 @@ private fun PrimaryMenuItem(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
@@ -162,6 +163,11 @@ private fun PrimaryMenuItem(
     // Faixa contínua: fundo ocupa 100% da largura, sem cantos arredondados nas bordas laterais
     val fullWidthShape = RoundedCornerShape(0.dp) // Sem cantos arredondados para faixa contínua
     
+    // Cores do gradiente baseadas no tema
+    val primaryColor = colorScheme.primary
+    val primaryLight = colorScheme.secondary // Usa secondary como "light"
+    val primaryDark = primaryColor.copy(red = primaryColor.red * 0.7f, green = primaryColor.green * 0.7f, blue = primaryColor.blue * 0.7f)
+    
     Box(
         modifier = modifier
             .fillMaxWidth() // Ocupa 100% da largura disponível
@@ -171,20 +177,20 @@ private fun PrimaryMenuItem(
             .shadow(
                 elevation = 24.dp,
                 shape = fullWidthShape,
-                spotColor = SpeedMenuColors.Primary.copy(alpha = shadowIntensity * 0.8f),
-                ambientColor = SpeedMenuColors.Primary.copy(alpha = shadowIntensity * 0.4f)
+                spotColor = primaryColor.copy(alpha = shadowIntensity * 0.8f),
+                ambientColor = primaryColor.copy(alpha = shadowIntensity * 0.4f)
             )
             .shadow(
                 elevation = 16.dp,
                 shape = fullWidthShape,
-                spotColor = SpeedMenuColors.PrimaryDark.copy(alpha = shadowIntensity * 0.6f),
-                ambientColor = SpeedMenuColors.PrimaryDark.copy(alpha = shadowIntensity * 0.3f)
+                spotColor = primaryDark.copy(alpha = shadowIntensity * 0.6f),
+                ambientColor = primaryDark.copy(alpha = shadowIntensity * 0.3f)
             )
             .shadow(
                 elevation = 8.dp,
                 shape = fullWidthShape,
-                spotColor = SpeedMenuColors.PrimaryDark.copy(alpha = shadowIntensity * 0.4f),
-                ambientColor = SpeedMenuColors.PrimaryDark.copy(alpha = shadowIntensity * 0.2f)
+                spotColor = primaryDark.copy(alpha = shadowIntensity * 0.4f),
+                ambientColor = primaryDark.copy(alpha = shadowIntensity * 0.2f)
             )
             .clip(fullWidthShape)
             .clickable(
@@ -197,18 +203,18 @@ private fun PrimaryMenuItem(
                 brush = if (enabled) {
                     Brush.verticalGradient(
                         colors = listOf(
-                            SpeedMenuColors.PrimaryLight.copy(red = 0.98f, green = 0.65f, blue = 0.05f),
-                            SpeedMenuColors.PrimaryLight,
-                            SpeedMenuColors.Primary,
-                            SpeedMenuColors.Primary.copy(red = 0.82f, green = 0.45f, blue = 0.03f),
-                            SpeedMenuColors.PrimaryDark
+                            primaryLight.copy(alpha = 0.9f),
+                            primaryLight,
+                            primaryColor,
+                            primaryColor.copy(alpha = 0.9f),
+                            primaryDark
                         )
                     )
                 } else {
                     Brush.verticalGradient(
                         colors = listOf(
-                            SpeedMenuColors.Disabled,
-                            SpeedMenuColors.Disabled.copy(alpha = 0.8f)
+                            colorScheme.surfaceVariant,
+                            colorScheme.surfaceVariant.copy(alpha = 0.8f)
                         )
                     )
                 },
@@ -264,7 +270,7 @@ private fun PrimaryMenuItem(
                 Icon(
                     imageVector = it,
                     contentDescription = null,
-                    tint = SpeedMenuColors.TextOnPrimary,
+                    tint = colorScheme.onPrimary,
                     modifier = Modifier
                         .size(24.dp) // Tamanho normalizado - igual aos ícones dos itens secundários para consistência visual
                 )
@@ -277,7 +283,7 @@ private fun PrimaryMenuItem(
                 text = text,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = SpeedMenuColors.TextOnPrimary,
+                color = colorScheme.onPrimary,
                 fontSize = 19.sp // Aumentado discretamente de 18.sp para melhor legibilidade em tablet
             )
         }
@@ -296,24 +302,25 @@ private fun SecondaryMenuItem(
     modifier: Modifier = Modifier,
     isActive: Boolean = false
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
     val targetItemColor = when {
-        isActive -> SpeedMenuColors.PrimaryLight
-        isPressed -> SpeedMenuColors.TextPrimary
-        else -> SpeedMenuColors.TextSecondary // Cor mais clara para melhor legibilidade
+        isActive -> colorScheme.secondary
+        isPressed -> colorScheme.onSurface
+        else -> colorScheme.onSurfaceVariant // Cor mais clara para melhor legibilidade
     }
     
     val targetIconColor = when {
-        isActive -> SpeedMenuColors.PrimaryLight
-        isPressed -> SpeedMenuColors.TextPrimary
-        else -> SpeedMenuColors.TextSecondary.copy(alpha = 0.9f) // TextSecondary com leve opacidade - elegante e legível
+        isActive -> colorScheme.secondary
+        isPressed -> colorScheme.onSurface
+        else -> colorScheme.onSurfaceVariant.copy(alpha = 0.9f) // Com leve opacidade - elegante e legível
     }
     
     val targetBackgroundColor = when {
-        isActive -> SpeedMenuColors.PrimaryContainer.copy(alpha = 0.15f)
-        isPressed -> SpeedMenuColors.Hover.copy(alpha = 0.3f)
+        isActive -> colorScheme.secondaryContainer.copy(alpha = 0.15f)
+        isPressed -> colorScheme.surfaceVariant.copy(alpha = 0.3f)
         else -> Color.Transparent
     }
     
@@ -410,24 +417,17 @@ private fun AiBorderedMenuItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
     // Cores seguindo o padrão dos botões secundários
-    val targetItemColor = if (isPressed) {
-        SpeedMenuColors.TextPrimary
-    } else {
-        SpeedMenuColors.TextPrimary // Texto sempre branco
-    }
+    val targetItemColor = colorScheme.onSurface // Texto sempre legível
     
-    val targetIconColor = if (isPressed) {
-        SpeedMenuColors.TextPrimary
-    } else {
-        SpeedMenuColors.TextPrimary // Ícone sempre branco
-    }
+    val targetIconColor = colorScheme.onSurface // Ícone sempre legível
     
     val targetBackgroundColor = if (isPressed) {
-        SpeedMenuColors.Hover.copy(alpha = 0.3f) // Mesmo hover dos secundários
+        colorScheme.surfaceVariant.copy(alpha = 0.3f) // Mesmo hover dos secundários
     } else {
         Color.Transparent // Fundo transparente
     }

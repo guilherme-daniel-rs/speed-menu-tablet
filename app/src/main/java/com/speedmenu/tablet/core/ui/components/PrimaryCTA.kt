@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
 /**
@@ -38,6 +37,7 @@ fun PrimaryCTA(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
@@ -45,11 +45,11 @@ fun PrimaryCTA(
     // Se desabilitado, usa cores mais escuras e reduzidas
     val topColor by animateColorAsState(
         targetValue = if (!enabled) {
-            SpeedMenuColors.Primary.copy(alpha = 0.5f)
+            colorScheme.primary.copy(alpha = 0.5f)
         } else if (isPressed) {
-            SpeedMenuColors.PrimaryLight.copy(alpha = 1f)
+            colorScheme.primaryContainer
         } else {
-            SpeedMenuColors.Primary
+            colorScheme.primary
         },
         animationSpec = tween(150),
         label = "cta_top_color"
@@ -57,11 +57,11 @@ fun PrimaryCTA(
     
     val bottomColor by animateColorAsState(
         targetValue = if (!enabled) {
-            SpeedMenuColors.PrimaryDark.copy(alpha = 0.5f)
+            colorScheme.primary.copy(alpha = 0.5f)
         } else if (isPressed) {
-            SpeedMenuColors.Primary
+            colorScheme.primary
         } else {
-            SpeedMenuColors.PrimaryDark
+            colorScheme.primary.copy(alpha = 0.9f)
         },
         animationSpec = tween(150),
         label = "cta_bottom_color"
@@ -74,7 +74,7 @@ fun PrimaryCTA(
             .shadow(
                 elevation = if (isPressed) 10.dp else 8.dp,
                 shape = RoundedCornerShape(999.dp),
-                spotColor = SpeedMenuColors.Primary.copy(alpha = if (isPressed) 0.4f else 0.3f),
+                spotColor = colorScheme.primary.copy(alpha = if (isPressed) 0.4f else 0.3f),
                 ambientColor = Color.Black.copy(alpha = if (isPressed) 0.18f else 0.15f)
             )
             .background(
@@ -102,7 +102,7 @@ fun PrimaryCTA(
             },
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            color = if (enabled) SpeedMenuColors.TextOnPrimary else SpeedMenuColors.TextOnPrimary.copy(alpha = 0.6f),
+            color = if (enabled) colorScheme.onPrimary else colorScheme.onPrimary.copy(alpha = 0.6f),
             fontSize = 18.sp
         )
     }

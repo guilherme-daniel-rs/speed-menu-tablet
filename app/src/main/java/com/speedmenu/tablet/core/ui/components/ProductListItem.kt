@@ -35,7 +35,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
 /**
@@ -54,6 +53,8 @@ fun ProductListItem(
     modifier: Modifier = Modifier,
     badgeText: String? = null // Badge opcional para destaque emocional
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Interação para animações de hover/press
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -83,11 +84,11 @@ fun ProductListItem(
             .shadow(
                 elevation = shadowElevation.dp,
                 shape = RoundedCornerShape(16.dp),
-                spotColor = SpeedMenuColors.Overlay.copy(alpha = if (isPressed) 0.3f else 0.2f),
-                ambientColor = SpeedMenuColors.Overlay.copy(alpha = if (isPressed) 0.15f else 0.1f)
+                spotColor = colorScheme.scrim.copy(alpha = if (isPressed) 0.3f else 0.2f),
+                ambientColor = colorScheme.scrim.copy(alpha = if (isPressed) 0.15f else 0.1f)
             )
             .background(
-                color = SpeedMenuColors.Surface,
+                color = colorScheme.surface,
                 shape = RoundedCornerShape(16.dp)
             )
             .clickable(
@@ -123,9 +124,9 @@ fun ProductListItem(
                         brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                             colors = listOf(
                                 androidx.compose.ui.graphics.Color.Transparent,
-                                SpeedMenuColors.Overlay.copy(alpha = 0.2f),
-                                SpeedMenuColors.Overlay.copy(alpha = 0.4f),
-                                SpeedMenuColors.Overlay.copy(alpha = 0.6f)
+                                colorScheme.scrim.copy(alpha = 0.2f),
+                                colorScheme.scrim.copy(alpha = 0.4f),
+                                colorScheme.scrim.copy(alpha = 0.6f)
                             )
                         ),
                         shape = RoundedCornerShape(12.dp)
@@ -142,7 +143,7 @@ fun ProductListItem(
                     Box(
                         modifier = Modifier
                             .background(
-                                color = SpeedMenuColors.Primary.copy(alpha = 0.9f),
+                                color = colorScheme.primary.copy(alpha = 0.9f),
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .padding(horizontal = 10.dp, vertical = 5.dp)
@@ -151,7 +152,7 @@ fun ProductListItem(
                             text = text,
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextOnPrimary,
+                            color = colorScheme.onPrimary,
                             fontSize = 10.sp,
                             letterSpacing = 0.3.sp
                         )
@@ -177,7 +178,7 @@ fun ProductListItem(
                     text = name,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onSurface,
                     fontSize = 24.sp,
                     lineHeight = 30.sp,
                     letterSpacing = (-0.3).sp
@@ -189,7 +190,7 @@ fun ProductListItem(
                     text = description,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 16.sp,
                     lineHeight = 22.sp,
                     letterSpacing = 0.1.sp
@@ -204,7 +205,7 @@ fun ProductListItem(
                 text = CurrencyFormatter.formatCurrencyBR(price),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = SpeedMenuColors.PrimaryLight,
+                color = colorScheme.primary,
                 fontSize = 20.sp,
                 modifier = Modifier.align(Alignment.BottomStart) // Ancorado à base (alinhado à base da foto)
             )
@@ -222,7 +223,7 @@ fun ProductListItem(
                     .align(Alignment.BottomEnd) // Ancorado ao canto inferior direito
                     .height(48.dp)
                     .background(
-                        color = SpeedMenuColors.Primary.copy(alpha = 0.25f),
+                        color = colorScheme.primary.copy(alpha = 0.25f),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .clickable(onClick = onSelectClick)
@@ -232,7 +233,7 @@ fun ProductListItem(
                     text = "Selecionar",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = SpeedMenuColors.PrimaryLight,
+                    color = colorScheme.primary,
                     fontSize = 15.sp,
                     modifier = Modifier.align(Alignment.Center)
                 )

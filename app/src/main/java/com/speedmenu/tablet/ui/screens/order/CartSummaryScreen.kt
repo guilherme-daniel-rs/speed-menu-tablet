@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
@@ -83,10 +82,12 @@ fun CartSummaryScreen(
     val subtotal = items.sumOf { it.totalPrice }
     val total = subtotal // Por enquanto, total = subtotal (taxa de serviço pode ser adicionada depois)
     
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // Top Action Bar
         AppTopBar(
@@ -117,7 +118,7 @@ fun CartSummaryScreen(
                 text = "Seu pedido",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 28.sp
             )
         }
@@ -127,7 +128,7 @@ fun CartSummaryScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.2f))
+                .background(colorScheme.outlineVariant.copy(alpha = 0.2f))
         )
         
         // Lista de produtos (scrollável)
@@ -159,7 +160,7 @@ fun CartSummaryScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.2f))
+                .background(colorScheme.outlineVariant.copy(alpha = 0.2f))
         )
         
         // Resumo financeiro (fixo, não rola) - área fixa na parte inferior
@@ -167,7 +168,7 @@ fun CartSummaryScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = SpeedMenuColors.Surface.copy(alpha = 0.1f),
+                    color = colorScheme.surface.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
                 .padding(horizontal = 32.dp, vertical = 24.dp),
@@ -183,14 +184,14 @@ fun CartSummaryScreen(
                     text = "Subtotal",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     fontSize = 15.sp
                 )
                 Text(
                     text = CurrencyFormatter.formatCurrencyBR(subtotal),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 15.sp
                 )
             }
@@ -200,7 +201,7 @@ fun CartSummaryScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.3f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.3f))
             )
             
             // Total (maior destaque tipográfico e cor)
@@ -213,14 +214,14 @@ fun CartSummaryScreen(
                     text = "Total",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onSurface,
                     fontSize = 24.sp
                 )
                 Text(
                     text = CurrencyFormatter.formatCurrencyBR(total),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.PrimaryLight,
+                    color = colorScheme.primary,
                     fontSize = 24.sp
                 )
             }
@@ -262,6 +263,8 @@ fun CartItemRow(
     readOnly: Boolean = false,
     animationDelay: Int = 0 // Delay em millisegundos para efeito cascata
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Animação de fade-in ao carregar o item com delay escalonado para efeito cascata elegante
     var isVisible by remember { mutableStateOf(false) }
     val alpha by animateFloatAsState(
@@ -275,16 +278,16 @@ fun CartItemRow(
     }
     
     // Gradiente premium com variação horizontal e vertical bem visível
-    // Cores derivadas do design system: preto/cinza escuro com toque perceptível de dourado
-    val gradientTopLeft = SpeedMenuColors.BackgroundPrimary.copy(alpha = 0.85f) // Topo esquerda: mais claro que o fundo
-    val gradientTopRight = SpeedMenuColors.Surface.copy(alpha = 0.55f) // Topo direita: bem visível
-    val gradientBottomLeft = SpeedMenuColors.Surface.copy(alpha = 0.40f) // Centro esquerda: perceptível
+    // Cores derivadas do design system: usando colorScheme
+    val gradientTopLeft = colorScheme.background.copy(alpha = 0.85f) // Topo esquerda: mais claro que o fundo
+    val gradientTopRight = colorScheme.surface.copy(alpha = 0.55f) // Topo direita: bem visível
+    val gradientBottomLeft = colorScheme.surface.copy(alpha = 0.40f) // Centro esquerda: perceptível
     val gradientBottomRight = Color(
-        // Centro direita: mistura bem visível de cinza escuro com toque perceptível de dourado
+        // Centro direita: mistura bem visível de cinza escuro com toque perceptível da cor primária
         // Onde o preço fica - zona mais "iluminada" do gradiente
-        red = (SpeedMenuColors.Surface.red * 0.65f + SpeedMenuColors.PrimaryLight.red * 0.15f).coerceIn(0f, 1f),
-        green = (SpeedMenuColors.Surface.green * 0.65f + SpeedMenuColors.PrimaryLight.green * 0.15f).coerceIn(0f, 1f),
-        blue = (SpeedMenuColors.Surface.blue * 0.65f + SpeedMenuColors.PrimaryLight.blue * 0.15f).coerceIn(0f, 1f),
+        red = (colorScheme.surface.red * 0.65f + colorScheme.primary.red * 0.15f).coerceIn(0f, 1f),
+        green = (colorScheme.surface.green * 0.65f + colorScheme.primary.green * 0.15f).coerceIn(0f, 1f),
+        blue = (colorScheme.surface.blue * 0.65f + colorScheme.primary.blue * 0.15f).coerceIn(0f, 1f),
         alpha = 0.70f
     )
     
@@ -341,7 +344,7 @@ fun CartItemRow(
                 text = item.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 18.sp
             )
             
@@ -350,7 +353,7 @@ fun CartItemRow(
                 text = "${item.quantity} × ${CurrencyFormatter.formatCurrencyBR(item.price)}",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Normal,
-                color = SpeedMenuColors.TextSecondary,
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 15.sp
             )
             
@@ -382,7 +385,7 @@ fun CartItemRow(
                     text = "Observações: ${itemsList.joinToString(", ")}",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextTertiary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -395,7 +398,7 @@ fun CartItemRow(
                     text = "Qtd: ${item.quantity}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextTertiary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -411,7 +414,7 @@ fun CartItemRow(
                         modifier = Modifier
                             .size(32.dp)
                             .background(
-                                color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                color = colorScheme.surface.copy(alpha = 0.15f),
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable {
@@ -426,7 +429,7 @@ fun CartItemRow(
                         Icon(
                             imageVector = Icons.Default.Remove,
                             contentDescription = "Diminuir quantidade",
-                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                            tint = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -436,7 +439,7 @@ fun CartItemRow(
                         text = "${item.quantity}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.TextPrimary,
+                        color = colorScheme.onSurface,
                         fontSize = 15.sp,
                         modifier = Modifier.width(24.dp)
                     )
@@ -446,7 +449,7 @@ fun CartItemRow(
                         modifier = Modifier
                             .size(32.dp)
                             .background(
-                                color = SpeedMenuColors.Surface.copy(alpha = 0.15f),
+                                color = colorScheme.surface.copy(alpha = 0.15f),
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable {
@@ -457,7 +460,7 @@ fun CartItemRow(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Aumentar quantidade",
-                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                            tint = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -467,7 +470,7 @@ fun CartItemRow(
                         modifier = Modifier
                             .size(32.dp)
                             .background(
-                                color = SpeedMenuColors.Surface.copy(alpha = 0.12f),
+                                color = colorScheme.surface.copy(alpha = 0.12f),
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable(onClick = onRemoveItem),
@@ -476,7 +479,7 @@ fun CartItemRow(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Remover item",
-                            tint = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f),
+                            tint = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -496,7 +499,7 @@ fun CartItemRow(
                         text = CurrencyFormatter.formatCurrencyBR(item.totalPrice),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = SpeedMenuColors.PrimaryLight,
+                        color = colorScheme.primary,
                         fontSize = 20.sp
                     )
                 }

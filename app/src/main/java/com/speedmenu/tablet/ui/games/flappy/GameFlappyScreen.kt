@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.games.flappy.FlappyViewModel
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import kotlinx.coroutines.delay
@@ -69,6 +68,8 @@ fun GameFlappyScreen(
     // Estados mockados (mesmo padrão da ProductsScreen)
     val isConnected = remember { true }
     val tableNumber = remember { "17" }
+    
+    val colorScheme = MaterialTheme.colorScheme
 
     // Dimensões da tela
     var screenSize by remember { mutableStateOf(Size.Zero) }
@@ -177,7 +178,7 @@ fun GameFlappyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // AppTopBar padronizado no topo
         AppTopBar(
@@ -222,7 +223,7 @@ fun GameFlappyScreen(
                     text = "${gameState.score}",
                     style = MaterialTheme.typography.displayLarge,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onBackground,
                     fontSize = 64.sp
                 )
             }
@@ -266,7 +267,7 @@ fun GameFlappyScreen(
                         text = "Toque para começar",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Medium,
-                        color = SpeedMenuColors.TextSecondary,
+                        color = colorScheme.onSurfaceVariant,
                         fontSize = 24.sp
                     )
                 }
@@ -313,6 +314,8 @@ private fun GameOverDialog(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -324,7 +327,7 @@ private fun GameOverDialog(
             modifier = Modifier
                 .fillMaxWidth(0.6f)
                 .background(
-                    color = SpeedMenuColors.SurfaceElevated,
+                    color = colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(24.dp)
                 )
                 .padding(32.dp)
@@ -339,7 +342,7 @@ private fun GameOverDialog(
                     text = "Fim de jogo",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onSurface,
                     fontSize = 32.sp
                 )
 
@@ -353,14 +356,14 @@ private fun GameOverDialog(
                     Text(
                         text = "Pontuação",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = SpeedMenuColors.TextSecondary,
+                        color = colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                     Text(
                         text = "$score",
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Bold,
-                        color = SpeedMenuColors.PrimaryLight,
+                        color = colorScheme.primary,
                         fontSize = 48.sp
                     )
                 }
@@ -373,14 +376,14 @@ private fun GameOverDialog(
                     Text(
                         text = "Recorde",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = SpeedMenuColors.TextSecondary,
+                        color = colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                     Text(
                         text = "$bestScore",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = SpeedMenuColors.TextPrimary,
+                        color = colorScheme.onSurface,
                         fontSize = 32.sp
                     )
                 }
@@ -398,7 +401,7 @@ private fun GameOverDialog(
                             .weight(1f)
                             .height(56.dp)
                             .background(
-                                color = SpeedMenuColors.Surface,
+                                color = colorScheme.surface,
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .clickable(onClick = onBack)
@@ -409,7 +412,7 @@ private fun GameOverDialog(
                             text = "Voltar",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextSecondary,
+                            color = colorScheme.onSurfaceVariant,
                             fontSize = 16.sp
                         )
                     }
@@ -420,7 +423,7 @@ private fun GameOverDialog(
                             .weight(1f)
                             .height(56.dp)
                             .background(
-                                color = SpeedMenuColors.Primary,
+                                color = colorScheme.primary,
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .clickable(onClick = onPlayAgain)
@@ -431,7 +434,7 @@ private fun GameOverDialog(
                             text = "Jogar novamente",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onPrimary,
                             fontSize = 16.sp
                         )
                     }

@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Dialog premium para confirmar chamada de garçom.
@@ -65,6 +64,8 @@ fun WaiterCalledDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Log para debug
     android.util.Log.d("WaiterCalledDialog", "🎭 Dialog renderizado - visible=$visible")
     
@@ -173,7 +174,7 @@ fun WaiterCalledDialog(
                                 .background(
                                     brush = Brush.radialGradient(
                                         colors = listOf(
-                                            SpeedMenuColors.Primary.copy(alpha = 0.3f),
+                                            colorScheme.primary.copy(alpha = 0.3f),
                                             Color.Transparent
                                         )
                                     ),
@@ -186,14 +187,14 @@ fun WaiterCalledDialog(
                             modifier = Modifier
                                 .size(64.dp)
                                 .background(
-                                    color = SpeedMenuColors.Primary,
+                                    color = colorScheme.primary,
                                     shape = CircleShape
                                 )
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = null,
-                                tint = SpeedMenuColors.TextPrimary,
+                                tint = colorScheme.onPrimary,
                                 modifier = Modifier
                                     .align(Alignment.Center)
                                     .size(32.dp)
@@ -214,7 +215,7 @@ fun WaiterCalledDialog(
                             text = "Garçom chamado",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = SpeedMenuColors.TextPrimary,
+                            color = colorScheme.onSurface,
                             fontSize = 30.sp,
                             lineHeight = 36.sp,
                             textAlign = TextAlign.Center
@@ -227,7 +228,7 @@ fun WaiterCalledDialog(
                             text = "Já avisamos a equipe. Em instantes alguém vem até sua mesa.",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Normal,
-                            color = SpeedMenuColors.TextSecondary.copy(alpha = 0.75f),
+                            color = colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
                             fontSize = 14.sp, // Reduzido de 15.sp para 14.sp
                             lineHeight = 20.sp, // Reduzido de 22.sp para 20.sp
                             textAlign = TextAlign.Center,
@@ -241,7 +242,7 @@ fun WaiterCalledDialog(
                         Row(
                             modifier = Modifier
                                 .background(
-                                    color = SpeedMenuColors.Success.copy(alpha = 0.15f),
+                                    color = colorScheme.tertiaryContainer.copy(alpha = 0.15f),
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .padding(horizontal = 14.dp, vertical = 8.dp),
@@ -251,14 +252,14 @@ fun WaiterCalledDialog(
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = SpeedMenuColors.Success,
+                                tint = colorScheme.tertiary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Text(
                                 text = "Solicitação enviada",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Medium,
-                                color = SpeedMenuColors.Success,
+                                color = colorScheme.tertiary,
                                 fontSize = 14.sp
                             )
                         }
@@ -285,8 +286,8 @@ fun WaiterCalledDialog(
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        SpeedMenuColors.Primary, // Top: laranja principal
-                                        Color(0xFFC76A05) // Bottom: laranja 8% mais escuro (0xFFD97706 * 0.92)
+                                        colorScheme.primary, // Top: cor primária
+                                        colorScheme.primary.copy(alpha = 0.9f) // Bottom: cor primária mais escura
                                     )
                                 ),
                                 shape = RoundedCornerShape(999.dp)

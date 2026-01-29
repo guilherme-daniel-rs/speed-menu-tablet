@@ -33,7 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.ui.screens.order.CartItemRow
@@ -70,10 +69,12 @@ fun ViewOrderScreen(
     val waiterViewModel: WaiterViewModel = hiltViewModel()
     val waiterUiState by waiterViewModel.uiState.collectAsState()
     
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // Top Action Bar
         AppTopBar(
@@ -101,12 +102,12 @@ fun ViewOrderScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         CircularProgressIndicator(
-                            color = SpeedMenuColors.PrimaryLight
+                            color = colorScheme.primary
                         )
                         Text(
                             text = "Carregando pedido...",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = SpeedMenuColors.TextSecondary,
+                            color = colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }
@@ -161,10 +162,12 @@ private fun ViewOrderContentScreen(
     subtotal: Double,
     total: Double
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // Título "Seu pedido"
         Box(
@@ -176,7 +179,7 @@ private fun ViewOrderContentScreen(
                 text = "Seu pedido",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onBackground,
                 fontSize = 28.sp
             )
         }
@@ -186,7 +189,7 @@ private fun ViewOrderContentScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.2f))
+                .background(colorScheme.outlineVariant.copy(alpha = 0.2f))
         )
         
         // Lista de produtos (scrollável)
@@ -213,7 +216,7 @@ private fun ViewOrderContentScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.2f))
+                .background(colorScheme.outlineVariant.copy(alpha = 0.2f))
         )
         
         // Resumo financeiro (fixo, não rola) - área fixa na parte inferior
@@ -221,7 +224,7 @@ private fun ViewOrderContentScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = SpeedMenuColors.Surface.copy(alpha = 0.1f),
+                    color = colorScheme.surface.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
                 .padding(horizontal = 32.dp, vertical = 24.dp),
@@ -237,14 +240,14 @@ private fun ViewOrderContentScreen(
                     text = "Subtotal",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary.copy(alpha = 0.8f),
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     fontSize = 15.sp
                 )
                 Text(
                     text = CurrencyFormatter.formatCurrencyBR(subtotal),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Normal,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 15.sp
                 )
             }
@@ -254,7 +257,7 @@ private fun ViewOrderContentScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.3f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.3f))
             )
             
             // Total (maior destaque tipográfico e cor)
@@ -267,14 +270,14 @@ private fun ViewOrderContentScreen(
                     text = "Total",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onBackground,
                     fontSize = 24.sp
                 )
                 Text(
                     text = CurrencyFormatter.formatCurrencyBR(total),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = SpeedMenuColors.PrimaryLight,
+                    color = colorScheme.primary,
                     fontSize = 24.sp
                 )
             }
@@ -298,10 +301,12 @@ private fun ViewOrderEmptyScreen(
     waiterViewModel: com.speedmenu.tablet.ui.viewmodel.WaiterViewModel,
     waiterUiState: com.speedmenu.tablet.ui.viewmodel.WaiterUiState
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // Top Action Bar
         AppTopBar(
@@ -331,7 +336,7 @@ private fun ViewOrderEmptyScreen(
                 Box(
                     modifier = Modifier
                         .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.08f),
+                            color = colorScheme.surface.copy(alpha = 0.08f),
                             shape = RoundedCornerShape(20.dp)
                         )
                         .padding(28.dp),
@@ -340,7 +345,7 @@ private fun ViewOrderEmptyScreen(
                     Icon(
                         imageVector = Icons.Default.ShoppingCart,
                         contentDescription = "Pedido vazio",
-                        tint = SpeedMenuColors.TextTertiary.copy(alpha = 0.25f),
+                        tint = colorScheme.onSurfaceVariant.copy(alpha = 0.25f),
                         modifier = Modifier.size(72.dp)
                     )
                 }
@@ -350,7 +355,7 @@ private fun ViewOrderEmptyScreen(
                     text = "Nenhum pedido encontrado",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Medium,
-                    color = SpeedMenuColors.TextPrimary.copy(alpha = 0.9f),
+                    color = colorScheme.onBackground.copy(alpha = 0.9f),
                     fontSize = 26.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
@@ -360,7 +365,7 @@ private fun ViewOrderEmptyScreen(
                     text = "Não há pedidos para esta comanda",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Light,
-                    color = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f),
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     fontSize = 15.sp,
                     textAlign = TextAlign.Center
                 )
@@ -389,10 +394,12 @@ private fun ViewOrderErrorScreen(
     waiterViewModel: com.speedmenu.tablet.ui.viewmodel.WaiterViewModel,
     waiterUiState: com.speedmenu.tablet.ui.viewmodel.WaiterUiState
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // Top Action Bar
         AppTopBar(
@@ -420,13 +427,13 @@ private fun ViewOrderErrorScreen(
                     text = "Erro ao carregar pedido",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = SpeedMenuColors.TextPrimary,
+                    color = colorScheme.onBackground,
                     fontSize = 20.sp
                 )
                 Text(
                     text = error,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }

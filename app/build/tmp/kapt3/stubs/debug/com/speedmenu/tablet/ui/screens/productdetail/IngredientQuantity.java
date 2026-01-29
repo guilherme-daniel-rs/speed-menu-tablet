@@ -14,7 +14,6 @@ import com.speedmenu.tablet.domain.model.CartItem;
 import com.speedmenu.tablet.domain.model.CartItemOptions;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel;
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel;
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors;
 import com.speedmenu.tablet.core.utils.CurrencyFormatter;
 
 /**

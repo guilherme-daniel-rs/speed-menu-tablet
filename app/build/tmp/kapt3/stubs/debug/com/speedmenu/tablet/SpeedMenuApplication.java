@@ -2,6 +2,7 @@ package com.speedmenu.tablet;
 
 import android.app.Application;
 import dagger.hilt.android.HiltAndroidApp;
+import timber.log.Timber;
 
 /**
  * Classe Application do SpeedMenuTablet.

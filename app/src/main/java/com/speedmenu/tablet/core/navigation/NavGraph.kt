@@ -67,6 +67,7 @@ fun NavGraph(
 
         composable(route = Screen.Home.route) {
             HomeScreen(
+                navController = navController,
                 onNavigateToCategories = {
                     // Navega diretamente para a primeira categoria do primeiro tópico
                     // Usa o mesmo mockup scenario padrão usado nas outras telas

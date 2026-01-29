@@ -2,13 +2,13 @@ package com.speedmenu.tablet.ui.games.flappy
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Renderer do jogo Flappy - desenha todos os elementos no Canvas.
@@ -21,6 +21,8 @@ fun FlappyRenderer(
     onTap: () -> Unit, // Mantido para compatibilidade, mas não usado aqui
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Usa o estado como dependência para forçar recomposição do Canvas
     val playerY = state.playerY
     val obstacles = state.obstacles
@@ -31,17 +33,17 @@ fun FlappyRenderer(
     ) {
         // Fundo
         drawRect(
-            color = SpeedMenuColors.BackgroundPrimary,
+            color = colorScheme.background,
             size = Size(size.width, size.height)
         )
 
         // Desenha obstáculos
         for (obstacle in obstacles) {
-            drawObstacle(obstacle, size.width, size.height)
+            drawObstacle(obstacle, size.width, size.height, colorScheme.primary)
         }
 
         // Desenha player
-        drawPlayer(playerY, size.width)
+        drawPlayer(playerY, size.width, colorScheme.secondary)
     }
 }
 
@@ -51,14 +53,15 @@ fun FlappyRenderer(
 private fun DrawScope.drawObstacle(
     obstacle: Obstacle,
     screenWidth: Float,
-    screenHeight: Float
+    screenHeight: Float,
+    primaryColor: androidx.compose.ui.graphics.Color
 ) {
     val obstacleWidth = FlappyGameState.OBSTACLE_WIDTH
     val x = obstacle.x
 
     // Cano superior
     drawRect(
-        color = SpeedMenuColors.Primary,
+        color = primaryColor,
         topLeft = Offset(x, 0f),
         size = Size(obstacleWidth, obstacle.topHeight)
     )
@@ -67,13 +70,13 @@ private fun DrawScope.drawObstacle(
     val bottomObstacleY = obstacle.gapY + obstacle.gapHeight
     val bottomObstacleHeight = screenHeight - bottomObstacleY
     drawRect(
-        color = SpeedMenuColors.Primary,
+        color = primaryColor,
         topLeft = Offset(x, bottomObstacleY),
         size = Size(obstacleWidth, bottomObstacleHeight)
     )
 
     // Detalhes decorativos nos canos (opcional, para ficar mais bonito)
-    val detailColor = SpeedMenuColors.Primary.copy(alpha = 0.7f)
+    val detailColor = primaryColor.copy(alpha = 0.7f)
     
     // Detalhe superior
     drawRect(
@@ -95,7 +98,8 @@ private fun DrawScope.drawObstacle(
  */
 private fun DrawScope.drawPlayer(
     playerY: Float,
-    screenWidth: Float
+    screenWidth: Float,
+    playerColor: androidx.compose.ui.graphics.Color
 ) {
     val playerRadius = FlappyGameState.PLAYER_SIZE / 2f
     val playerCenterX = screenWidth / 2f - playerRadius
@@ -103,7 +107,7 @@ private fun DrawScope.drawPlayer(
 
     // Círculo principal
     drawCircle(
-        color = SpeedMenuColors.PrimaryLight,
+        color = playerColor,
         radius = playerRadius,
         center = playerCenter
     )

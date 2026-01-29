@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Header da tela de produtos.
@@ -38,6 +37,7 @@ fun ProductsHeader(
     onCartClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     // Linha horizontal: Título à esquerda, botão Carrinho à direita (mesma altura visual)
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -53,7 +53,7 @@ fun ProductsHeader(
                 text = categoryName,
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onBackground,
                 fontSize = 36.sp,
                 lineHeight = 42.sp
             )
@@ -62,7 +62,7 @@ fun ProductsHeader(
                 text = "$productCount opções disponíveis",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Normal,
-                color = SpeedMenuColors.TextTertiary,
+                color = colorScheme.onSurfaceVariant,
                 fontSize = 15.sp
             )
         }
@@ -72,7 +72,7 @@ fun ProductsHeader(
         Box(
             modifier = Modifier
                 .background(
-                    color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.6f),
+                    color = colorScheme.surfaceVariant.copy(alpha = 0.6f),
                     shape = RoundedCornerShape(20.dp)
                 )
                 .clickable(onClick = onCartClick)
@@ -85,14 +85,14 @@ fun ProductsHeader(
                 Icon(
                     imageVector = Icons.Default.ShoppingCart,
                     contentDescription = "Carrinho",
-                    tint = SpeedMenuColors.TextSecondary,
+                    tint = colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(0.dp)
                 )
                 Text(
                     text = "Carrinho ($cartItemCount)",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }

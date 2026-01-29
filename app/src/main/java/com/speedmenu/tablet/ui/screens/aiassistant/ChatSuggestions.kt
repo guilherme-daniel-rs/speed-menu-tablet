@@ -43,7 +43,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Sugestão de pergunta para o chat.
@@ -122,6 +121,7 @@ private fun SuggestionChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -133,9 +133,9 @@ private fun SuggestionChip(
 
     val borderColor by animateColorAsState(
         targetValue = if (isPressed) {
-            SpeedMenuColors.Primary.copy(alpha = 0.8f)
+            colorScheme.primary.copy(alpha = 0.8f)
         } else {
-            SpeedMenuColors.Primary.copy(alpha = 0.4f)
+            colorScheme.primary.copy(alpha = 0.4f)
         },
         animationSpec = tween(200),
         label = "chip_border"
@@ -151,7 +151,7 @@ private fun SuggestionChip(
                 shape = RoundedCornerShape(20.dp)
             )
             .background(
-                color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.6f),
+                color = colorScheme.surfaceVariant.copy(alpha = 0.6f),
                 shape = RoundedCornerShape(20.dp)
             )
             .clickable(
@@ -168,14 +168,14 @@ private fun SuggestionChip(
             Icon(
                 imageVector = suggestion.icon,
                 contentDescription = null,
-                tint = SpeedMenuColors.PrimaryLight,
+                tint = colorScheme.primary,
                 modifier = Modifier.size(18.dp)
             )
             Text(
                 text = suggestion.text,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 14.sp
             )
         }

@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Componente reutilizável de status no topo direito para o fluxo de pedidos.
@@ -58,11 +57,13 @@ fun OrderTopStatusPill(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Container agrupado com fundo semi-transparente
     Box(
         modifier = modifier
             .background(
-                color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.75f),
+                color = colorScheme.surfaceVariant.copy(alpha = 0.75f),
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(horizontal = 20.dp, vertical = 14.dp)
@@ -85,9 +86,9 @@ fun OrderTopStatusPill(
                         imageVector = if (isConnected) Icons.Default.Wifi else Icons.Default.WifiOff,
                         contentDescription = if (isConnected) "Conectado" else "Desconectado",
                         tint = if (isConnected) {
-                            SpeedMenuColors.Success.copy(alpha = 0.85f)
+                            colorScheme.tertiary.copy(alpha = 0.85f)
                         } else {
-                            SpeedMenuColors.Error.copy(alpha = 0.85f)
+                            colorScheme.error.copy(alpha = 0.85f)
                         },
                         modifier = Modifier.size(18.dp)
                     )
@@ -96,7 +97,7 @@ fun OrderTopStatusPill(
                 Text(
                     text = if (isConnected) "Conectado" else "Desconectado",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SpeedMenuColors.TextTertiary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -107,7 +108,7 @@ fun OrderTopStatusPill(
                 modifier = Modifier
                     .width(1.dp)
                     .height(24.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.4f))
             )
 
             // Informação da mesa
@@ -119,13 +120,13 @@ fun OrderTopStatusPill(
                 Icon(
                     imageVector = Icons.Default.TableRestaurant,
                     contentDescription = "Mesa",
-                    tint = SpeedMenuColors.TextTertiary.copy(alpha = 0.7f),
+                    tint = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = "Mesa $tableNumber",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -136,7 +137,7 @@ fun OrderTopStatusPill(
                 modifier = Modifier
                     .width(1.dp)
                     .height(24.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.4f))
             )
 
             // Ação rápida: Chamar garçom (com micro-interação)
@@ -145,9 +146,9 @@ fun OrderTopStatusPill(
             
             val waiterIconColor by animateColorAsState(
                 targetValue = when {
-                    !enabled -> SpeedMenuColors.TextTertiary.copy(alpha = 0.4f)
-                    isWaiterPressed -> SpeedMenuColors.PrimaryLight
-                    else -> SpeedMenuColors.PrimaryLight.copy(alpha = 0.8f)
+                    !enabled -> colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                    isWaiterPressed -> colorScheme.primary
+                    else -> colorScheme.primary.copy(alpha = 0.8f)
                 },
                 animationSpec = tween(150),
                 label = "waiter_icon_color"
@@ -155,9 +156,9 @@ fun OrderTopStatusPill(
             
             val waiterTextColor by animateColorAsState(
                 targetValue = when {
-                    !enabled -> SpeedMenuColors.TextTertiary.copy(alpha = 0.4f)
-                    isWaiterPressed -> SpeedMenuColors.TextPrimary
-                    else -> SpeedMenuColors.TextSecondary
+                    !enabled -> colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                    isWaiterPressed -> colorScheme.onSurface
+                    else -> colorScheme.onSurfaceVariant
                 },
                 animationSpec = tween(150),
                 label = "waiter_text_color"
