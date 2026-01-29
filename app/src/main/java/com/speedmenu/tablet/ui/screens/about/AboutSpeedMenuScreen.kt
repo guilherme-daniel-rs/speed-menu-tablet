@@ -1,10 +1,9 @@
 package com.speedmenu.tablet.ui.screens.about
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,12 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,9 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.content.Intent
-import android.net.Uri
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.AppTopBar
@@ -78,37 +74,35 @@ fun AboutSpeedMenuScreen(
                 .padding(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                // QR Code do Instagram no canto superior direito
-                InstagramQRCode(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
-                )
-                
-                // Conteúdo principal centralizado verticalmente
+            // Conteúdo principal centralizado verticalmente com padding mínimo garantido
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp, vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Bloco de conteúdo como unidade vertical
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 32.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    // Bloco de conteúdo como unidade vertical
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        // ========== 1. HERO DE MARCA (clean) ==========
-                        HeroSection()
-                        
-                        // ========== 2. BENEFÍCIOS COMO DESTAQUES VISUAIS ==========
-                        BenefitsSection()
-                        
-                        // ========== 3. FRASE DE IMPACTO ==========
-                        ImpactStatement()
-                    }
+                    // ========== 1. HERO DE MARCA (clean) ==========
+                    HeroSection()
+                    
+                    // ========== 2. BENEFÍCIOS COMO DESTAQUES VISUAIS ==========
+                    BenefitsSection()
+                    
+                    // ========== 3. FRASE DE IMPACTO ==========
+                    ImpactStatement()
+                    
+                    // ========== 4. ENCONTRE A GENTE (DESTAQUE) ==========
+                    FindUsSection()
                 }
+                
+                // Padding mínimo garantido no final (sempre visível)
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
@@ -258,66 +252,154 @@ private fun ImpactStatement() {
 }
 
 /**
- * QR Code do Instagram no canto superior direito.
- * Elemento discreto e elegante, não rouba foco do hero.
+ * Seção "Encontre a gente" com destaque para @ e site.
+ * Visual premium, sem interação clicável.
+ * Layout responsivo: duas linhas quando há espaço, uma linha quando não há.
  */
 @Composable
-private fun InstagramQRCode(
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    
-    Column(
-        modifier = modifier
-            .clickable {
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/speed_menu/"))
-                    context.startActivity(intent)
-                } catch (e: Exception) {
-                    android.util.Log.e("AboutSpeedMenu", "Erro ao abrir URL do Instagram", e)
-                }
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+private fun FindUsSection() {
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        // Ícone do Instagram + texto pequeno
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Share,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-            Text(
-                text = "Instagram",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                fontSize = 11.sp
-            )
-        }
+        // Detectar se há espaço suficiente (altura disponível)
+        val hasEnoughSpace = maxHeight > 600.dp
         
-        // QR Code em container claro e discreto
-        Surface(
-            modifier = Modifier.size(100.dp),
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 2.dp
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
+            // Título pequeno (label)
+            Text(
+                text = "Encontre a gente",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp
+            )
+            
+            // Bloco de destaque com @ e site
+            Surface(
+                modifier = Modifier.fillMaxWidth(0.85f),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                tonalElevation = 1.dp
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.qr_instagram),
-                    contentDescription = "QR Code Instagram",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
+                if (hasEnoughSpace) {
+                    // Layout em duas linhas (quando há espaço)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // @ do Instagram
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            Text(
+                                text = "@speed_menu",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            )
+                        }
+                        
+                        // Separador discreto
+                        Text(
+                            text = "•",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            fontSize = 16.sp
+                        )
+                        
+                        // Website
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Language,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            Text(
+                                text = "www.speedmenu.com.br",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            )
+                        }
+                    }
+                } else {
+                    // Layout em uma linha (quando não há espaço)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // @ do Instagram
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            Text(
+                                text = "@speed_menu",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp
+                            )
+                        }
+                        
+                        // Separador "/"
+                        Text(
+                            text = " / ",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            fontSize = 16.sp
+                        )
+                        
+                        // Website
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Language,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            Text(
+                                text = "www.speedmenu.com.br",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }
