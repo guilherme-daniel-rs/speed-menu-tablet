@@ -32,11 +32,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.AppTopBar
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.ui.screens.order.CartItemRow
 import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 
 /**
  * Tela de visualização de pedido por comanda (read-only).
@@ -64,6 +66,10 @@ fun ViewOrderScreen(
     val isConnected = true
     val tableNumber = "17"
     
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -75,7 +81,10 @@ fun ViewOrderScreen(
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,
-            onCallWaiterClick = {}
+            onCallWaiterClick = {
+                waiterViewModel.requestWaiter("ViewOrderScreen")
+            },
+            screenName = "ViewOrderScreen"
         )
         
         when {
@@ -109,14 +118,18 @@ fun ViewOrderScreen(
                 val errorMessage = uiState.error ?: "Erro desconhecido"
                 ViewOrderErrorScreen(
                     error = errorMessage,
-                    onNavigateBack = onNavigateBack
+                    onNavigateBack = onNavigateBack,
+                    waiterViewModel = waiterViewModel,
+                    waiterUiState = waiterUiState
                 )
             }
             
             uiState.isEmpty -> {
                 // Estado vazio
                 ViewOrderEmptyScreen(
-                    onNavigateBack = onNavigateBack
+                    onNavigateBack = onNavigateBack,
+                    waiterViewModel = waiterViewModel,
+                    waiterUiState = waiterUiState
                 )
             }
             
@@ -130,6 +143,13 @@ fun ViewOrderScreen(
             }
         }
     }
+    
+    // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+    WaiterCalledDialog(
+        visible = waiterUiState.showDialog,
+        onDismiss = { waiterViewModel.dismissDialog() },
+        onConfirm = { waiterViewModel.confirmWaiterCall() }
+    )
 }
 
 /**
@@ -274,7 +294,9 @@ private fun ViewOrderContentScreen(
  */
 @Composable
 private fun ViewOrderEmptyScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    waiterViewModel: com.speedmenu.tablet.ui.viewmodel.WaiterViewModel,
+    waiterUiState: com.speedmenu.tablet.ui.viewmodel.WaiterUiState
 ) {
     Column(
         modifier = Modifier
@@ -287,7 +309,10 @@ private fun ViewOrderEmptyScreen(
             onBackClick = onNavigateBack,
             isConnected = true,
             tableNumber = "17",
-            onCallWaiterClick = {}
+            onCallWaiterClick = {
+                waiterViewModel.requestWaiter("ViewOrderScreen")
+            },
+            screenName = "ViewOrderScreen"
         )
         
         // Conteúdo centralizado
@@ -360,7 +385,9 @@ private fun ViewOrderEmptyScreen(
 @Composable
 private fun ViewOrderErrorScreen(
     error: String,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    waiterViewModel: com.speedmenu.tablet.ui.viewmodel.WaiterViewModel,
+    waiterUiState: com.speedmenu.tablet.ui.viewmodel.WaiterUiState
 ) {
     Column(
         modifier = Modifier
@@ -373,7 +400,10 @@ private fun ViewOrderErrorScreen(
             onBackClick = onNavigateBack,
             isConnected = true,
             tableNumber = "17",
-            onCallWaiterClick = {}
+            onCallWaiterClick = {
+                waiterViewModel.requestWaiter("ViewOrderScreen")
+            },
+            screenName = "ViewOrderScreen"
         )
         
         Box(

@@ -78,7 +78,11 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.SpeedMenuPrimaryButton
 import com.speedmenu.tablet.core.ui.components.AppTopBar
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.delay
 
 /**
@@ -96,6 +100,10 @@ fun RatePlaceScreen(
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showSuccessDialog by remember { mutableStateOf(false) }
+    
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
 
     // Estados mockados (mesmo padrão das outras telas)
     val isConnected = true
@@ -132,7 +140,10 @@ fun RatePlaceScreen(
                 onBackClick = onNavigateBack,
                 isConnected = isConnected,
                 tableNumber = tableNumber,
-                onCallWaiterClick = {}
+                onCallWaiterClick = {
+                    waiterViewModel.requestWaiter("RatePlaceScreen")
+                },
+                screenName = "RatePlaceScreen"
             )
 
             // Conteúdo principal (scrollável)
@@ -248,6 +259,13 @@ fun RatePlaceScreen(
         }
 
         // Modal de sucesso (em tela cheia)
+        // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+        WaiterCalledDialog(
+            visible = waiterUiState.showDialog,
+            onDismiss = { waiterViewModel.dismissDialog() },
+            onConfirm = { waiterViewModel.confirmWaiterCall() }
+        )
+        
         RatePlaceSuccessDialog(
             visible = showSuccessDialog,
             onDismiss = {

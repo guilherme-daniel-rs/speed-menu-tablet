@@ -1,5 +1,6 @@
 package com.speedmenu.tablet.core.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,11 +38,15 @@ import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
  * A logo é centralizada usando Box com Alignment.Center, garantindo que
  * fique exatamente no centro horizontal, independentemente do conteúdo lateral.
  * 
+ * IMPORTANTE: onCallWaiterClick é OBRIGATÓRIO e nunca deve ser vazio.
+ * Use o WaiterViewModel para centralizar a lógica de chamadas de garçom.
+ * 
  * @param showBackButton Se deve exibir o botão voltar (false na Home)
  * @param onBackClick Callback quando o botão voltar é clicado
  * @param isConnected Status da conexão
  * @param tableNumber Número da mesa
- * @param onCallWaiterClick Callback quando o botão garçom é clicado
+ * @param onCallWaiterClick Callback quando o botão garçom é clicado (OBRIGATÓRIO)
+ * @param screenName Nome da tela atual (para logs de debug)
  * @param onMenuClick Callback quando o botão menu (hamburger) é clicado (para abrir drawer no celular)
  * @param enabled Se o botão de garçom está habilitado
  * @param modifier Modifier para customização adicional
@@ -52,11 +57,17 @@ fun AppTopBar(
     onBackClick: () -> Unit = {},
     isConnected: Boolean = true,
     tableNumber: String = "17",
-    onCallWaiterClick: () -> Unit = {},
+    onCallWaiterClick: () -> Unit, // OBRIGATÓRIO - não pode ser vazio
+    screenName: String = "Unknown",
     onMenuClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    // Handler interno que adiciona logging antes de chamar o callback
+    val waiterClickHandler: () -> Unit = {
+        Log.d("TopBar", "🛎️ Garçom click - screen=$screenName")
+        onCallWaiterClick()
+    }
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -143,7 +154,7 @@ fun AppTopBar(
             OrderTopStatusPill(
                 isConnected = isConnected,
                 tableNumber = tableNumber,
-                onCallWaiterClick = onCallWaiterClick,
+                onCallWaiterClick = waiterClickHandler,
                 enabled = enabled
             )
         }

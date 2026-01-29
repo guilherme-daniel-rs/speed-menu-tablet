@@ -1,5 +1,6 @@
 package com.speedmenu.tablet.core.ui.components
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -169,7 +170,14 @@ fun OrderTopStatusPill(
                     interactionSource = waiterInteractionSource,
                     indication = null,
                     enabled = enabled,
-                    onClick = onCallWaiterClick
+                    onClick = {
+                        if (enabled) {
+                            Log.d("OrderTopStatusPill", "🛎️ Botão Garçom clicado (enabled=$enabled)")
+                            onCallWaiterClick()
+                        } else {
+                            Log.w("OrderTopStatusPill", "⚠️ Botão Garçom clicado mas está desabilitado")
+                        }
+                    }
                 )
             ) {
                 Icon(

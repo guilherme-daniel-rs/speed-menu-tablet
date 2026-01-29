@@ -10,6 +10,7 @@ import com.speedmenu.tablet.ui.screens.splash.SplashViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel_HiltModules;
 import com.speedmenu.tablet.ui.viewmodel.ViewOrderViewModel_HiltModules;
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -171,7 +172,8 @@ public final class SpeedMenuApplication_HiltComponents {
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
           SplashViewModel_HiltModules.KeyModule.class,
-          ViewOrderViewModel_HiltModules.KeyModule.class
+          ViewOrderViewModel_HiltModules.KeyModule.class,
+          WaiterViewModel_HiltModules.KeyModule.class
       }
   )
   @ActivityRetainedScoped
@@ -215,7 +217,8 @@ public final class SpeedMenuApplication_HiltComponents {
           QrScannerViewModel_HiltModules.BindsModule.class,
           RatePlaceViewModel_HiltModules.BindsModule.class,
           SplashViewModel_HiltModules.BindsModule.class,
-          ViewOrderViewModel_HiltModules.BindsModule.class
+          ViewOrderViewModel_HiltModules.BindsModule.class,
+          WaiterViewModel_HiltModules.BindsModule.class
       }
   )
   @ViewModelScoped

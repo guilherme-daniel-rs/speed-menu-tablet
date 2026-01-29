@@ -65,6 +65,9 @@ import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.domain.model.CartItemOptions
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 
@@ -125,8 +128,9 @@ fun VerPratoScreen(
     var isAddedToCart by remember { mutableStateOf(false) }
     var showToast by remember { mutableStateOf(false) }
     
-    // Estado para controlar visibilidade do dialog de garçom
-    var showWaiterCalledDialog by remember { mutableStateOf(false) }
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
     
     // Estados mockados (em produção viriam de um ViewModel)
     val isConnected = remember { true } // Mock: sempre conectado
@@ -146,8 +150,9 @@ fun VerPratoScreen(
             isConnected = isConnected,
             tableNumber = tableNumber,
             onCallWaiterClick = {
-                showWaiterCalledDialog = true
-            }
+                waiterViewModel.requestWaiter("VerPratoScreen")
+            },
+            screenName = "VerPratoScreen"
         )
         
         // ========== CONTEÚDO PRINCIPAL (2 COLUNAS) ==========
@@ -542,13 +547,12 @@ fun VerPratoScreen(
     }
     
     // Dialog de garçom chamado
-    if (showWaiterCalledDialog) {
-        WaiterCalledDialog(
-            visible = showWaiterCalledDialog,
-            onDismiss = { showWaiterCalledDialog = false },
-            onConfirm = { showWaiterCalledDialog = false }
-        )
-    }
+    // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+    WaiterCalledDialog(
+        visible = waiterUiState.showDialog,
+        onDismiss = { waiterViewModel.dismissDialog() },
+        onConfirm = { waiterViewModel.confirmWaiterCall() }
+    )
     
     // Toast discreto de confirmação
     Box(

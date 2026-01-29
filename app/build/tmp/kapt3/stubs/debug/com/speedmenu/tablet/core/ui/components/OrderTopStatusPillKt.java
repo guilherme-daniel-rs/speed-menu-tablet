@@ -1,5 +1,6 @@
 package com.speedmenu.tablet.core.ui.components;
 
+import android.util.Log;
 import androidx.compose.foundation.layout.Arrangement;
 import androidx.compose.material.icons.Icons;
 import androidx.compose.runtime.Composable;

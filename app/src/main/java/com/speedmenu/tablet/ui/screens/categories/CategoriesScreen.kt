@@ -44,6 +44,9 @@ import com.speedmenu.tablet.core.ui.components.CategoryCard
 import com.speedmenu.tablet.core.ui.components.OrderFlowScaffold
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
 import com.speedmenu.tablet.ui.screens.home.MenuTopic
 import com.speedmenu.tablet.ui.screens.home.MenuCategory
@@ -73,8 +76,9 @@ fun CategoriesScreen(
     onNavigateToCategory: (String) -> Unit = {},
     onNavigateToHome: () -> Unit = {} // Callback para navegar para HOME
 ) {
-    // Estado para controlar visibilidade do dialog de garçom
-    var showWaiterCalledDialog by remember { mutableStateOf(false) }
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
     
     // Estados mockados (em produção viriam de um ViewModel)
     val isConnected = remember { true } // Mock: sempre conectado
@@ -142,7 +146,7 @@ fun CategoriesScreen(
         isConnected = isConnected,
         tableNumber = tableNumber,
         onCallWaiterClick = {
-            showWaiterCalledDialog = true
+            waiterViewModel.requestWaiter("CategoriesScreen")
         }
     ) {
         Row(
@@ -234,12 +238,11 @@ fun CategoriesScreen(
     }
     
     // Dialog de garçom chamado (fora do scaffold para não ser afetado pelo overlay)
-    if (showWaiterCalledDialog) {
-        WaiterCalledDialog(
-            visible = showWaiterCalledDialog,
-            onDismiss = { showWaiterCalledDialog = false },
-            onConfirm = { showWaiterCalledDialog = false }
-        )
-    }
+    // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+    WaiterCalledDialog(
+        visible = waiterUiState.showDialog,
+        onDismiss = { waiterViewModel.dismissDialog() },
+        onConfirm = { waiterViewModel.confirmWaiterCall() }
+    )
 }
 

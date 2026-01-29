@@ -46,10 +46,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.AppTopBar
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 
 /**
  * Tela de carrinho - revisão do pedido antes de finalizar.
@@ -71,6 +75,10 @@ fun CartSummaryScreen(
     val isConnected = true
     val tableNumber = "17"
     
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
+    
     // Calcula valores
     val subtotal = items.sumOf { it.totalPrice }
     val total = subtotal // Por enquanto, total = subtotal (taxa de serviço pode ser adicionada depois)
@@ -86,7 +94,17 @@ fun CartSummaryScreen(
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,
-            onCallWaiterClick = {}
+            onCallWaiterClick = {
+                waiterViewModel.requestWaiter("CartSummaryScreen")
+            },
+            screenName = "CartSummaryScreen"
+        )
+        
+        // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+        WaiterCalledDialog(
+            visible = waiterUiState.showDialog,
+            onDismiss = { waiterViewModel.dismissDialog() },
+            onConfirm = { waiterViewModel.confirmWaiterCall() }
         )
         
         // Título "Seu pedido"

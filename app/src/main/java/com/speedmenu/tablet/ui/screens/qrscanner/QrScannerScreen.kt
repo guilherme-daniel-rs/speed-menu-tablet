@@ -54,8 +54,10 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.speedmenu.tablet.core.ui.components.OrderPlacedDialog
 import com.speedmenu.tablet.core.ui.components.AppTopBar
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import com.speedmenu.tablet.ui.viewmodel.FinalizationState
 import com.speedmenu.tablet.ui.viewmodel.QrScannerViewModel
 import com.speedmenu.tablet.ui.viewmodel.ScanState
@@ -118,6 +120,10 @@ fun QrScannerScreen(
     val context = LocalContext.current
     val uiState by qrScannerViewModel.uiState.collectAsState()
     val cartState by cartViewModel.cartState.collectAsState()
+    
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
     
     // Inicializa ViewModel apenas com o modo (não precisa copiar itens)
     LaunchedEffect(mode) {
@@ -205,7 +211,10 @@ fun QrScannerScreen(
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,
-            onCallWaiterClick = {}
+            onCallWaiterClick = {
+                waiterViewModel.requestWaiter("QrScannerScreen")
+            },
+            screenName = "QrScannerScreen"
         )
         
         // Split View: 40% câmera + 60% carrinho/pedido
@@ -285,6 +294,14 @@ fun QrScannerScreen(
             }
         }
     }
+    
+    // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+    // IMPORTANTE: Deve estar FORA de qualquer condicional para aparecer sempre
+    WaiterCalledDialog(
+        visible = waiterUiState.showDialog,
+        onDismiss = { waiterViewModel.dismissDialog() },
+        onConfirm = { waiterViewModel.confirmWaiterCall() }
+    )
     
     // Dialog de pedido realizado (apenas no modo CHECKOUT após finalização bem-sucedida)
     if (mode == QrScannerMode.CHECKOUT 

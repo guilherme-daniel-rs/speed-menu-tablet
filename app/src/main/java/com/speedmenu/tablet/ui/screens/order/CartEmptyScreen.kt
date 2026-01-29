@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -23,7 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.AppTopBar
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 
 /**
  * Tela de pedido vazio.
@@ -39,6 +44,10 @@ fun CartEmptyScreen(
     val isConnected = true
     val tableNumber = "17"
     
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -50,7 +59,17 @@ fun CartEmptyScreen(
             onBackClick = onNavigateBack,
             isConnected = isConnected,
             tableNumber = tableNumber,
-            onCallWaiterClick = {}
+            onCallWaiterClick = {
+                waiterViewModel.requestWaiter("CartEmptyScreen")
+            },
+            screenName = "CartEmptyScreen"
+        )
+        
+        // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+        WaiterCalledDialog(
+            visible = waiterUiState.showDialog,
+            onDismiss = { waiterViewModel.dismissDialog() },
+            onConfirm = { waiterViewModel.confirmWaiterCall() }
         )
         
         // Conteúdo centralizado

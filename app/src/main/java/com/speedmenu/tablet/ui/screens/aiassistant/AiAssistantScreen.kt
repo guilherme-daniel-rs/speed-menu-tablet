@@ -48,7 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.core.ui.components.OrderTopStatusPill
+import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 
 /**
  * Tela de assistente de IA com chat completo.
@@ -67,6 +69,10 @@ fun AiAssistantScreen(
     // Estados mockados
     val isConnected = true
     val tableNumber = "17"
+    
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
 
     // Scroll automático para última mensagem
     val listState = rememberLazyListState()
@@ -100,7 +106,9 @@ fun AiAssistantScreen(
                 onBackClick = onNavigateBack,
                 isConnected = isConnected,
                 tableNumber = tableNumber,
-                onCallWaiterClick = {}
+                onCallWaiterClick = {
+                    waiterViewModel.requestWaiter("AiAssistantScreen")
+                }
             )
 
             // Área de mensagens
@@ -187,6 +195,13 @@ fun AiAssistantScreen(
                 contentColor = SpeedMenuColors.TextPrimary
             )
         }
+        
+        // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+        WaiterCalledDialog(
+            visible = waiterUiState.showDialog,
+            onDismiss = { waiterViewModel.dismissDialog() },
+            onConfirm = { waiterViewModel.confirmWaiterCall() }
+        )
     }
 }
 

@@ -39,6 +39,9 @@ import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 
 /**
  * Hub de jogos - tela principal que lista os jogos disponíveis.
@@ -49,8 +52,9 @@ fun GamesHubScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToFlappy: () -> Unit = {}
 ) {
-    // Estado para controlar visibilidade do dialog de garçom
-    var showWaiterDialog by remember { mutableStateOf(false) }
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
     
     // Estados mockados (mesmo padrão da ProductsScreen)
     val isConnected = remember { true }
@@ -68,8 +72,9 @@ fun GamesHubScreen(
             isConnected = isConnected,
             tableNumber = tableNumber,
             onCallWaiterClick = {
-                showWaiterDialog = true
-            }
+                waiterViewModel.requestWaiter("GamesHubScreen")
+            },
+            screenName = "GamesHubScreen"
         )
 
         // Conteúdo principal
@@ -134,12 +139,11 @@ fun GamesHubScreen(
         }
 
         // Dialog de garçom chamado
+        // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
         WaiterCalledDialog(
-            visible = showWaiterDialog,
-            onDismiss = { showWaiterDialog = false },
-            onConfirm = {
-                showWaiterDialog = false
-            }
+            visible = waiterUiState.showDialog,
+            onDismiss = { waiterViewModel.dismissDialog() },
+            onConfirm = { waiterViewModel.confirmWaiterCall() }
         )
     }
 }

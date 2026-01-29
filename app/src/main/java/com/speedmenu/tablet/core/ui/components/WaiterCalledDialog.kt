@@ -65,6 +65,9 @@ fun WaiterCalledDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
+    // Log para debug
+    android.util.Log.d("WaiterCalledDialog", "🎭 Dialog renderizado - visible=$visible")
+    
     if (!visible) return
 
     // Animações de entrada

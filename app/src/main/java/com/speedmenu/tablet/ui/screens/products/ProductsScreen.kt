@@ -36,6 +36,8 @@ import com.speedmenu.tablet.core.ui.components.ItemAddedDialog
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.ui.screens.products.ProductDetailsBottomSheet
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.speedmenu.tablet.ui.screens.home.OrderFlowSidebar
 import com.speedmenu.tablet.ui.screens.home.MenuMockupScenario
 import com.speedmenu.tablet.ui.screens.home.getMenuMockup
@@ -59,8 +61,9 @@ fun ProductsScreen(
     // Estado para controlar bottom sheet
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     
-    // Estado para controlar visibilidade do dialog de garçom
-    var showWaiterCalledDialog by remember { mutableStateOf(false) }
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
     
     // Estado para controlar visibilidade do dialog de item adicionado
     var showItemAddedDialog by remember { mutableStateOf(false) }
@@ -184,8 +187,9 @@ fun ProductsScreen(
             isConnected = isConnected,
             tableNumber = tableNumber,
             onCallWaiterClick = {
-                showWaiterCalledDialog = true
-            }
+                waiterViewModel.requestWaiter("ProductsScreen")
+            },
+            screenName = "ProductsScreen"
         )
         
         // ========== CONTEÚDO PRINCIPAL ==========
@@ -318,13 +322,12 @@ fun ProductsScreen(
     
     // ========== DIALOG DE GARÇOM CHAMADO ==========
     // Fora do scaffold para não ser afetado pelo overlay
-    if (showWaiterCalledDialog) {
-        WaiterCalledDialog(
-            visible = showWaiterCalledDialog,
-            onDismiss = { showWaiterCalledDialog = false },
-            onConfirm = { showWaiterCalledDialog = false }
-        )
-    }
+    // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
+    WaiterCalledDialog(
+        visible = waiterUiState.showDialog,
+        onDismiss = { waiterViewModel.dismissDialog() },
+        onConfirm = { waiterViewModel.confirmWaiterCall() }
+    )
     
     // Dialog de item adicionado ao carrinho
     if (showItemAddedDialog) {

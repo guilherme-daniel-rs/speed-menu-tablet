@@ -86,6 +86,9 @@ import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
 import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
+import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 
 /**
  * FONTE ÚNICA DE VERDADE: Lista de itens do menu da Home.
@@ -175,8 +178,9 @@ fun HomeScreen(
     // Estado para controlar animação de entrada
     var isVisible by remember { mutableStateOf(false) }
     
-    // Estado para controlar visibilidade do dialog de garçom
-    var showWaiterDialog by remember { mutableStateOf(false) }
+    // WaiterViewModel centralizado para gerenciar chamadas de garçom
+    val waiterViewModel: WaiterViewModel = hiltViewModel()
+    val waiterUiState by waiterViewModel.uiState.collectAsState()
     
     // Estado do drawer (apenas para celular)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -217,8 +221,9 @@ fun HomeScreen(
                 isConnected = true,
                 tableNumber = "17",
                 onCallWaiterClick = {
-                    showWaiterDialog = true
-                }
+                    waiterViewModel.requestWaiter("HomeScreen")
+                },
+                screenName = "HomeScreen"
             )
             
             // Conteúdo principal com sidebar fixa
@@ -282,8 +287,7 @@ fun HomeScreen(
                     HomeContent(
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight(),
-                        onShowWaiterDialog = { showWaiterDialog = it }
+                            .fillMaxHeight()
                     )
                 }
             }
@@ -307,14 +311,15 @@ fun HomeScreen(
             Scaffold(
                 topBar = {
                     // Top bar com botão hamburger para abrir drawer
-                    AppTopBar(
-                        showBackButton = false,
-                        isConnected = true,
-                        tableNumber = "17",
-                        onCallWaiterClick = {
-                            showWaiterDialog = true
-                        },
-                        onMenuClick = {
+            AppTopBar(
+                showBackButton = false,
+                isConnected = true,
+                tableNumber = "17",
+                onCallWaiterClick = {
+                    waiterViewModel.requestWaiter("HomeScreen")
+                },
+                screenName = "HomeScreen",
+                onMenuClick = {
                             coroutineScope.launch {
                                 drawerState.open()
                             }
@@ -326,21 +331,17 @@ fun HomeScreen(
                 HomeContent(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding),
-                    onShowWaiterDialog = { showWaiterDialog = it }
+                        .padding(innerPadding)
                 )
             }
         }
     }
     
-    // Dialog de garçom chamado
+    // Dialog de garçom chamado (gerenciado pelo WaiterViewModel)
     WaiterCalledDialog(
-        visible = showWaiterDialog,
-        onDismiss = { showWaiterDialog = false },
-        onConfirm = {
-            showWaiterDialog = false
-            // TODO: Implementar lógica de chamar garçom
-        }
+        visible = waiterUiState.showDialog,
+        onDismiss = { waiterViewModel.dismissDialog() },
+        onConfirm = { waiterViewModel.confirmWaiterCall() }
     )
 }
 
@@ -766,8 +767,7 @@ private fun SidebarHeader(
  */
 @Composable
 private fun HomeContent(
-    modifier: Modifier = Modifier,
-    onShowWaiterDialog: (Boolean) -> Unit
+    modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
         // Banner principal com imagem de fundo
