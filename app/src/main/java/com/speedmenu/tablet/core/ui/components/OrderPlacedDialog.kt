@@ -116,7 +116,7 @@ fun OrderPlacedDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = Color(0xFF11161C).copy(alpha = 0.95f),
+                            color = colorScheme.surfaceVariant.copy(alpha = 0.95f),
                             shape = RoundedCornerShape(28.dp)
                         )
                         .drawBehind {

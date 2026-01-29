@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,9 +75,9 @@ fun HeroImage(
                     .background(
                         brush = Brush.linearGradient(
                             colors = listOf(
-                                Color(0xFF1A1F26), // Surface escuro
-                                Color(0xFF232830).copy(alpha = 0.3f + shimmerOffset * 0.2f), // Shimmer sutil
-                                Color(0xFF1A1F26)
+                                MaterialTheme.colorScheme.surface, // Surface escuro
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f + shimmerOffset * 0.2f), // Shimmer sutil
+                                MaterialTheme.colorScheme.surface
                             ),
                             start = androidx.compose.ui.geometry.Offset(0f, 0f),
                             end = androidx.compose.ui.geometry.Offset(400f * shimmerOffset, 400f * shimmerOffset)

@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier;
 import androidx.compose.ui.graphics.Brush;
 import androidx.compose.ui.graphics.vector.ImageVector;
 import androidx.compose.ui.text.font.FontWeight;
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors;
 
 /**
  * Constantes de alinhamento horizontal para o menu lateral.

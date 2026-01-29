@@ -43,7 +43,6 @@ import com.speedmenu.tablet.R
 import com.speedmenu.tablet.core.ui.components.CategoryCard
 import com.speedmenu.tablet.core.ui.components.OrderFlowScaffold
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
@@ -141,6 +140,8 @@ fun CategoriesScreen(
         )
     }
 
+    val colorScheme = MaterialTheme.colorScheme
+    
     // OrderFlowScaffold envolve toda a tela para garantir posicionamento consistente do status pill
     OrderFlowScaffold(
         isConnected = isConnected,
@@ -152,7 +153,7 @@ fun CategoriesScreen(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(SpeedMenuColors.BackgroundPrimary)
+                .background(colorScheme.background)
         ) {
             // Sidebar fixa à esquerda (novo menu hierárquico)
             Box(
@@ -181,9 +182,9 @@ fun CategoriesScreen(
                             brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                                 colors = listOf(
                                     Color.Transparent,
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.15f),
-                                    SpeedMenuColors.BorderSubtle.copy(alpha = 0.08f),
+                                    colorScheme.outlineVariant.copy(alpha = 0.08f),
+                                    colorScheme.outlineVariant.copy(alpha = 0.15f),
+                                    colorScheme.outlineVariant.copy(alpha = 0.08f),
                                     Color.Transparent
                                 )
                             )
@@ -199,9 +200,9 @@ fun CategoriesScreen(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                SpeedMenuColors.BackgroundPrimary,
-                                SpeedMenuColors.BackgroundPrimary.copy(red = 0.08f, green = 0.10f, blue = 0.08f),
-                                SpeedMenuColors.BackgroundSecondary
+                                colorScheme.background,
+                                colorScheme.background.copy(red = colorScheme.background.red * 0.8f, green = colorScheme.background.green * 0.8f, blue = colorScheme.background.blue * 0.8f),
+                                colorScheme.surface
                             )
                         )
                     )

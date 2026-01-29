@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Toast discreto e não intrusivo para confirmações.
@@ -31,6 +30,8 @@ fun DiscreteToast(
     visible: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(
@@ -53,7 +54,7 @@ fun DiscreteToast(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.85f),
+                    color = colorScheme.surfaceVariant.copy(alpha = 0.85f),
                     shape = RoundedCornerShape(12.dp)
                 )
                 .padding(horizontal = 20.dp, vertical = 14.dp),
@@ -63,7 +64,7 @@ fun DiscreteToast(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 14.sp
             )
         }

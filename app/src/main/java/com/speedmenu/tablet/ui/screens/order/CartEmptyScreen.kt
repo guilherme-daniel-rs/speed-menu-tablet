@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
@@ -47,11 +46,12 @@ fun CartEmptyScreen(
     // WaiterViewModel centralizado para gerenciar chamadas de garçom
     val waiterViewModel: WaiterViewModel = hiltViewModel()
     val waiterUiState by waiterViewModel.uiState.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
     
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpeedMenuColors.BackgroundPrimary)
+            .background(colorScheme.background)
     ) {
         // Top Action Bar
         AppTopBar(
@@ -88,7 +88,7 @@ fun CartEmptyScreen(
                 Box(
                     modifier = Modifier
                         .background(
-                            color = SpeedMenuColors.Surface.copy(alpha = 0.08f), // Mais sutil
+                            color = colorScheme.surface.copy(alpha = 0.08f), // Mais sutil
                             shape = RoundedCornerShape(20.dp) // Mais suave
                         )
                         .padding(28.dp), // Ligeiramente menor
@@ -97,7 +97,7 @@ fun CartEmptyScreen(
                     Icon(
                         imageVector = Icons.Default.ShoppingCart,
                         contentDescription = "Carrinho vazio",
-                        tint = SpeedMenuColors.TextTertiary.copy(alpha = 0.25f), // Ainda mais discreto
+                        tint = colorScheme.onSurfaceVariant.copy(alpha = 0.25f), // Ainda mais discreto
                         modifier = Modifier.size(72.dp) // Ligeiramente menor
                     )
                 }
@@ -107,7 +107,7 @@ fun CartEmptyScreen(
                     text = "O carrinho está vazio",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Medium, // Mais leve que SemiBold
-                    color = SpeedMenuColors.TextPrimary.copy(alpha = 0.9f), // Ligeiramente mais suave
+                    color = colorScheme.onSurface.copy(alpha = 0.9f), // Ligeiramente mais suave
                     fontSize = 26.sp, // Ligeiramente menor
                     textAlign = TextAlign.Center,
                     letterSpacing = 0.2.sp // Espaçamento refinado
@@ -118,7 +118,7 @@ fun CartEmptyScreen(
                     text = "Adicione itens para começar",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Light, // Mais leve
-                    color = SpeedMenuColors.TextSecondary.copy(alpha = 0.7f), // Mais discreto
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f), // Mais discreto
                     fontSize = 15.sp, // Ligeiramente menor
                     textAlign = TextAlign.Center,
                     letterSpacing = 0.3.sp

@@ -84,7 +84,6 @@ import com.speedmenu.tablet.core.ui.components.SidebarMenuItem
 import com.speedmenu.tablet.core.ui.components.SidebarMenuItemStyle
 import com.speedmenu.tablet.core.ui.components.SpeedMenuBadge
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 import com.speedmenu.tablet.ui.components.RestaurantDebugMenu
 import com.speedmenu.tablet.ui.viewmodel.WaiterViewModel
 import androidx.hilt.navigation.compose.hiltViewModel

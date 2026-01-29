@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Item de ingrediente com controles de quantidade.
@@ -49,6 +48,8 @@ fun IngredientQuantityItem(
     onRemoveBaseIngredient: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -61,7 +62,7 @@ fun IngredientQuantityItem(
             text = name,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Normal,
-            color = SpeedMenuColors.TextSecondary,
+            color = colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -82,7 +83,7 @@ fun IngredientQuantityItem(
                 modifier = Modifier
                     .size(32.dp)
                     .background(
-                        color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                        color = colorScheme.surface.copy(alpha = 0.3f),
                         shape = CircleShape
                     )
                     .clickable(enabled = quantity > 0) {
@@ -100,9 +101,9 @@ fun IngredientQuantityItem(
                     imageVector = Icons.Default.Remove,
                     contentDescription = "Diminuir",
                     tint = if (quantity > 0) {
-                        SpeedMenuColors.TextSecondary.copy(alpha = 0.7f)
+                        colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     } else {
-                        SpeedMenuColors.TextTertiary.copy(alpha = 0.4f)
+                        colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                     },
                     modifier = Modifier.size(16.dp)
                 )
@@ -113,7 +114,7 @@ fun IngredientQuantityItem(
                 text = quantity.toString(),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = SpeedMenuColors.TextPrimary,
+                color = colorScheme.onSurface,
                 fontSize = 15.sp,
                 modifier = Modifier.width(24.dp),
                 textAlign = TextAlign.Center
@@ -124,7 +125,7 @@ fun IngredientQuantityItem(
                 modifier = Modifier
                     .size(32.dp)
                     .background(
-                        color = SpeedMenuColors.Surface.copy(alpha = 0.3f),
+                        color = colorScheme.surface.copy(alpha = 0.3f),
                         shape = CircleShape
                     )
                     .clickable(enabled = quantity < maxQuantity) {
@@ -136,9 +137,9 @@ fun IngredientQuantityItem(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Aumentar",
                     tint = if (quantity < maxQuantity) {
-                        SpeedMenuColors.TextSecondary.copy(alpha = 0.7f)
+                        colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     } else {
-                        SpeedMenuColors.TextTertiary.copy(alpha = 0.4f)
+                        colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                     },
                     modifier = Modifier.size(16.dp)
                 )

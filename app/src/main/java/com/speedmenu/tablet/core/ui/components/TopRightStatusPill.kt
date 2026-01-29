@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Componente reutilizável de status no topo direito.
@@ -44,11 +43,13 @@ fun TopRightStatusPill(
     onWaiterClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     // Container agrupado com fundo semi-transparente
     Box(
         modifier = modifier
             .background(
-                color = SpeedMenuColors.SurfaceElevated.copy(alpha = 0.75f),
+                color = colorScheme.surfaceVariant.copy(alpha = 0.75f),
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(horizontal = 20.dp, vertical = 14.dp)
@@ -70,7 +71,7 @@ fun TopRightStatusPill(
                     Icon(
                         imageVector = Icons.Default.Wifi,
                         contentDescription = "Conectado",
-                        tint = SpeedMenuColors.Success.copy(alpha = 0.85f),
+                        tint = colorScheme.tertiary.copy(alpha = 0.85f),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -78,7 +79,7 @@ fun TopRightStatusPill(
                 Text(
                     text = "Conectado",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SpeedMenuColors.TextTertiary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -89,7 +90,7 @@ fun TopRightStatusPill(
                 modifier = Modifier
                     .width(1.dp)
                     .height(24.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.4f))
             )
 
             // Informação da mesa
@@ -101,13 +102,13 @@ fun TopRightStatusPill(
                 Icon(
                     imageVector = Icons.Default.TableRestaurant,
                     contentDescription = "Mesa",
-                    tint = SpeedMenuColors.TextTertiary.copy(alpha = 0.7f),
+                    tint = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = "Mesa 17",
                     style = MaterialTheme.typography.bodySmall,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -118,7 +119,7 @@ fun TopRightStatusPill(
                 modifier = Modifier
                     .width(1.dp)
                     .height(24.dp)
-                    .background(SpeedMenuColors.BorderSubtle.copy(alpha = 0.4f))
+                    .background(colorScheme.outlineVariant.copy(alpha = 0.4f))
             )
 
             // Ação rápida: Chamar garçom (com micro-interação)
@@ -127,9 +128,9 @@ fun TopRightStatusPill(
             
             val waiterIconColor by animateColorAsState(
                 targetValue = if (isWaiterPressed) {
-                    SpeedMenuColors.PrimaryLight
+                    colorScheme.secondary
                 } else {
-                    SpeedMenuColors.PrimaryLight.copy(alpha = 0.8f)
+                    colorScheme.secondary.copy(alpha = 0.8f)
                 },
                 animationSpec = tween(150),
                 label = "waiter_icon_color"
@@ -137,9 +138,9 @@ fun TopRightStatusPill(
             
             val waiterTextColor by animateColorAsState(
                 targetValue = if (isWaiterPressed) {
-                    SpeedMenuColors.TextPrimary
+                    colorScheme.onSurface
                 } else {
-                    SpeedMenuColors.TextSecondary
+                    colorScheme.onSurfaceVariant
                 },
                 animationSpec = tween(150),
                 label = "waiter_text_color"

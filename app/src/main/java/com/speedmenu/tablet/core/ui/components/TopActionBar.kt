@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
  * Barra de ação fixa no topo da tela.
@@ -43,12 +42,14 @@ fun TopActionBar(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(72.dp)
             .zIndex(10f) // Garante que está acima de outros elementos
-            .background(SpeedMenuColors.Surface)
+            .background(colorScheme.surface)
             .padding(horizontal = 24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -66,14 +67,14 @@ fun TopActionBar(
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Voltar",
-                    tint = SpeedMenuColors.TextSecondary,
+                    tint = colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
                     text = "Voltar",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = SpeedMenuColors.TextSecondary,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = 16.sp
                 )
             }
