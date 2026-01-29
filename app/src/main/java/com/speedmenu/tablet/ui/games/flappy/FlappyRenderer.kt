@@ -1,17 +1,13 @@
 package com.speedmenu.tablet.ui.games.flappy
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.input.pointer.pointerInput
 import com.speedmenu.tablet.core.ui.theme.SpeedMenuColors
 
 /**
@@ -22,22 +18,16 @@ fun FlappyRenderer(
     state: FlappyGameState,
     screenWidth: Float,
     screenHeight: Float,
-    onTap: () -> Unit,
+    onTap: () -> Unit, // Mantido para compatibilidade, mas não usado aqui
     modifier: Modifier = Modifier
 ) {
     // Usa o estado como dependência para forçar recomposição do Canvas
     val playerY = state.playerY
     val obstacles = state.obstacles
-    val status = state.status
     
+    // Canvas simples - handler de toque será gerenciado pelo GameFlappyScreen
     Canvas(
-        modifier = modifier
-            .fillMaxSize()
-            .pointerInput(status) { // Usa status como chave para garantir que o handler está ativo
-                detectTapGestures {
-                    onTap()
-                }
-            }
+        modifier = modifier.fillMaxSize()
     ) {
         // Fundo
         drawRect(

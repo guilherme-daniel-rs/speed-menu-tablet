@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.zIndex
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -134,14 +136,15 @@ fun GameFlappyScreen(
                 }
                 
                 if (currentState.status == GameStatus.RUNNING) {
-                    engine.update(deltaTime.coerceIn(0f, 0.1f)) // Limita deltaTime para evitar saltos grandes
+                    val clampedDt = deltaTime.coerceIn(0f, 0.033f) // Limita dt a 33ms (30 FPS mínimo)
+                    engine.update(clampedDt)
                     
                     // Incrementa tick a cada frame para forçar recomposição do Canvas
                     gameStateTick++
                     
-                    // Log a cada 30 frames (throttle)
-                    if (DEBUG && frameCount % 30 == 0) {
-                        Log.d("GameFlappyScreen", "Frame $frameCount - dt=${deltaTime}s, status=${currentState.status}, y=${currentState.playerY}, score=${currentState.score}")
+                    // Log a cada 15 frames (throttle) com informações de física
+                    if (DEBUG && frameCount % 15 == 0) {
+                        Log.d("GameFlappyScreen", "Frame $frameCount - dt=${clampedDt}s, status=${currentState.status}, y=${currentState.playerY}, velY=${currentState.playerVelocity}, score=${currentState.score}")
                     }
                 }
                 
@@ -198,26 +201,18 @@ fun GameFlappyScreen(
                     }
                 }
         ) {
-            // Renderer do jogo
-            // Usa gameStateTick como key para forçar recomposição do Canvas quando o estado muda
+            // Renderer do jogo (Canvas por baixo)
             if (engine != null) {
-                key(gameStateTick) {
-                    FlappyRenderer(
-                        state = gameState,
-                        screenWidth = screenSize.width,
-                        screenHeight = screenSize.height,
-                        onTap = {
-                            if (DEBUG) Log.d("GameFlappyScreen", "Tap received - current status=${gameState.status}")
-                            engine.onTap()
-                            // Força atualização imediata do estado
-                            gameStateTick++
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                FlappyRenderer(
+                    state = gameState,
+                    screenWidth = screenSize.width,
+                    screenHeight = screenSize.height,
+                    onTap = {}, // Não usado, handler está no Box acima
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
-            // HUD - Score no topo
+            // HUD - Score no topo (não bloqueia toques - está abaixo do Box de toque)
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
@@ -229,6 +224,28 @@ fun GameFlappyScreen(
                     fontWeight = FontWeight.Bold,
                     color = SpeedMenuColors.TextPrimary,
                     fontSize = 64.sp
+                )
+            }
+            
+            // CORREÇÃO CRÍTICA: Box transparente com clickable POR CIMA de tudo (exceto dialogs)
+            // Isso garante que capture TODOS os toques, mesmo quando o jogo está rodando
+            // IMPORTANTE: Só captura toques quando o jogo NÃO está em GAME_OVER (para não interferir no dialog)
+            val interactionSource = remember { MutableInteractionSource() }
+            if (gameState.status != GameStatus.GAME_OVER) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(1f) // Garante que está acima de outros elementos
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null, // Sem ripple para não interferir
+                            onClick = {
+                                if (DEBUG) Log.d("GameFlappyScreen", "Tap received - current status=${gameState.status}, y=${gameState.playerY}, velY=${gameState.playerVelocity}")
+                                engine?.onTap()
+                                // Força atualização imediata do estado
+                                gameStateTick++
+                            }
+                        )
                 )
             }
 
@@ -255,7 +272,7 @@ fun GameFlappyScreen(
                 }
             }
 
-            // Dialog de Game Over
+            // Dialog de Game Over (com zIndex alto para ficar acima do Box transparente)
             if (showGameOverDialog) {
                 GameOverDialog(
                     score = gameState.score,
@@ -269,7 +286,8 @@ fun GameFlappyScreen(
                     onBack = {
                         showGameOverDialog = false
                         onNavigateBack()
-                    }
+                    },
+                    modifier = Modifier.zIndex(10f) // Garante que está acima do Box transparente
                 )
             }
         }
@@ -292,10 +310,11 @@ private fun GameOverDialog(
     score: Int,
     bestScore: Int,
     onPlayAgain: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.7f))
             .clickable(onClick = {}), // Previne fechar ao clicar fora

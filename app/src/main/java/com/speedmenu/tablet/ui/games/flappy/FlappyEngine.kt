@@ -26,18 +26,20 @@ data class FlappyGameState(
     var obstacles: MutableList<Obstacle> = mutableListOf(),
     var score: Int = 0,
     var status: GameStatus = GameStatus.IDLE,
-    var lastObstacleX: Float = 0f
+    var lastObstacleX: Float = 0f,
+    var gameStartTime: Long = 0L // Para grace period no início
 ) {
     companion object {
-        const val GRAVITY = 0.4f // Reduzido de 0.6f para 0.4f (queda mais lenta)
+        const val GRAVITY = 0.5f // Aumentado para deixar mais difícil (cai mais rápido)
         const val JUMP_STRENGTH = -12f
-        const val OBSTACLE_SPEED = 4f
+        const val OBSTACLE_SPEED = 5.5f // Aumentado de 4f para 5.5f (obstáculos mais rápidos)
         const val OBSTACLE_SPACING = 400f
-        const val OBSTACLE_GAP = 350f // Aumentado de 200f para 350f (75% maior)
-        const val PLAYER_SIZE = 30f
+        const val OBSTACLE_GAP = 280f // Reduzido de 350f para 280f (mais difícil de passar)
+        const val PLAYER_SIZE = 45f // Aumentado de 30f para 45f (50% maior)
         const val OBSTACLE_WIDTH = 60f
-        const val MIN_GAP_Y = 150f
-        const val MAX_GAP_Y = 450f
+        const val MIN_GAP_Y = 100f // Reduzido de 150f para permitir buracos mais altos
+        const val MAX_GAP_Y = 600f // Aumentado de 450f para 600f (maior variação vertical)
+        const val GRACE_PERIOD_MS = 300L // Período de graça após iniciar (evita game over imediato)
     }
     
     val gameStarted: Boolean get() = status == GameStatus.RUNNING
@@ -78,6 +80,7 @@ class FlappyEngine(
         state.score = 0
         state.status = GameStatus.IDLE
         state.lastObstacleX = screenWidth
+        state.gameStartTime = 0L
         
         // Cria obstáculos iniciais
         for (i in 0..2) {
@@ -88,26 +91,35 @@ class FlappyEngine(
 
     /**
      * Handler de tap - inicia o jogo ou aplica impulso.
+     * CORREÇÃO: Garante que o primeiro toque SEMPRE aplica impulso imediatamente.
      */
     fun onTap() {
-        if (DEBUG) Log.d("FlappyEngine", "onTap() called - status=${state.status}")
+        val statusBefore = state.status
+        val velocityBefore = state.playerVelocity
+        
+        if (DEBUG) Log.d("FlappyEngine", "onTap() called - status=$statusBefore, velBefore=$velocityBefore, y=${state.playerY}")
         
         when (state.status) {
             GameStatus.IDLE -> {
-                // Primeiro tap: inicia o jogo
+                // Primeiro tap: inicia o jogo E aplica impulso imediatamente
                 state.status = GameStatus.RUNNING
                 state.playerVelocity = FlappyGameState.JUMP_STRENGTH
-                if (DEBUG) Log.d("FlappyEngine", "Game started - status=${state.status}")
+                state.gameStartTime = System.currentTimeMillis()
+                if (DEBUG) Log.d("FlappyEngine", "Game started + jump applied - status=${state.status}, velocity=${state.playerVelocity}, y=${state.playerY}")
             }
             GameStatus.RUNNING -> {
-                // Taps seguintes: aplica impulso
+                // Taps seguintes: aplica impulso SEMPRE
                 state.playerVelocity = FlappyGameState.JUMP_STRENGTH
-                if (DEBUG) Log.d("FlappyEngine", "Jump applied - velocity=${state.playerVelocity}")
+                if (DEBUG) Log.d("FlappyEngine", "Jump applied - velocity=${state.playerVelocity}, y=${state.playerY}")
             }
             GameStatus.GAME_OVER -> {
                 // Ignora taps quando game over
                 if (DEBUG) Log.d("FlappyEngine", "Tap ignored - game over")
             }
+        }
+        
+        if (DEBUG && statusBefore == GameStatus.RUNNING) {
+            Log.d("FlappyEngine", "onTap() completed - velAfter=${state.playerVelocity}, y=${state.playerY}")
         }
     }
 
@@ -122,17 +134,28 @@ class FlappyEngine(
         state.playerVelocity += FlappyGameState.GRAVITY * deltaTime * 60f
         state.playerY += state.playerVelocity * deltaTime * 60f
 
-        // Limita player dentro da tela
+        // Limita player dentro da tela (com grace period no início)
         val playerRadius = FlappyGameState.PLAYER_SIZE / 2f
+        val currentTime = System.currentTimeMillis()
+        val timeSinceStart = currentTime - state.gameStartTime
+        val inGracePeriod = state.gameStartTime > 0 && timeSinceStart < FlappyGameState.GRACE_PERIOD_MS
+        
         if (state.playerY - playerRadius < 0) {
             state.playerY = playerRadius
-            state.status = GameStatus.GAME_OVER
-            if (DEBUG) Log.d("FlappyEngine", "Game over - hit top")
+            if (!inGracePeriod) {
+                state.status = GameStatus.GAME_OVER
+                if (DEBUG) Log.d("FlappyEngine", "Game over - hit top")
+            }
         }
         if (state.playerY + playerRadius > screenHeight) {
             state.playerY = screenHeight - playerRadius
-            state.status = GameStatus.GAME_OVER
-            if (DEBUG) Log.d("FlappyEngine", "Game over - hit bottom")
+            // Grace period: não dá game over imediatamente após iniciar (evita queda instantânea)
+            if (!inGracePeriod) {
+                state.status = GameStatus.GAME_OVER
+                if (DEBUG) Log.d("FlappyEngine", "Game over - hit bottom (gracePeriod=$inGracePeriod, timeSinceStart=$timeSinceStart)")
+            } else {
+                if (DEBUG) Log.d("FlappyEngine", "Hit bottom but in grace period - y=${state.playerY}, timeSinceStart=$timeSinceStart")
+            }
         }
 
         // Move obstáculos

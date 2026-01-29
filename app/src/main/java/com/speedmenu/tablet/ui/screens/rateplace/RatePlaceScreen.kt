@@ -66,7 +66,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -97,6 +100,7 @@ fun RatePlaceScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -104,6 +108,12 @@ fun RatePlaceScreen(
     // WaiterViewModel centralizado para gerenciar chamadas de garçom
     val waiterViewModel: WaiterViewModel = hiltViewModel()
     val waiterUiState by waiterViewModel.uiState.collectAsState()
+    
+    // Função para fechar teclado e remover foco
+    fun dismissKeyboard() {
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
+    }
 
     // Estados mockados (mesmo padrão das outras telas)
     val isConnected = true
@@ -130,6 +140,14 @@ fun RatePlaceScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(SpeedMenuColors.BackgroundPrimary)
+            // Detectar toques fora dos componentes interativos para fechar teclado
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        dismissKeyboard()
+                    }
+                )
+            }
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -199,14 +217,17 @@ fun RatePlaceScreen(
                                 rating = uiState.rating,
                                 onRatingSelected = { rating ->
                                     viewModel.onSelectRating(rating)
-                                    keyboardController?.hide()
+                                    dismissKeyboard()
                                 }
                             )
 
                             // Chips de feedback rápido
                             FeedbackChipsRow(
                                 selectedTags = uiState.selectedTags,
-                                onTagToggle = viewModel::toggleTag
+                                onTagToggle = { tag ->
+                                    viewModel.toggleTag(tag)
+                                    // Não fecha teclado ao tocar em chips (comportamento opcional)
+                                }
                             )
                         }
 
@@ -221,6 +242,7 @@ fun RatePlaceScreen(
                             CommentTextField(
                                 value = uiState.comment,
                                 onValueChange = viewModel::onCommentChange,
+                                onDismissKeyboard = { dismissKeyboard() },
                                 modifier = Modifier.fillMaxWidth()
                             )
 
@@ -230,7 +252,8 @@ fun RatePlaceScreen(
                             FlatPremiumButton(
                                 text = if (uiState.isSubmitting) "Enviando…" else "Enviar avaliação",
                                 onClick = {
-                                    keyboardController?.hide()
+                                    // Fechar teclado e remover foco antes de enviar
+                                    dismissKeyboard()
                                     viewModel.submit()
                                 },
                                 enabled = uiState.rating >= 1 && !uiState.isSubmitting,
@@ -269,10 +292,14 @@ fun RatePlaceScreen(
         RatePlaceSuccessDialog(
             visible = showSuccessDialog,
             onDismiss = {
+                // Fechar teclado antes de fechar modal
+                dismissKeyboard()
                 showSuccessDialog = false
                 viewModel.resetSuccess()
             },
             onConfirm = {
+                // Fechar teclado antes de navegar
+                dismissKeyboard()
                 showSuccessDialog = false
                 viewModel.resetSuccess()
                 onNavigateToHome()
@@ -588,11 +615,14 @@ private fun FeedbackChip(
 private fun CommentTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    onDismissKeyboard: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Animação da borda e elevação ao focar
     val borderColor by animateColorAsState(
@@ -663,7 +693,8 @@ private fun CommentTextField(
                     ),
                     keyboardActions = KeyboardActions(
                         onDone = {
-                            focusRequester.freeFocus()
+                            focusManager.clearFocus(force = true)
+                            keyboardController?.hide()
                         }
                     ),
                     interactionSource = interactionSource,
@@ -772,6 +803,9 @@ private fun RatePlaceSuccessDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    
     if (!visible) return
 
     // Animações de entrada (mesmo padrão do WaiterCalledDialog)
@@ -993,7 +1027,12 @@ private fun RatePlaceSuccessDialog(
                                 ),
                                 shape = RoundedCornerShape(999.dp)
                             )
-                            .clickable(onClick = onConfirm),
+                            .clickable(onClick = {
+                                // Fechar teclado antes de confirmar
+                                focusManager.clearFocus(force = true)
+                                keyboardController?.hide()
+                                onConfirm()
+                            }),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
