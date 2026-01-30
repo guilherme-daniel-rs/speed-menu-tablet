@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import com.speedmenu.tablet.domain.model.CartItem
+import com.speedmenu.tablet.domain.model.FulfillmentType
 
 /**
  * Estado do carrinho de compras.
@@ -137,6 +138,22 @@ class CartViewModel @Inject constructor() : ViewModel() {
             val updatedItems = state.items.map { item ->
                 if (item.id == itemId) {
                     item.copy(quantity = newQuantity)
+                } else {
+                    item
+                }
+            }
+            state.copy(items = updatedItems)
+        }
+    }
+
+    /**
+     * Atualiza o tipo de atendimento (fulfillment type) de um item no carrinho.
+     */
+    fun updateFulfillmentType(itemId: String, newType: FulfillmentType) {
+        _cartState.update { state ->
+            val updatedItems = state.items.map { item ->
+                if (item.id == itemId) {
+                    item.copy(fulfillmentType = newType)
                 } else {
                     item
                 }

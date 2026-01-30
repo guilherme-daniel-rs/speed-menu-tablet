@@ -25,10 +25,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,6 +53,7 @@ import com.speedmenu.tablet.ui.viewmodel.FinalizationState
  * @param finalizationState Estado da finalização (apenas CHECKOUT, null em VIEW_ORDER)
  * @param onUpdateQuantity Callback para atualizar quantidade (apenas CHECKOUT)
  * @param onRemoveItem Callback para remover item (apenas CHECKOUT)
+ * @param onUpdateFulfillmentType Callback para atualizar tipo de atendimento (apenas CHECKOUT)
  * @param onRetryFinalization Callback para tentar finalizar novamente após erro (apenas CHECKOUT)
  * @param billRequested Se true, a conta já foi solicitada (VIEW_ORDER apenas)
  * @param isRequestingBill Se true, está solicitando a conta (VIEW_ORDER apenas)
@@ -68,6 +69,7 @@ fun CompactOrderPanel(
     finalizationState: FinalizationState? = null,
     onUpdateQuantity: ((String, Int) -> Unit)? = null,
     onRemoveItem: ((String) -> Unit)? = null,
+    onUpdateFulfillmentType: ((String, com.speedmenu.tablet.domain.model.FulfillmentType) -> Unit)? = null,
     onRetryFinalization: () -> Unit = {},
     billRequested: Boolean = false,
     isRequestingBill: Boolean = false,
@@ -182,6 +184,9 @@ fun CompactOrderPanel(
                                     },
                                     onUpdateQuantity = { newQuantity ->
                                         onUpdateQuantity?.invoke(item.id, newQuantity)
+                                    },
+                                    onUpdateFulfillmentType = { newType ->
+                                        onUpdateFulfillmentType?.invoke(item.id, newType)
                                     }
                                 )
                             }

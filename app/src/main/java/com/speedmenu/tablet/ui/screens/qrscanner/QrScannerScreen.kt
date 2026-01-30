@@ -292,6 +292,9 @@ fun QrScannerScreen(
                     onRemoveItem = { itemId ->
                         cartViewModel.removeItem(itemId)
                     },
+                    onUpdateFulfillmentType = { itemId, newType ->
+                        cartViewModel.updateFulfillmentType(itemId, newType)
+                    },
                     onRetryFinalization = {
                         if (mode == QrScannerMode.CHECKOUT) {
                             qrScannerViewModel.retryFinalization(cartState.items)

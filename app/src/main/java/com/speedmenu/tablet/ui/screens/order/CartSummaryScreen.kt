@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.speedmenu.tablet.core.ui.components.PrimaryCTA
 import com.speedmenu.tablet.core.ui.components.AppTopBar
 import com.speedmenu.tablet.core.ui.components.WaiterCalledDialog
+import com.speedmenu.tablet.core.ui.components.FulfillmentToggle
 import com.speedmenu.tablet.core.utils.CurrencyFormatter
 import com.speedmenu.tablet.domain.model.CartItem
 import com.speedmenu.tablet.ui.viewmodel.CartViewModel
@@ -150,6 +151,9 @@ fun CartSummaryScreen(
                     },
                     onUpdateQuantity = { newQuantity ->
                         cartViewModel?.updateItemQuantity(item.id, newQuantity)
+                    },
+                    onUpdateFulfillmentType = { newType ->
+                        cartViewModel?.updateFulfillmentType(item.id, newType)
                     }
                 )
             }
@@ -259,6 +263,7 @@ fun CartItemRow(
     item: CartItem,
     onRemoveItem: () -> Unit = {},
     onUpdateQuantity: (Int) -> Unit = {},
+    onUpdateFulfillmentType: ((com.speedmenu.tablet.domain.model.FulfillmentType) -> Unit)? = null,
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
     animationDelay: Int = 0 // Delay em millisegundos para efeito cascata
@@ -339,14 +344,31 @@ fun CartItemRow(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Nome do prato (destaque principal)
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = colorScheme.onSurface,
-                fontSize = 18.sp
-            )
+            // Nome do prato e toggle de atendimento (mesma linha)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Nome do prato (destaque principal)
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colorScheme.onSurface,
+                    fontSize = 18.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                // Toggle de atendimento (apenas se não for read-only e callback estiver disponível)
+                if (!readOnly && onUpdateFulfillmentType != null) {
+                    FulfillmentToggle(
+                        fulfillmentType = item.fulfillmentType,
+                        onValueChange = onUpdateFulfillmentType,
+                        modifier = Modifier.padding(start = 12.dp)
+                    )
+                }
+            }
             
             // Quantidade × Preço unitário
             Text(
